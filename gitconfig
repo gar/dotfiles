@@ -25,3 +25,8 @@
   autosquash = true
 [include]
   path = ~/.gitconfig.local
+[user]
+  name = "Gar Morley"
+  email = "garmorley@gmail.com"
+[credential]
+  helper = osxkeychain
