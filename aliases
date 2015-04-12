@@ -18,6 +18,7 @@ alias tree="tree -C"
 
 # git
 alias gci="git pull --rebase && rake && git push"
+alias gg="git ci"
 
 # Bundler
 alias b="bundle"
