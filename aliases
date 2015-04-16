@@ -15,6 +15,7 @@ alias v='$VISUAL'
 alias tz="tar zxf"
 alias tj="tar jxf"
 alias tree="tree -C"
+alias less="less -R"
 
 # git
 alias gci="git pull --rebase && rake && git push"
