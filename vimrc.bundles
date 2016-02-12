@@ -29,12 +29,12 @@ call plug#begin('~/.vim/bundle')
 " Define bundles via Github repos
 Plug 'christoomey/vim-run-interactive'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'fatih/vim-go'
 Plug 'janko-m/vim-test'
-Plug 'kchmck/vim-coffee-script'
 Plug 'pbrisbin/vim-mkdir'
 Plug 'scrooloose/syntastic'
-Plug 'slim-template/vim-slim'
+Plug 'pbrisbin/vim-mkdir'
+Plug 'scrooloose/syntastic'
+Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-eunuch'
@@ -44,7 +44,6 @@ Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rake'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
-Plug 'vim-ruby/vim-ruby'
 Plug 'vim-scripts/tComment'
 
 if filereadable(expand("~/.vimrc.bundles.local"))
