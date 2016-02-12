@@ -117,6 +117,9 @@ inoremap <S-Tab> <c-n>
 " Switch between the last two files
 nnoremap <leader><leader> <c-^>
 
+" Find word under cursor in git project
+nnoremap <leader>f :Ggrep <c-r><c-w><CR>
+
 " Get off my lawn
 nnoremap <Left> :echoe "Use h"<CR>
 nnoremap <Right> :echoe "Use l"<CR>
