@@ -20,7 +20,7 @@ brew install --cask 1password/tap/1password-cli
 open /System/Volumes/Data/Applications/1Password.app
 read -p "Set up account in 1Password app (and enable biometrics) [enter to continue]"
 
-op signin --account my.1password.com
+eval $(op signin --account my.1password.com)
 
 # Install and run chezmoi to pull in config and scripts
 brew install chezmoi
