@@ -12,12 +12,12 @@ which make || xcode-select --install
 
 # Install homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Install and setup 1password-cli so chezmoi can retrieve files it needs
 brew install --cask 1password
 brew install --cask 1password/tap/1password-cli
-echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-eval "$(/opt/homebrew/bin/brew shellenv)"
 
 open /System/Volumes/Data/Applications/1Password.app
 read -p "Set up account in 1Password app (and enable biometrics) [enter to continue]"
