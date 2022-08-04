@@ -43,6 +43,13 @@ sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo Hos
 # Disable Notification Center and remove the menu bar icon
 launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist 2> /dev/null
 
+# Hide Siri menu bar icon
+defaults write com.apple.siri "StatusMenuVisible" 0
+defaults write com.apple.systemuiserver "NSStatusItem Visible Siri" 0
+
+# Remove Spotlight menu bar icon
+defaults -currentHost write com.apple.Spotlight MenuItemHidden -int 1
+
 # Set a custom wallpaper image. `DefaultDesktop.jpg` is already a symlink, and
 # all wallpapers are in `/System/Library/Desktop Pictures/`. The default is `Wave.jpg`.
 rm -rf ~/Library/Application Support/Dock/desktoppicture.db
