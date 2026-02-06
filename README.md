@@ -78,6 +78,40 @@ Add packages to the `Brewfile`, then:
 brew bundle
 ```
 
+## Testing
+
+A test suite validates shell scripts, neovim config, and chezmoi templates. The same checks run locally and in CI.
+
+### Run locally
+
+```bash
+# all checks
+./bin/executable_test.sh
+
+# single check (shellcheck | shell-syntax | lua-lint | nvim-startup | git-config | chezmoi-template)
+./bin/executable_test.sh lua-lint
+```
+
+**Dependencies** (install the ones you need):
+
+```bash
+brew install shellcheck luacheck neovim chezmoi
+```
+
+### CI
+
+GitHub Actions runs automatically on every pull request and push to `main`. The pipeline has four parallel jobs:
+
+| Job | What it checks |
+|---|---|
+| **Lint** | `shellcheck` on shell scripts, `bash -n` / `zsh -n` syntax |
+| **Lua lint** | `luacheck` on all neovim Lua files |
+| **Neovim startup** | Headless `nvim` launch — catches broken plugin specs, bad keymaps, etc. |
+| **Git config** | Renders and parses `dot_gitconfig.tmpl` to catch malformed config |
+| **Chezmoi templates** | Renders every `.tmpl` file to verify template syntax |
+
+No manual GitHub setup is required — the workflow runs automatically once `.github/workflows/ci.yml` is pushed.
+
 ## What's Included
 
 | File | Purpose |
@@ -90,3 +124,5 @@ brew bundle
 | `private_dot_ssh/` | SSH keys and config (populated from 1Password) |
 | `Brewfile` | Homebrew packages, casks, and Mac App Store apps |
 | `bin/executable_bootstrap.sh` | Full machine bootstrap script |
+| `bin/executable_test.sh` | Local test runner (same checks as CI) |
+| `.github/workflows/ci.yml` | GitHub Actions CI pipeline |

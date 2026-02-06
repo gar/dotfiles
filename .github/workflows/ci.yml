@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: ShellCheck
+        run: |
+          shellcheck -e SC1091,SC2034,SC2044,SC2046,SC2064,SC2086,SC2162 bin/executable_*.sh dot_macos
+
+      - name: Bash syntax check
+        run: |
+          for f in bin/executable_*.sh; do
+            echo "checking $f"
+            bash -n "$f"
+          done
+
+      - name: Zsh syntax check
+        run: |
+          sudo apt-get install -y zsh
+          zsh -n dot_zshrc
+
+  lua:
+    name: Lua lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install luacheck
+        run: sudo apt-get update && sudo apt-get install -y lua-check
+
+      - name: Luacheck neovim config
+        run: |
+          luacheck dot_config/nvim \
+            --globals vim \
+            --no-unused-args \
+            --no-max-line-length
+
+  neovim:
+    name: Neovim startup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install neovim
+        run: |
+          curl -LO https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz
+          tar xzf nvim-linux-x86_64.tar.gz
+          echo "$PWD/nvim-linux-x86_64/bin" >> "$GITHUB_PATH"
+
+      - name: Neovim headless startup
+        run: |
+          # Point neovim at our config from the repo
+          export XDG_CONFIG_HOME="$PWD/dot_config"
+
+          # Install plugins and quit — capture stderr
+          NVIM_ERR=$(nvim --headless \
+            "+Lazy! install" \
+            "+lua vim.cmd('qall!')" 2>&1) || true
+
+          # Filter known-benign noise
+          NVIM_ERR=$(echo "$NVIM_ERR" | grep -iE "^e[0-9]+:|error" || true)
+
+          if [ -n "$NVIM_ERR" ]; then
+            echo "::error::Neovim startup produced errors:"
+            echo "$NVIM_ERR"
+            exit 1
+          fi
+          echo "Neovim started cleanly"
+
+  git-config:
+    name: Git config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Validate git config
+        run: |
+          TMPFILE=$(mktemp)
+          chezmoi execute-template --init < dot_gitconfig.tmpl > "$TMPFILE"
+          if ! git config --file "$TMPFILE" --list > /dev/null; then
+            echo "::error::dot_gitconfig.tmpl is not valid git config"
+            git config --file "$TMPFILE" --list
+            exit 1
+          fi
+          echo "Git config is valid"
+
+  chezmoi:
+    name: Chezmoi templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Validate templates
+        run: |
+          FAILED=0
+          for f in $(find . -name '*.tmpl' -not -path './.git/*'); do
+            echo "checking $f"
+            if ! chezmoi execute-template --init < "$f" > /dev/null 2>&1; then
+              # Templates using 1Password functions can't render in CI — skip them
+              ERR=$(chezmoi execute-template --init < "$f" 2>&1 || true)
+              if echo "$ERR" | grep -qi "onepassword\|1password\|op:"; then
+                echo "  skipped (requires 1Password)"
+              else
+                echo "::error::Template failed to render: $f"
+                echo "$ERR"
+                FAILED=1
+              fi
+            fi
+          done
+          exit $FAILED
