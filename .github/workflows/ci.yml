@@ -26,10 +26,16 @@ jobs:
             bash -n "$f"
           done
 
+      - name: Install chezmoi
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
       - name: Zsh syntax check
         run: |
           sudo apt-get install -y zsh
-          zsh -n dot_zshrc
+          chezmoi execute-template --init < dot_zshrc.tmpl > /tmp/dot_zshrc
+          zsh -n /tmp/dot_zshrc
 
   lua:
     name: Lua lint
