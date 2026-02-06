@@ -12,12 +12,12 @@ if not vim.uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Load core settings before plugins
-require("core.options")
-require("core.keymaps")
-require("core.autocmds")
+-- Load editor settings before features
+require("editor.options")
+require("editor.keymaps")
+require("editor.autocmds")
 
--- Load plugins (each file in lua/plugins/ is auto-loaded)
-require("lazy").setup("plugins", {
+-- Load features (each file in lua/features/ is auto-loaded by lazy.nvim)
+require("lazy").setup("features", {
   ui = { border = "rounded" },
 })
