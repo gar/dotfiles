@@ -52,7 +52,7 @@ if run_check "shellcheck" "$FILTER"; then
       fi
     done
   else
-    fail "shellcheck not installed (brew install shellcheck)"
+    fail "shellcheck not installed"
   fi
 fi
 
@@ -71,15 +71,25 @@ if run_check "shell-syntax" "$FILTER"; then
     fi
   done
 
-  # zsh — only if zsh is available (CI uses a shim if not)
+  # zsh — render template first if chezmoi is available, then syntax-check
   if command -v zsh &>/dev/null; then
-    if zsh -n "$REPO_DIR/dot_zshrc" 2>&1; then
-      pass "zsh -n dot_zshrc"
-    else
-      fail "zsh -n dot_zshrc"
+    ZSHRC_FILE="$REPO_DIR/dot_zshrc.tmpl"
+    if [[ -f "$ZSHRC_FILE" ]]; then
+      ZSHRC_TMP=$(mktemp)
+      if command -v chezmoi &>/dev/null; then
+        chezmoi execute-template --init < "$ZSHRC_FILE" > "$ZSHRC_TMP" 2>/dev/null
+      else
+        cp "$ZSHRC_FILE" "$ZSHRC_TMP"
+      fi
+      if zsh -n "$ZSHRC_TMP" 2>&1; then
+        pass "zsh -n dot_zshrc.tmpl"
+      else
+        fail "zsh -n dot_zshrc.tmpl"
+      fi
+      rm -f "$ZSHRC_TMP"
     fi
   else
-    pass "zsh -n dot_zshrc (skipped — zsh not available)"
+    pass "zsh -n dot_zshrc.tmpl (skipped — zsh not available)"
   fi
 fi
 
@@ -97,7 +107,7 @@ if run_check "lua-lint" "$FILTER"; then
       fail "luacheck dot_config/nvim"
     fi
   else
-    fail "luacheck not installed (brew install luacheck)"
+    fail "luacheck not installed"
   fi
 fi
 

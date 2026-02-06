@@ -64,11 +64,24 @@ export PATH="$HOME/bin:$PATH"
 export ERL_AFLAGS="-kernel shell_history enabled"
 
 # ------------------------------
-# Plugins (managed by homebrew)
+# Plugins
 # ------------------------------
+{{- if eq .chezmoi.os "darwin" }}
 source $(brew --prefix)/share/zsh-you-should-use/you-should-use.plugin.zsh
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+{{- else }}
+# Source plugins from standard Linux paths (apt: /usr/share, pacman: /usr/share/zsh/plugins)
+for plugin_dir in /usr/share/zsh-you-should-use /usr/share/zsh/plugins/zsh-you-should-use; do
+  [[ -f "$plugin_dir/you-should-use.plugin.zsh" ]] && source "$plugin_dir/you-should-use.plugin.zsh" && break
+done
+for plugin_dir in /usr/share/zsh-autosuggestions /usr/share/zsh/plugins/zsh-autosuggestions; do
+  [[ -f "$plugin_dir/zsh-autosuggestions.zsh" ]] && source "$plugin_dir/zsh-autosuggestions.zsh" && break
+done
+for plugin_dir in /usr/share/zsh-syntax-highlighting /usr/share/zsh/plugins/zsh-syntax-highlighting; do
+  [[ -f "$plugin_dir/zsh-syntax-highlighting.zsh" ]] && source "$plugin_dir/zsh-syntax-highlighting.zsh" && break
+done
+{{- end }}
 
 # ------------------------------
 # Prompt (robbyrussell-style)
@@ -86,4 +99,4 @@ eval "$(mise activate zsh)"
 eval "$(direnv hook zsh)"
 eval "$(zoxide init zsh)"
 eval "$(chezmoi completion zsh)"
-eval "$(op completion zsh)"; compdef _op op
+command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
