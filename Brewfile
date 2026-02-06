@@ -3,7 +3,7 @@ tap 'homebrew/bundle'
 tap 'homebrew/cask-drivers'
 tap 'homebrew/cask-fonts'
 
-brew 'asdf'
+brew 'mise'
 brew 'autoconf'
 brew 'coreutils'
 brew 'curl'
