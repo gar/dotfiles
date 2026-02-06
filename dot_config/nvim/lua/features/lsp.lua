@@ -13,7 +13,7 @@ return {
     dependencies = { "williamboman/mason.nvim" },
     config = function()
       require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls" },
+        ensure_installed = { "lua_ls", "elixirls", "pyright", "ts_ls" },
       })
     end,
   },
@@ -121,6 +121,14 @@ return {
                   [vim.fn.stdpath("config") .. "/lua"] = true,
                 },
               },
+            },
+          },
+        },
+        elixirls = {
+          settings = {
+            elixirLS = {
+              dialyzerEnabled = true,
+              fetchDeps = false,
             },
           },
         },
