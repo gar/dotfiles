@@ -3,7 +3,6 @@ tap 'homebrew/cask-drivers'
 tap 'homebrew/cask-fonts'
 
 brew 'mise'
-brew 'starship'
 brew 'zsh-autosuggestions'
 brew 'zsh-syntax-highlighting'
 brew 'autoconf'
