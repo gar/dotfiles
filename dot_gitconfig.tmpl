@@ -1,7 +1,6 @@
 [color]
 	ui = auto
 [core]
-  pager = delta
 [alias]
 	oops = commit --amend -C HEAD
 	shove = push --force-with-lease
@@ -10,23 +9,11 @@
 	ff = only
 [init]
 	defaultBranch = main
-[interactive]
-  diffFilter = delta --color-only
-[add.interactive]
-  useBuiltin = false
 [push]
 	default = current
 [user]
 	email = garmorley@gmail.com
 	name = Gar Morley
-[delta]
-  navigate = true
-  light = false
-  file-decoration-style = 'deepskyblue ul'
-  file-style = 'deepskyblue'
-  hunk-header-decoration-style = 'deepskyblue box'
-  hunk-header-file-style = 'deepskyblue'
-  hunk-header-line-number-style = 'deepskyblue'
 [merge]
   conflictStyle = diff3
 [diff]

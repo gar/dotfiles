@@ -7,23 +7,9 @@ return {
     "hrsh7th/cmp-cmdline",
     "hrsh7th/cmp-nvim-lsp",
     "hrsh7th/cmp-nvim-lua",
-    "saadparwaiz1/cmp_luasnip",
-    {
-      "L3MON4D3/LuaSnip",
-      dependencies = { "rafamadriz/friendly-snippets" },
-      config = function()
-        require("luasnip.loaders.from_vscode").lazy_load()
-      end,
-    },
   },
   config = function()
     local cmp = require("cmp")
-    local luasnip = require("luasnip")
-
-    local check_backspace = function()
-      local col = vim.fn.col(".") - 1
-      return col == 0 or vim.fn.getline("."):sub(col, col):match("%s")
-    end
 
     local kind_icons = {
       Text = "", Method = "m", Function = "", Constructor = "",
@@ -36,11 +22,6 @@ return {
     }
 
     cmp.setup({
-      snippet = {
-        expand = function(args)
-          luasnip.lsp_expand(args.body)
-        end,
-      },
       mapping = cmp.mapping.preset.insert({
         ["<C-k>"] = cmp.mapping.select_prev_item(),
         ["<C-j>"] = cmp.mapping.select_next_item(),
@@ -52,12 +33,6 @@ return {
         ["<Tab>"] = cmp.mapping(function(fallback)
           if cmp.visible() then
             cmp.select_next_item()
-          elseif luasnip.expandable() then
-            luasnip.expand()
-          elseif luasnip.expand_or_jumpable() then
-            luasnip.expand_or_jump()
-          elseif check_backspace() then
-            fallback()
           else
             fallback()
           end
@@ -65,8 +40,6 @@ return {
         ["<S-Tab>"] = cmp.mapping(function(fallback)
           if cmp.visible() then
             cmp.select_prev_item()
-          elseif luasnip.jumpable(-1) then
-            luasnip.jump(-1)
           else
             fallback()
           end
@@ -77,7 +50,6 @@ return {
         format = function(entry, vim_item)
           vim_item.kind = string.format("%s", kind_icons[vim_item.kind])
           vim_item.menu = ({
-            luasnip = "[Snippet]",
             buffer = "[Buffer]",
             path = "[Path]",
             nvim_lsp = "[LSP]",
@@ -89,7 +61,6 @@ return {
       sources = cmp.config.sources({
         { name = "nvim_lsp" },
         { name = "nvim_lua" },
-        { name = "luasnip" },
       }, {
         { name = "buffer" },
         { name = "path" },
