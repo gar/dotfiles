@@ -79,6 +79,28 @@ jobs:
           fi
           echo "Neovim started cleanly"
 
+  git-config:
+    name: Git config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Validate git config
+        run: |
+          TMPFILE=$(mktemp)
+          chezmoi execute-template --init < dot_gitconfig.tmpl > "$TMPFILE"
+          if ! git config --file "$TMPFILE" --list > /dev/null; then
+            echo "::error::dot_gitconfig.tmpl is not valid git config"
+            git config --file "$TMPFILE" --list
+            exit 1
+          fi
+          echo "Git config is valid"
+
   chezmoi:
     name: Chezmoi templates
     runs-on: ubuntu-latest

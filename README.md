@@ -88,7 +88,7 @@ A test suite validates shell scripts, neovim config, and chezmoi templates. The 
 # all checks
 ./bin/executable_test.sh
 
-# single check (shellcheck | shell-syntax | lua-lint | nvim-startup | chezmoi-template)
+# single check (shellcheck | shell-syntax | lua-lint | nvim-startup | git-config | chezmoi-template)
 ./bin/executable_test.sh lua-lint
 ```
 
@@ -107,6 +107,7 @@ GitHub Actions runs automatically on every pull request and push to `main`. The 
 | **Lint** | `shellcheck` on shell scripts, `bash -n` / `zsh -n` syntax |
 | **Lua lint** | `luacheck` on all neovim Lua files |
 | **Neovim startup** | Headless `nvim` launch — catches broken plugin specs, bad keymaps, etc. |
+| **Git config** | Renders and parses `dot_gitconfig.tmpl` to catch malformed config |
 | **Chezmoi templates** | Renders every `.tmpl` file to verify template syntax |
 
 No manual GitHub setup is required — the workflow runs automatically once `.github/workflows/ci.yml` is pushed.

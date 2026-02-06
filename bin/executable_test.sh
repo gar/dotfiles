@@ -5,7 +5,7 @@ set -euo pipefail
 # Run all checks: ./bin/executable_test.sh
 # Run one check:  ./bin/executable_test.sh <check_name>
 #
-# Checks: shellcheck, shell-syntax, lua-lint, nvim-startup, chezmoi-template
+# Checks: shellcheck, shell-syntax, lua-lint, nvim-startup, chezmoi-template, git-config
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -127,7 +127,32 @@ if run_check "nvim-startup" "$FILTER"; then
 fi
 
 # ---------------------------------------------------------------------------
-# 5. Chezmoi template — validate templates render without errors
+# 5. Git config — validate gitconfig parses correctly
+# ---------------------------------------------------------------------------
+if run_check "git-config" "$FILTER"; then
+  GITCONFIG="$REPO_DIR/dot_gitconfig.tmpl"
+  if [[ -f "$GITCONFIG" ]]; then
+    # Render template if chezmoi is available, otherwise test the raw file
+    TMPFILE=$(mktemp)
+    trap "rm -f $TMPFILE" EXIT
+    if command -v chezmoi &>/dev/null; then
+      chezmoi execute-template --init < "$GITCONFIG" > "$TMPFILE" 2>/dev/null
+    else
+      cp "$GITCONFIG" "$TMPFILE"
+    fi
+    if git config --file "$TMPFILE" --list >/dev/null 2>&1; then
+      pass "git config dot_gitconfig.tmpl"
+    else
+      git config --file "$TMPFILE" --list 2>&1 || true
+      fail "git config dot_gitconfig.tmpl"
+    fi
+  else
+    pass "git config (skipped — dot_gitconfig.tmpl not found)"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 6. Chezmoi template — validate templates render without errors
 # ---------------------------------------------------------------------------
 if run_check "chezmoi-template" "$FILTER"; then
   if command -v chezmoi &>/dev/null; then
