@@ -169,6 +169,9 @@ fi
 # Install language runtimes
 mise install
 
+# Install Claude Code (requires node from mise)
+npm install -g @anthropic-ai/claude-code
+
 # Set zsh as default shell if it isn't already
 if [[ "$SHELL" != */zsh ]]; then
   ZSH_PATH="$(command -v zsh)"
