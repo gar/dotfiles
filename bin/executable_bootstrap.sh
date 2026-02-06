@@ -22,13 +22,7 @@ chezmoi init gar --apply
 brew bundle
 
 # Install all languages
-asdf plugin add nodejs
-asdf plugin add erlang
-asdf plugin add elixir
-asdf plugin add golang
-asdf plugin add python
-asdf plugin add lua
-asdf install
+mise install
 
 # restart
 sudo shutdown -r now

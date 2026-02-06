@@ -106,7 +106,7 @@ alias vim="nvim"
 export PATH="$HOME/bin:$PATH"
 
 # Setup tools
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
+eval "$(mise activate zsh)"
 eval "$(direnv hook zsh)"
 eval "$(zoxide init zsh)"
 eval "$(chezmoi completion zsh)"
