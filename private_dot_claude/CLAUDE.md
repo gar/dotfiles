@@ -7,8 +7,8 @@
 
 # Workflow
 
-- Start with plan mode for non-trivial tasks; iterate on the plan before writing code
-- Run the project's test suite after making changes: look for a Makefile, package.json scripts, or mix.exs to find the right command
+- Start with plan mode for non-trivial tasks; iterate on the plan before writing code. If implementation goes sideways, switch back to plan mode and re-plan rather than pushing through
+- IMPORTANT: always verify your work — run tests, linters, or type-checkers to close the feedback loop. If verification fails, iterate until it passes. Look for a Makefile, package.json scripts, or mix.exs to find the right commands
 - Run the linter/formatter before committing if one is configured
 - Commit with concise messages in imperative mood (e.g. "Add user auth endpoint")
 - Prefer small, focused commits over large sweeping ones
