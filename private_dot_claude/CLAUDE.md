@@ -3,6 +3,7 @@
 - Default to simple, readable solutions over clever abstractions
 - Prefer pure functions; isolate side effects at the edges
 - Favour immutable data — avoid mutation unless the language idiom demands it
+- Parse, don't validate — use types and structures to make illegal states unrepresentable
 - Keep functions small and focused on a single responsibility
 - Use descriptive variable and function names; avoid abbreviations
 
