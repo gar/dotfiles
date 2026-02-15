@@ -1,6 +1,8 @@
 # Personal preferences
 
 - Default to simple, readable solutions over clever abstractions
+- Prefer deep modules — simple interfaces that hide internal complexity
+- Pull complexity downward — handle it inside the module rather than leaking it to callers
 - Prefer pure functions; isolate side effects at the edges
 - Favour immutable data — avoid mutation unless the language idiom demands it
 - Parse, don't validate — use types and structures to make illegal states unrepresentable
