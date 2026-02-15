@@ -1,7 +1,8 @@
 # Personal preferences
 
 - Default to simple, readable solutions over clever abstractions
-- Prefer composition over inheritance
+- Prefer pure functions; isolate side effects at the edges
+- Favour immutable data — avoid mutation unless the language idiom demands it
 - Keep functions small and focused on a single responsibility
 - Use descriptive variable and function names; avoid abbreviations
 
@@ -17,7 +18,9 @@
 
 - Match the existing style of the file and project — do not impose a different convention
 - Use the project's configured formatter (prettier, mix format, black, etc.) rather than manually formatting
-- Prefer early returns over deeply nested conditionals
+- Prefer pattern matching and guards over conditionals; use early returns in imperative code
+- Use pipelines and function composition to express data transformations
+- Prefer map/filter/reduce over imperative loops
 - Only add comments where the *why* isn't obvious from the code
 
 # Git
@@ -29,6 +32,7 @@
 # Error handling
 
 - Handle errors at the boundary where they can be meaningfully addressed
+- Use tagged tuples ({:ok, _} / {:error, _}) or result types; pattern match on them explicitly
 - Do not swallow errors silently — log or propagate them
 - Prefer specific error types over generic catch-all handlers
 
