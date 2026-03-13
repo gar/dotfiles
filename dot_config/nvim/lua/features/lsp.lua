@@ -23,7 +23,7 @@ return {
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
-      "hrsh7th/cmp-nvim-lsp",
+      "saghen/blink.cmp",
     },
     config = function()
       -- Diagnostic signs
@@ -106,8 +106,8 @@ return {
         end
       end
 
-      -- Capabilities (enhanced with nvim-cmp)
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      -- Capabilities (enhanced with blink.cmp)
+      local capabilities = require("blink.cmp").get_lsp_capabilities()
 
       -- Server-specific settings
       local server_settings = {
