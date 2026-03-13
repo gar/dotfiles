@@ -3,7 +3,7 @@ tap 'homebrew/cask-fonts'
 
 brew 'mise'
 brew 'zsh-autosuggestions'
-brew 'zsh-syntax-highlighting'
+brew 'zsh-fast-syntax-highlighting'
 brew 'zsh-you-should-use'
 brew 'autoconf'
 brew 'coreutils'

@@ -33,7 +33,7 @@ install_packages_darwin() {
 install_packages_debian() {
   sudo apt-get update
   sudo apt-get install -y \
-    zsh zsh-autosuggestions zsh-syntax-highlighting \
+    zsh zsh-autosuggestions \
     autoconf build-essential \
     curl wget rsync \
     direnv \
@@ -60,6 +60,11 @@ install_packages_debian() {
     sudo git clone https://github.com/MichaelAqwortsms/zsh-you-should-use.git /usr/share/zsh-you-should-use
   fi
 
+  # fast-syntax-highlighting is not in Ubuntu repos — install from source if missing
+  if [[ ! -d /usr/share/zsh/plugins/fast-syntax-highlighting ]]; then
+    sudo git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git /usr/share/zsh/plugins/fast-syntax-highlighting
+  fi
+
   # luacheck via luarocks
   if ! command -v luacheck &>/dev/null; then
     sudo luarocks install luacheck
@@ -69,7 +74,7 @@ install_packages_debian() {
 install_packages_arch() {
   sudo pacman -Syu --noconfirm
   sudo pacman -S --needed --noconfirm \
-    zsh zsh-autosuggestions zsh-syntax-highlighting \
+    zsh zsh-autosuggestions \
     autoconf base-devel \
     curl wget rsync \
     direnv \
@@ -91,13 +96,13 @@ install_packages_arch() {
     tree \
     zoxide
 
-  # zsh-you-should-use is in AUR — install if yay is available
+  # AUR packages (zsh-you-should-use, zsh-fast-syntax-highlighting)
   if command -v yay &>/dev/null; then
-    yay -S --needed --noconfirm zsh-you-should-use
+    yay -S --needed --noconfirm zsh-you-should-use zsh-fast-syntax-highlighting
   elif command -v paru &>/dev/null; then
-    paru -S --needed --noconfirm zsh-you-should-use
+    paru -S --needed --noconfirm zsh-you-should-use zsh-fast-syntax-highlighting
   else
-    echo "Note: install zsh-you-should-use from AUR manually (yay -S zsh-you-should-use)"
+    echo "Note: install from AUR manually (yay -S zsh-you-should-use zsh-fast-syntax-highlighting)"
   fi
 }
 
