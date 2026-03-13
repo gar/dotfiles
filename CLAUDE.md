@@ -14,7 +14,7 @@ dotfiles/
 │       ├── init.lua               # Entry point — bootstraps lazy.nvim
 │       └── lua/
 │           ├── editor/            # Core settings (options, keymaps, autocmds)
-│           └── features/          # Plugin specs (colorscheme, completion, fuzzy_find, lsp, syntax)
+│           └── features/          # Plugin specs (colorscheme, completion, fuzzy_find, lsp, syntax, terminal)
 ├── private_dot_claude/            # Personal Claude preferences (private)
 ├── private_dot_ssh/               # SSH keys (populated from 1Password)
 ├── .github/workflows/ci.yml      # GitHub Actions CI pipeline
@@ -74,7 +74,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 - **`dot_mise.toml`** — Pins language runtime versions. Changed here, applied via `mise install`.
 - **`Brewfile`** — macOS packages. Run `brew bundle` after changes.
 - **`bin/executable_bootstrap.sh`** — Full machine setup. Detects OS/distro, installs packages, applies chezmoi, installs runtimes, sets default shell.
-- **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, elixirls, pyright, ts_ls.
+- **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, elixirls, pyright, ts_ls. Floating terminal via toggleterm.nvim (`<C-\>` to toggle).
 
 ## Development Workflow
 
