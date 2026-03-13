@@ -188,6 +188,22 @@ Leader key is `Space`.
 | `gl` | normal | Line diagnostics |
 | `:Format` | command | Format buffer via LSP |
 
+### Git Worktrees
+
+| Keymap | Mode | Action |
+|--------|------|--------|
+| `<leader>gwl` | normal | List and switch between worktrees (Telescope) |
+| `<leader>gwc` | normal | Create a new worktree from a branch (Telescope) |
+
+Shell aliases:
+
+| Alias | Command |
+|-------|---------|
+| `gwl` | `git worktree list` |
+| `gwa` | `git worktree add <path> <branch>` |
+| `gwd` | `git worktree remove <path>` |
+| `gwp` | `git worktree prune` |
+
 ### Claude Code (AI)
 
 | Keymap | Mode | Action |
@@ -201,6 +217,8 @@ Leader key is `Space`.
 | `<leader>dn` | normal | Reject Claude-proposed diff |
 
 **Workflow:** Select code in visual mode → `<leader>as` to send to Claude → type your instruction in the panel → accept or reject proposed changes with `<leader>dy` / `<leader>dn`.
+
+**Worktrees + Claude Code:** Run `claude --worktree <name>` in a terminal to start an isolated Claude session on its own branch. Use `<leader>gwl` to switch between worktree directories in Neovim. Multiple worktrees let you run parallel Claude sessions without conflicts.
 
 ## OS Support
 

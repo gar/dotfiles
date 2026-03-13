@@ -18,7 +18,7 @@ dotfiles/
 │       ├── init.lua               # Entry point — bootstraps lazy.nvim
 │       └── lua/
 │           ├── editor/            # Core settings (options, keymaps, autocmds)
-│           └── features/          # Plugin specs (claude, colorscheme, completion, fuzzy_find, lsp, syntax, terminal)
+│           └── features/          # Plugin specs (claude, colorscheme, completion, fuzzy_find, git_worktree, lsp, syntax, terminal)
 ├── private_dot_claude/            # Personal Claude preferences (private)
 ├── private_dot_ssh/               # SSH keys (populated from 1Password)
 ├── .github/workflows/ci.yml      # GitHub Actions CI pipeline
@@ -84,8 +84,11 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 
 1. Edit files in this repo (they are chezmoi source files, not the live dotfiles)
 2. Run `./bin/executable_test.sh` to validate changes
-3. Commit and push — CI runs automatically
-4. Apply to the local machine with `chezmoi apply` (or `chezmoi update` to pull + apply)
+3. **Update `README.md`** if the change affects user-facing behaviour: keymaps, aliases, shell commands, plugins, or workflow
+4. Commit and push — CI runs automatically
+5. Apply to the local machine with `chezmoi apply` (or `chezmoi update` to pull + apply)
+
+> **Documentation rule:** Any change that adds, removes, or modifies a keymap, shell alias, plugin, or notable workflow **must** include a corresponding update to `README.md`. CLAUDE.md is for implementation notes only — user-facing docs live in `README.md`.
 
 ### When editing shell config
 
@@ -103,6 +106,10 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 ### Claude Code inside Neovim
 
 `lua/features/claude.lua` configures [claudecode.nvim](https://github.com/coder/claudecode.nvim). All Claude keymaps use the `<leader>a` prefix — avoid assigning new keymaps there. Diff keymaps use `<leader>d`. See `README.md` for the full keymap reference.
+
+### Git worktrees
+
+`lua/features/git_worktree.lua` configures [git-worktree.nvim](https://github.com/ThePrimeagen/git-worktree.nvim) with Telescope integration. Keymaps use the `<leader>gw` prefix. Shell aliases (`gwl`, `gwa`, `gwd`, `gwp`) are defined in `dot_zshrc.tmpl`. Claude Code's native `--worktree` flag works independently of this plugin — the plugin adds in-editor switching via Telescope.
 
 ### When editing templates
 
