@@ -98,27 +98,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 
 ### Claude Code inside Neovim
 
-`lua/features/claude.lua` integrates the Claude Code CLI via [claudecode.nvim](https://github.com/coder/claudecode.nvim). The plugin starts a local WebSocket server; the Claude CLI discovers it automatically and gains real-time access to open buffers, the current selection, and LSP diagnostics.
-
-**Keymaps** (all prefixed `<leader>a` for "AI"):
-
-| Keymap | Mode | Action |
-|--------|------|--------|
-| `<leader>ac` | normal | Toggle Claude Code panel |
-| `<leader>af` | normal | Focus Claude Code panel |
-| `<leader>ar` | normal | Resume last Claude session |
-| `<leader>aa` | normal | Add current file to Claude context |
-| `<leader>as` | visual | Send selection to Claude |
-| `<leader>dy` | normal | Accept Claude-proposed diff |
-| `<leader>dn` | normal | Reject Claude-proposed diff |
-
-**Typical workflow:**
-1. Open a file, select lines in visual mode, press `<leader>as` to send context to Claude.
-2. Type your question/instruction in the Claude panel; it sees the selection automatically.
-3. Claude proposes changes as a diff — review with `<leader>dy` (accept) or `<leader>dn` (reject).
-4. Use `<leader>aa` to @-mention additional files into the conversation.
-
-**Dependencies:** `folke/snacks.nvim` (terminal provider for the Claude panel). snacks is configured with only its terminal feature enabled to avoid conflicts with telescope and toggleterm.
+`lua/features/claude.lua` configures [claudecode.nvim](https://github.com/coder/claudecode.nvim). All Claude keymaps use the `<leader>a` prefix — avoid assigning new keymaps there. Diff keymaps use `<leader>d`. See `README.md` for the full keymap reference.
 
 ### When editing templates
 
