@@ -1,5 +1,9 @@
 # Dotfiles — CLAUDE.md
 
+> **This file is context for the AI assistant, not human documentation.**
+> Keep entries here terse and implementation-focused (file paths, conventions, gotchas).
+> Anything a human would want to read — keymaps, usage guides, feature descriptions — belongs in `README.md`.
+
 Cross-platform dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports macOS, Ubuntu/Debian, and Arch/Manjaro. Secrets are stored in 1Password and injected at apply time via chezmoi templates.
 
 ## Repository Structure
