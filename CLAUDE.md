@@ -1,5 +1,9 @@
 # Dotfiles — CLAUDE.md
 
+> **This file is context for the AI assistant, not human documentation.**
+> Keep entries here terse and implementation-focused (file paths, conventions, gotchas).
+> Anything a human would want to read — keymaps, usage guides, feature descriptions — belongs in `README.md`.
+
 Cross-platform dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports macOS, Ubuntu/Debian, and Arch/Manjaro. Secrets are stored in 1Password and injected at apply time via chezmoi templates.
 
 ## Repository Structure
@@ -14,7 +18,7 @@ dotfiles/
 │       ├── init.lua               # Entry point — bootstraps lazy.nvim
 │       └── lua/
 │           ├── editor/            # Core settings (options, keymaps, autocmds)
-│           └── features/          # Plugin specs (colorscheme, completion, fuzzy_find, lsp, syntax, terminal)
+│           └── features/          # Plugin specs (claude, colorscheme, completion, fuzzy_find, lsp, syntax, terminal)
 ├── private_dot_claude/            # Personal Claude preferences (private)
 ├── private_dot_ssh/               # SSH keys (populated from 1Password)
 ├── .github/workflows/ci.yml      # GitHub Actions CI pipeline
@@ -74,7 +78,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 - **`dot_mise.toml`** — Pins language runtime versions. Changed here, applied via `mise install`.
 - **`Brewfile`** — macOS packages. Run `brew bundle` after changes.
 - **`bin/executable_bootstrap.sh`** — Full machine setup. Detects OS/distro, installs packages, applies chezmoi, installs runtimes, sets default shell.
-- **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, elixirls, pyright, ts_ls. Floating terminal via toggleterm.nvim (`<C-\>` to toggle).
+- **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, elixirls, pyright, ts_ls. Floating terminal via toggleterm.nvim (`<C-\>` to toggle). Claude Code integration via claudecode.nvim (`<leader>ac` to toggle).
 
 ## Development Workflow
 
@@ -95,6 +99,10 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 - Plugin specs use lazy.nvim format (table with plugin URL, dependencies, config function)
 - Test with `./bin/executable_test.sh lua-lint` and `./bin/executable_test.sh nvim-startup`
 - `vim` is a recognized global in luacheck — no need to declare it
+
+### Claude Code inside Neovim
+
+`lua/features/claude.lua` configures [claudecode.nvim](https://github.com/coder/claudecode.nvim). All Claude keymaps use the `<leader>a` prefix — avoid assigning new keymaps there. Diff keymaps use `<leader>d`. See `README.md` for the full keymap reference.
 
 ### When editing templates
 

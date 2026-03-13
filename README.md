@@ -145,6 +145,63 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `bin/executable_test.sh` | Local test runner (same checks as CI) |
 | `.github/workflows/ci.yml` | GitHub Actions CI pipeline |
 
+## Neovim Keymaps
+
+Leader key is `Space`.
+
+### Editor
+
+| Keymap | Mode | Action |
+|--------|------|--------|
+| `<leader>e` | normal | Toggle file explorer (netrw) |
+| `<A-Up>` | normal | Increase window height |
+| `<A-Down>` | normal | Decrease window height |
+| `<A-Left>` | normal | Increase window width |
+| `<A-Right>` | normal | Decrease window width |
+| `J` | visual | Move selection down |
+| `K` | visual | Move selection up |
+| `p` | visual | Paste without overwriting clipboard |
+| `<C-\>` | normal | Toggle floating terminal |
+
+### Fuzzy Find (Telescope)
+
+| Keymap | Mode | Action |
+|--------|------|--------|
+| `<C-p>` | normal | Find files |
+| `<C-t>` | normal | Live grep |
+
+### LSP
+
+| Keymap | Mode | Action |
+|--------|------|--------|
+| `gd` | normal | Go to definition |
+| `gD` | normal | Go to declaration |
+| `gi` | normal | Go to implementation |
+| `gr` | normal | Show references |
+| `K` | normal | Hover documentation |
+| `<C-k>` | normal | Signature help |
+| `<leader>rn` | normal | Rename symbol |
+| `<leader>ca` | normal | Code action |
+| `<leader>f` | normal | Open diagnostic float |
+| `<leader>q` | normal | Diagnostics to location list |
+| `[d` / `]d` | normal | Previous / next diagnostic |
+| `gl` | normal | Line diagnostics |
+| `:Format` | command | Format buffer via LSP |
+
+### Claude Code (AI)
+
+| Keymap | Mode | Action |
+|--------|------|--------|
+| `<leader>ac` | normal | Toggle Claude Code panel |
+| `<leader>af` | normal | Focus Claude Code panel |
+| `<leader>ar` | normal | Resume last Claude session |
+| `<leader>aa` | normal | Add current file to Claude context |
+| `<leader>as` | visual | Send selection to Claude |
+| `<leader>dy` | normal | Accept Claude-proposed diff |
+| `<leader>dn` | normal | Reject Claude-proposed diff |
+
+**Workflow:** Select code in visual mode → `<leader>as` to send to Claude → type your instruction in the panel → accept or reject proposed changes with `<leader>dy` / `<leader>dn`.
+
 ## OS Support
 
 | Feature | macOS | Ubuntu/Debian | Arch/Manjaro |
