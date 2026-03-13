@@ -137,7 +137,7 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `dot_gitconfig.tmpl` | Git config (aliases, user info) |
 | `dot_mise.toml` | Language runtime versions |
 | `dot_macos` | macOS system preferences (skipped on Linux via `.chezmoiignore`) |
-| `dot_config/nvim/` | Neovim config (LSP, completion, fuzzy find, etc.) |
+| `dot_config/nvim/` | Neovim config (LSP, completion, fuzzy find, floating terminal, etc.) |
 | `private_dot_ssh/` | SSH keys and config (populated from 1Password) |
 | `Brewfile` | Homebrew packages and casks (macOS only) |
 | `.chezmoiignore` | OS-conditional file exclusions |
