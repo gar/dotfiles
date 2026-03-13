@@ -220,6 +220,24 @@ Shell aliases:
 
 **Worktrees + Claude Code:** Run `claude --worktree <name>` in a terminal to start an isolated Claude session on its own branch. Use `<leader>gwl` to switch between worktree directories in Neovim. Multiple worktrees let you run parallel Claude sessions without conflicts.
 
+## Habit Training
+
+### Zsh — `zsh-you-should-use`
+
+When you type a command that has a shell alias defined, you'll see a reminder after it runs:
+
+```
+Found existing alias for "git status". You should use: gst
+```
+
+This fires for all aliases in `dot_zshrc.tmpl` (git, worktree, etc.).
+
+### Neovim — `hardtime.nvim`
+
+When you press `h`/`j`/`k`/`l` (or the arrow keys) more than 4 times in quick succession, a hint appears suggesting a more efficient motion — a count prefix, `w`/`b`/`e`/`f`/`t`, a jump (`ctrl-d`/`ctrl-u`), or a search.
+
+Configured in `hint` mode: the keypress still registers, you just get nudged. To switch to blocking mode (the key is swallowed until you use a better motion), set `restriction_mode = "block"` in `dot_config/nvim/lua/features/hardtime.lua`.
+
 ## OS Support
 
 | Feature | macOS | Ubuntu/Debian | Arch/Manjaro |
