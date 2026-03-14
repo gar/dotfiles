@@ -254,6 +254,40 @@ Shell aliases:
 
 **Worktrees + Claude Code:** Run `claude --worktree <name>` in a terminal to start an isolated Claude session on its own branch. Use `<leader>gwl` to switch between worktree directories in Neovim. Multiple worktrees let you run parallel Claude sessions without conflicts.
 
+## Shell Aliases
+
+### Modern CLI tools
+
+| Alias | Replaces | Notes |
+|-------|----------|-------|
+| `ls` | `ls` | `eza --icons` — color-coded, Nerd Font icons |
+| `ll` | `ls -la` | `eza -la --icons --git` — long list with git status per file |
+| `cat` | `cat` | `bat` — syntax highlighting, line numbers, git diff markers |
+
+`man` pages are also rendered via `bat` for syntax-highlighted output.
+
+`broot` provides an interactive tree explorer with fuzzy search. Run `broot --install` once after install to enable the `br` shell function (`br` lets you `cd` on exit; plain `broot` does not).
+
+### Git
+
+| Alias | Command |
+|-------|---------|
+| `g` | `git` |
+| `ga` | `git add` |
+| `gaa` | `git add --all` |
+| `gc` | `git commit` |
+| `gcm` | `git commit -m` |
+| `gco` | `git checkout` |
+| `gd` | `git diff` |
+| `gds` | `git diff --staged` |
+| `gl` | `git pull` |
+| `glog` | `git log --oneline --decorate --graph` |
+| `gp` | `git push` |
+| `grb` | `git rebase` |
+| `gst` | `git status` |
+| `gsw` | `git switch` |
+| `gswc` | `git switch -c` |
+
 ## Habit Training
 
 ### Zsh — `zsh-you-should-use`

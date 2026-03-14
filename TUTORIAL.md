@@ -332,7 +332,48 @@ A few tools from the Brewfile worth knowing:
 | `gh` | GitHub CLI | `gh pr create`, `gh pr list`, `gh issue view 42` |
 | `entr` | Re-run on file change | `fd -e ex \| entr mix test` |
 | `htop` | Process viewer | `htop` |
-| `tree` | Directory tree | `tree src/ -L 2` |
+| `tree` | Interactive directory tree (broot) | `tree src/` — fuzzy search, Alt+Enter to cd |
+| `ls` | Directory listing (eza) | `ls` or `ll` for long form with git status |
+| `cat` | File viewer (bat) | `cat file.ex` — syntax highlighted, with line numbers |
+
+### eza — better ls
+
+`ls` and `ll` are aliased to `eza`:
+
+```bash
+ls                  # icons, color-coded by type
+ll                  # long form: permissions, size, modified date, git status per file
+ll --sort=modified  # most recently changed files first
+eza -T              # tree view (static, pipeable — use when you need output not a TUI)
+```
+
+### bat — better cat
+
+`cat` is aliased to `bat`:
+
+```bash
+cat file.ex         # syntax highlighted with line numbers
+bat -A file         # show non-printable characters (tabs, line endings)
+bat --diff file     # show only changed lines (requires git)
+man ls              # man pages are also rendered via bat
+```
+
+### broot — interactive tree explorer
+
+`tree` is aliased to `broot`:
+
+```bash
+tree                # open interactive tree for current directory
+tree src/           # open at a specific path
+br                  # same as tree, but cd into the selected directory on exit
+```
+
+Inside broot:
+- Type to fuzzy-search files and directories
+- `Alt+Enter` to `cd` into the selected directory and exit
+- `?` for help
+
+Note: `br` (cd-on-exit) requires the broot shell launcher, which bootstrap installs automatically. Plain `tree`/`broot` works without it.
 
 ### gh for pull requests
 

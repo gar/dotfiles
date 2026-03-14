@@ -88,7 +88,14 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 4. Commit and push — CI runs automatically
 5. Apply to the local machine with `chezmoi apply` (or `chezmoi update` to pull + apply)
 
-> **Documentation rule:** Any change that adds, removes, or modifies a keymap, shell alias, plugin, or notable workflow **must** include a corresponding update to `README.md`. CLAUDE.md is for implementation notes only — user-facing docs live in `README.md`.
+> **Documentation rule:** Any change that adds, removes, or modifies a keymap, shell alias, plugin, CLI tool, or notable workflow **must** include corresponding updates to both `README.md` (reference) and `TUTORIAL.md` (practical usage). CLAUDE.md is for implementation notes only — user-facing docs live in README and TUTORIAL.
+
+### When adding CLI tools or shell setup steps
+
+- **Never require manual post-install steps.** If a tool needs initialisation (e.g. `broot --install`, `foo setup`), add it to `bin/executable_bootstrap.sh` — guarded with an existence check so it's idempotent.
+- Add the tool to all three install paths: `Brewfile` (macOS), `install_packages_debian()` (apt), `install_packages_arch()` (pacman). If a tool isn't in a distro's repos, add a fallback or a clear `echo` explaining manual steps.
+- Add shell aliases or environment setup to `dot_zshrc.tmpl`, guarded with `command -v` so the config degrades gracefully on machines where the tool isn't installed yet.
+- Update `TUTORIAL.md` section 11 (Useful CLI Tools) with a table row and, if the tool warrants it, a dedicated subsection with practical usage examples.
 
 ### When editing shell config
 

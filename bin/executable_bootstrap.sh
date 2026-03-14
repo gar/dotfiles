@@ -37,6 +37,8 @@ install_packages_debian() {
     autoconf build-essential \
     curl wget rsync \
     direnv \
+    bat \
+    broot \
     entr \
     fd-find \
     fzf \
@@ -55,6 +57,13 @@ install_packages_debian() {
     shellcheck \
     tree \
     zoxide
+
+  # eza is available in Ubuntu 24.04+ — skip silently on older releases
+  if apt-cache show eza &>/dev/null 2>&1; then
+    sudo apt-get install -y eza
+  else
+    echo "Note: eza not available via apt. Install manually: https://github.com/eza-community/eza/releases"
+  fi
 
   # zsh-you-should-use is not in Ubuntu repos — install from source if missing
   if [[ ! -d /usr/share/zsh-you-should-use ]]; then
@@ -79,7 +88,10 @@ install_packages_arch() {
     autoconf base-devel \
     curl wget rsync \
     direnv \
+    bat \
+    broot \
     entr \
+    eza \
     fd \
     fzf \
     github-cli \
@@ -109,7 +121,16 @@ install_packages_arch() {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Install mise (language version manager)
+# 2. Install broot shell launcher
+# ---------------------------------------------------------------------------
+install_broot_launcher() {
+  if command -v broot &>/dev/null && [[ ! -f "$HOME/.config/broot/launcher/bash/1" ]]; then
+    printf 'y\n' | broot --install
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# 3. Install mise (language version manager)
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
@@ -119,7 +140,7 @@ install_mise() {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Install chezmoi
+# 4. Install chezmoi
 # ---------------------------------------------------------------------------
 install_chezmoi() {
   if ! command -v chezmoi &>/dev/null; then
@@ -158,6 +179,9 @@ else
     *)      echo "Unsupported distro. Install packages manually, then re-run."; exit 1 ;;
   esac
 fi
+
+# Install broot shell launcher (enables the 'br' cd-on-exit function)
+install_broot_launcher
 
 # Install mise and chezmoi (on macOS these come from Homebrew; on Linux install standalone)
 if [[ "$OS" != "Darwin" ]]; then
