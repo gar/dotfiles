@@ -57,6 +57,19 @@ alias gst="git status"
 alias gsw="git switch"
 alias gswc="git switch -c"
 
+# modern CLI tools
+if command -v eza &>/dev/null; then
+  alias ls='eza --icons'
+  alias ll='eza -la --icons --git'
+fi
+if command -v bat &>/dev/null; then
+  alias cat='bat'
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+elif command -v batcat &>/dev/null; then
+  alias cat='batcat'
+  export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
+fi
+
 # git worktree
 alias gwl="git worktree list"
 alias gwa="git worktree add"
@@ -106,3 +119,5 @@ eval "$(direnv hook zsh)"
 eval "$(zoxide init zsh)"
 eval "$(chezmoi completion zsh)"
 command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
+# broot shell integration — provides the 'br' function (run 'broot --install' once to enable)
+[[ -f "$HOME/.config/broot/launcher/bash/1" ]] && source "$HOME/.config/broot/launcher/bash/1"

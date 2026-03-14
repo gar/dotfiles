@@ -37,6 +37,8 @@ install_packages_debian() {
     autoconf build-essential \
     curl wget rsync \
     direnv \
+    bat \
+    broot \
     entr \
     fd-find \
     fzf \
@@ -54,6 +56,13 @@ install_packages_debian() {
     shellcheck \
     tree \
     zoxide
+
+  # eza is available in Ubuntu 24.04+ — skip silently on older releases
+  if apt-cache show eza &>/dev/null 2>&1; then
+    sudo apt-get install -y eza
+  else
+    echo "Note: eza not available via apt. Install manually: https://github.com/eza-community/eza/releases"
+  fi
 
   # zsh-you-should-use is not in Ubuntu repos — install from source if missing
   if [[ ! -d /usr/share/zsh-you-should-use ]]; then
@@ -78,7 +87,10 @@ install_packages_arch() {
     autoconf base-devel \
     curl wget rsync \
     direnv \
+    bat \
+    broot \
     entr \
+    eza \
     fd \
     fzf \
     github-cli \
