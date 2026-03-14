@@ -51,6 +51,7 @@ install_packages_debian() {
     pkg-config \
     postgresql postgresql-client \
     ripgrep \
+    sd \
     shellcheck \
     tree \
     zoxide
@@ -92,6 +93,7 @@ install_packages_arch() {
     pkgconf \
     postgresql-libs \
     ripgrep \
+    sd \
     shellcheck \
     tree \
     zoxide
