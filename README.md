@@ -87,6 +87,20 @@ brew bundle
 
 **Arch:** Packages are installed via `pacman` in the bootstrap script. To add new packages, edit the `install_packages_arch()` function in `bin/executable_bootstrap.sh`.
 
+## CLI Tools
+
+| Tool | Purpose |
+|------|---------|
+| `btop` | System monitor — CPU, memory, disk, network, processes with graphs and per-core view |
+| `hyperfine` | Command benchmarking with statistics (mean/stddev, warmup runs, parameter sweeps) |
+| `procs` | Modern `ps` replacement — color output, keyword search, process tree view |
+
+**Example:** Compare test suite performance with hyperfine:
+
+```bash
+hyperfine 'mix test --stale' 'mix test'
+```
+
 ## Testing
 
 A test suite validates shell scripts, neovim config, and chezmoi templates. The same checks run locally and in CI.

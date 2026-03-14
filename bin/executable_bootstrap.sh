@@ -43,7 +43,9 @@ install_packages_debian() {
     gh \
     git \
     gnupg \
-    htop \
+    btop \
+    hyperfine \
+    procs \
     jq \
     libpq-dev libxslt1-dev libssl-dev libreadline-dev libwxgtk3.2-dev \
     luarocks \
@@ -84,7 +86,9 @@ install_packages_arch() {
     github-cli \
     git \
     gnupg \
-    htop \
+    btop \
+    hyperfine \
+    procs \
     jq \
     libxslt openssl readline wxwidgets \
     luacheck \
