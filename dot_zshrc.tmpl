@@ -69,6 +69,7 @@ elif command -v batcat &>/dev/null; then
   alias cat='batcat'
   export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
 fi
+command -v broot &>/dev/null && alias tree='broot'
 
 # git worktree
 alias gwl="git worktree list"

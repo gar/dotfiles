@@ -119,7 +119,16 @@ install_packages_arch() {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Install mise (language version manager)
+# 2. Install broot shell launcher
+# ---------------------------------------------------------------------------
+install_broot_launcher() {
+  if command -v broot &>/dev/null && [[ ! -f "$HOME/.config/broot/launcher/bash/1" ]]; then
+    printf 'y\n' | broot --install
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# 3. Install mise (language version manager)
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
@@ -129,7 +138,7 @@ install_mise() {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Install chezmoi
+# 4. Install chezmoi
 # ---------------------------------------------------------------------------
 install_chezmoi() {
   if ! command -v chezmoi &>/dev/null; then
@@ -168,6 +177,9 @@ else
     *)      echo "Unsupported distro. Install packages manually, then re-run."; exit 1 ;;
   esac
 fi
+
+# Install broot shell launcher (enables the 'br' cd-on-exit function)
+install_broot_launcher
 
 # Install mise and chezmoi (on macOS these come from Homebrew; on Linux install standalone)
 if [[ "$OS" != "Darwin" ]]; then
