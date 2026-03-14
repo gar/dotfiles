@@ -40,6 +40,14 @@ fi
 # ------------------------------
 alias vim="nvim"
 
+# modern CLI replacements
+alias grep='rg'
+if command -v fdfind &>/dev/null; then
+  alias find='fdfind'
+elif command -v fd &>/dev/null; then
+  alias find='fd'
+fi
+
 # git (subset of oh-my-zsh git plugin)
 alias g="git"
 alias ga="git add"

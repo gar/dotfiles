@@ -145,6 +145,40 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `bin/executable_test.sh` | Local test runner (same checks as CI) |
 | `.github/workflows/ci.yml` | GitHub Actions CI pipeline |
 
+## Shell Aliases
+
+### Modern CLI Replacements
+
+These modern tools are installed and aliased over their traditional counterparts:
+
+| Alias | Replaces | Tool |
+|-------|----------|------|
+| `find` | `find` | [`fd`](https://github.com/sharkdp/fd) — faster, friendlier find |
+| `grep` | `grep` | [`rg`](https://github.com/BurntSushi/ripgrep) — ripgrep, faster grep |
+| `sd` | `sed` | [`sd`](https://github.com/chmln/sd) — simpler stream editor (accessed as `sd`) |
+
+> **Note:** `sd` uses a different syntax from `sed` — it does not override `sed`. Use `sd 'old' 'new' file` or pipe: `echo 'hello' | sd 'hello' 'world'`.
+
+### Git
+
+| Alias | Command |
+|-------|---------|
+| `g` | `git` |
+| `ga` | `git add` |
+| `gaa` | `git add --all` |
+| `gc` | `git commit` |
+| `gcm` | `git commit -m` |
+| `gco` | `git checkout` |
+| `gd` | `git diff` |
+| `gds` | `git diff --staged` |
+| `gl` | `git pull` |
+| `glog` | `git log --oneline --decorate --graph` |
+| `gp` | `git push` |
+| `grb` | `git rebase` |
+| `gst` | `git status` |
+| `gsw` | `git switch` |
+| `gswc` | `git switch -c` |
+
 ## Neovim Keymaps
 
 Leader key is `Space`.
