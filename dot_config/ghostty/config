@@ -1,0 +1,79 @@
+# Ghostty config — Gruvbox Material theme
+# JetBrains Mono Nerd Font, Hyprland/Wayland integration
+
+# ---------------------------------------------------------------------------
+# Font
+# ---------------------------------------------------------------------------
+font-family = JetBrainsMono Nerd Font
+font-size = 13
+font-feature = calt    # contextual alternates (ligatures)
+font-feature = liga    # standard ligatures
+font-feature = ss01    # stylistic set 1 (single-story a)
+
+# ---------------------------------------------------------------------------
+# Gruvbox Material (medium background, material foreground)
+# Colours defined inline — no external theme dependency
+# ---------------------------------------------------------------------------
+background = #282828
+foreground = #d4be98
+
+# Normal colours (ANSI 0-7)
+palette = 0=#282828
+palette = 1=#ea6962
+palette = 2=#a9b665
+palette = 3=#d8a657
+palette = 4=#7daea3
+palette = 5=#d3869b
+palette = 6=#89b482
+palette = 7=#d4be98
+
+# Bright colours (ANSI 8-15)
+palette = 8=#7c6f64
+palette = 9=#ea6962
+palette = 10=#a9b665
+palette = 11=#d8a657
+palette = 12=#7daea3
+palette = 13=#d3869b
+palette = 14=#89b482
+palette = 15=#ddc7a1
+
+cursor-color = #d4be98
+selection-background = #45403d
+selection-foreground = #d4be98
+
+# ---------------------------------------------------------------------------
+# Window
+# ---------------------------------------------------------------------------
+# Let Hyprland handle window chrome (no GTK titlebar)
+gtk-titlebar = false
+window-decoration = server
+
+window-padding-x = 8
+window-padding-y = 8
+
+# ---------------------------------------------------------------------------
+# Terminal behaviour
+# ---------------------------------------------------------------------------
+shell-integration = zsh
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+scrollback-limit = 10000
+
+# Confirm before closing window with running processes
+confirm-close-surface = true
+
+# ---------------------------------------------------------------------------
+# Keybinds
+# ---------------------------------------------------------------------------
+# New tab / split (Ghostty uses cmd on macOS; ctrl+shift on Linux)
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+n=new_window
+keybind = ctrl+shift+v=paste_from_clipboard
+keybind = ctrl+shift+c=copy_to_clipboard
+
+# Tab navigation
+keybind = ctrl+tab=next_tab
+keybind = ctrl+shift+tab=previous_tab
+
+# Quick terminal (toggle) — works with Hyprland scratchpad or Ghostty's quick terminal
+keybind = ctrl+grave_accent=toggle_quick_terminal

@@ -1,0 +1,183 @@
+/* Waybar style — Gruvbox Material (medium bg, material fg) */
+
+/* -------------------------------------------------------------------------
+   Palette
+   bg0 #282828  bg1 #32302f  bg2 #45403d  bg3 #504945  bg4 #665c54
+   fg0 #d4be98  fg1 #ddc7a1
+   red #ea6962  orange #e78a4e  yellow #d8a657  green #a9b665
+   aqua #89b482  blue #7daea3  purple #d3869b
+   grey0 #7c6f64  grey1 #928374  grey2 #a89984
+   ------------------------------------------------------------------------- */
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Inter", sans-serif;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(40, 40, 40, 0.92);
+    color: #d4be98;
+    border-radius: 8px;
+}
+
+/* Hover states */
+button:hover {
+    background: rgba(69, 64, 61, 0.8);
+    border-radius: 4px;
+}
+
+/* -------------------------------------------------------------------------
+   Left — workspaces + window title
+   ------------------------------------------------------------------------- */
+#workspaces {
+    background: transparent;
+    margin: 4px 4px 4px 6px;
+    padding: 0 2px;
+}
+
+#workspaces button {
+    color: #928374;
+    background: transparent;
+    padding: 2px 8px;
+    border-radius: 4px;
+    min-width: 0;
+    transition: all 0.15s ease;
+}
+
+#workspaces button.active,
+#workspaces button.focused {
+    color: #d4be98;
+    background: #45403d;
+}
+
+#workspaces button.urgent {
+    color: #282828;
+    background: #ea6962;
+}
+
+#submap {
+    color: #d8a657;
+    background: rgba(69, 64, 61, 0.8);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 4px 2px;
+    font-style: italic;
+}
+
+#window {
+    color: #928374;
+    padding: 2px 6px;
+    margin: 4px 2px;
+}
+
+/* -------------------------------------------------------------------------
+   Center — clock
+   ------------------------------------------------------------------------- */
+#clock {
+    color: #d4be98;
+    background: rgba(69, 64, 61, 0.6);
+    border-radius: 6px;
+    padding: 2px 12px;
+    margin: 4px 2px;
+    font-weight: bold;
+}
+
+/* -------------------------------------------------------------------------
+   Right — status modules
+   ------------------------------------------------------------------------- */
+#tray,
+#pulseaudio,
+#bluetooth,
+#network,
+#battery,
+#cpu,
+#memory,
+#backlight,
+#custom-notification {
+    padding: 2px 8px;
+    margin: 4px 2px;
+    border-radius: 4px;
+    background: rgba(50, 48, 47, 0.7);
+    color: #d4be98;
+}
+
+#tray {
+    margin-right: 4px;
+}
+
+/* Volume */
+#pulseaudio {
+    color: #89b482;
+}
+#pulseaudio.muted {
+    color: #7c6f64;
+}
+
+/* Bluetooth */
+#bluetooth {
+    color: #7daea3;
+}
+#bluetooth.disabled {
+    color: #7c6f64;
+}
+
+/* Network */
+#network {
+    color: #7daea3;
+}
+#network.disconnected {
+    color: #ea6962;
+}
+
+/* Battery */
+#battery {
+    color: #a9b665;
+}
+#battery.charging,
+#battery.plugged {
+    color: #89b482;
+}
+#battery.warning:not(.charging) {
+    color: #d8a657;
+}
+#battery.critical:not(.charging) {
+    color: #ea6962;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: steps(12);
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes blink {
+    to { color: #282828; background: #ea6962; }
+}
+
+/* CPU */
+#cpu {
+    color: #e78a4e;
+}
+
+/* Memory */
+#memory {
+    color: #d3869b;
+}
+
+/* Backlight */
+#backlight {
+    color: #d8a657;
+}
+
+/* Notification bell */
+#custom-notification {
+    color: #d4be98;
+}
+#custom-notification.dnd-notification,
+#custom-notification.dnd-none {
+    color: #7c6f64;
+}

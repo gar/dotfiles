@@ -24,12 +24,14 @@ bash bin/executable_bootstrap.sh
 2. Install system packages:
    - **macOS:** Homebrew packages and casks (`Brewfile`)
    - **Ubuntu/Debian:** apt packages + luacheck via luarocks
-   - **Arch/Manjaro:** pacman packages (+ AUR for `zsh-you-should-use`)
+   - **Arch/Manjaro:** pacman packages (+ AUR for `zsh-you-should-use`) **plus the full Hyprland desktop stack**
 3. Install chezmoi and apply dotfiles (pulling secrets from 1Password)
 4. **macOS only:** Apply system preferences (`.macos`)
 5. Install language runtimes via [mise](https://mise.jdx.dev/) (Node, Erlang, Elixir, Python)
 6. Set zsh as the default shell (if not already)
 7. **macOS only:** Restart to apply system preferences
+
+**Arch Linux additionally installs:** Hyprland, Waybar, Ghostty, rofi-wayland, swaync, PipeWire, Bluetooth, NetworkManager, SDDM, Intel iGPU drivers, screenshot tools, and applies the Intel PSR fix. See the [Hyprland setup](#hyprland-arch-linux) section below.
 
 ## Updating Dotfiles on an Existing Machine
 
@@ -152,6 +154,11 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `dot_mise.toml` | Language runtime versions |
 | `dot_macos` | macOS system preferences (skipped on Linux via `.chezmoiignore`) |
 | `dot_config/nvim/` | Neovim config (LSP, completion, fuzzy find, floating terminal, etc.) |
+| `dot_config/hypr/` | Hyprland compositor config (Linux/Arch only) |
+| `dot_config/waybar/` | Waybar status bar config and Gruvbox Material styles |
+| `dot_config/rofi/` | Rofi-wayland launcher config and Gruvbox Material theme |
+| `dot_config/swaync/` | SwayNotificationCenter config and styles |
+| `dot_config/ghostty/` | Ghostty terminal config with Gruvbox Material colours |
 | `private_dot_ssh/` | SSH keys and config (populated from 1Password) |
 | `Brewfile` | Homebrew packages and casks (macOS only) |
 | `.chezmoiignore` | OS-conditional file exclusions |
@@ -320,6 +327,107 @@ When you press `h`/`j`/`k`/`l` (or the arrow keys) more than 4 times in quick su
 
 Configured in `hint` mode: the keypress still registers, you just get nudged. To switch to blocking mode (the key is swallowed until you use a better motion), set `restriction_mode = "block"` in `dot_config/nvim/lua/features/hardtime.lua`.
 
+## Hyprland (Arch Linux)
+
+A full keyboard-driven Wayland desktop, handcrafted — no ML4W, HyDE, or other frameworks. All colours are Gruvbox Material (medium background, material foreground), defined inline without external theme packages.
+
+### Stack
+
+| Component | Package | Purpose |
+|---|---|---|
+| Compositor | `hyprland` | Wayland compositor |
+| Lock screen | `hyprlock` | GPU-accelerated lock |
+| Idle daemon | `hypridle` | Screen dim/lock/sleep |
+| Wallpaper | `hyprpaper` | Static wallpaper |
+| Status bar | `waybar` | Top bar with workspaces, battery, audio |
+| Launcher | `rofi-wayland` | App/run/window launcher |
+| Notifications | `swaync` | Notification center with history |
+| Terminal | `ghostty` | GPU-accelerated terminal |
+| Audio | `pipewire` + `wireplumber` | PipeWire audio stack |
+| Display login | `sddm` | Wayland-compatible display manager |
+
+### Hyprland keymaps
+
+`$mainMod` = `Super` (Windows key).
+
+#### Applications
+
+| Keybind | Action |
+|---|---|
+| `Super + Return` | Open Ghostty terminal |
+| `Super + E` | Open Thunar file manager |
+| `Super + Space` | Rofi app launcher |
+| `Super + Shift + Space` | Rofi run prompt |
+| `Super + .` | Rofi emoji picker |
+| `Super + Shift + V` | Clipboard history (cliphist → rofi) |
+| `Print` | Screenshot selection → swappy |
+| `Shift + Print` | Screenshot full screen → swappy |
+| `Super + N` | Toggle notification centre (swaync) |
+
+#### Window management
+
+| Keybind | Action |
+|---|---|
+| `Super + Q` | Close active window |
+| `Super + F` | Fullscreen |
+| `Super + Shift + F` | Maximise (no gaps) |
+| `Super + T` | Toggle floating |
+| `Super + P` | Pseudotile |
+| `Super + X` | Pin (keep on top across workspaces) |
+| `Super + G` | Toggle window group (tabbed) |
+| `Super + Tab` | Next window in group |
+| `Super + Shift + Tab` | Previous window in group |
+
+#### Focus and movement (vim keys)
+
+| Keybind | Action |
+|---|---|
+| `Super + H/J/K/L` | Move focus left/down/up/right |
+| `Super + Shift + H/J/K/L` | Move window left/down/up/right |
+| `Super + R` | Enter resize submap |
+| `H/J/K/L` (in resize) | Resize window |
+| `Escape` / `Enter` (in resize) | Exit resize submap |
+
+#### Workspaces
+
+| Keybind | Action |
+|---|---|
+| `Super + 1–0` | Switch to workspace 1–10 |
+| `Super + Shift + 1–0` | Move window to workspace 1–10 |
+| `Super + mouse scroll` | Cycle workspaces |
+| `Super + mouse drag` | Move window |
+| `Super + right-click drag` | Resize window |
+
+#### Scratchpads
+
+| Keybind | Action |
+|---|---|
+| `Super + S` | Toggle general scratchpad (Ghostty) |
+| `Super + Shift + S` | Move window to scratchpad |
+| `Super + V` | Toggle volume mixer scratchpad (pavucontrol) |
+
+#### Hardware
+
+| Keybind | Action |
+|---|---|
+| `XF86AudioRaiseVolume` | Volume up 5% |
+| `XF86AudioLowerVolume` | Volume down 5% |
+| `XF86AudioMute` | Toggle mute |
+| `XF86AudioPlay/Next/Prev` | Media controls |
+| `XF86MonBrightnessUp/Down` | Backlight ±5% |
+
+### Intel iGPU notes
+
+The bootstrap script automatically applies the Panel Self Refresh (PSR) fix (`options i915 enable_psr=0` in `/etc/modprobe.d/i915.conf`) and rebuilds the initramfs. PSR causes flickering on nearly all Intel iGPUs under Wayland.
+
+**VA-API driver selection** — set `LIBVA_DRIVER_NAME` in `dot_config/hypr/hyprland.conf`:
+- `i965` — Haswell (4th gen, HD 4000/4600)
+- `iHD` — Broadwell (5th gen, HD 5500) and newer
+
+Run `vainfo` after first boot to confirm the driver is working.
+
+**Blur and shadows are disabled** in the Hyprland config. On Haswell iGPUs, blur alone can drive ~25% idle GPU load; disabling it keeps the compositor near zero while keeping smooth animations. `vfr = true` ensures frames are only rendered when content changes, which is the biggest battery-life improvement.
+
 ## OS Support
 
 | Feature | macOS | Ubuntu/Debian | Arch/Manjaro |
@@ -327,6 +435,7 @@ Configured in `hint` mode: the keypress still registers, you just get nudged. To
 | Package installation | Homebrew | apt | pacman |
 | Zsh plugins | Homebrew | apt + git clone | pacman + AUR |
 | macOS preferences | Yes | Skipped | Skipped |
+| Hyprland desktop | No | No | Yes |
 | Neovim config | Yes | Yes | Yes |
 | SSH keys (1Password) | Yes | Yes | Yes |
 | Language runtimes (mise) | Yes | Yes | Yes |

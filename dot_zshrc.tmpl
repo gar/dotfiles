@@ -121,6 +121,27 @@ setopt PROMPT_SUBST
 PROMPT='%(?:%F{green}➜:%F{red}➜)%f %F{cyan}%c%f${vcs_info_msg_0_} '
 
 # ------------------------------
+# Hyprland / Wayland (Arch Linux)
+# ------------------------------
+{{- if eq .chezmoi.os "linux" }}
+if [[ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
+  # Convenience aliases for Hyprland
+  alias hreload='hyprctl reload'
+  alias hkill='hyprctl kill'
+  alias hclients='hyprctl clients'
+  alias hworkspaces='hyprctl workspaces'
+  alias hmonitors='hyprctl monitors'
+
+  # Screenshot helpers (require grim + slurp + swappy)
+  alias screenshot='grim -g "$(slurp)" - | swappy -f -'
+  alias screenshot-full='grim - | swappy -f -'
+
+  # Clipboard history
+  alias ch='cliphist list | rofi -dmenu | cliphist decode | wl-copy'
+fi
+{{- end }}
+
+# ------------------------------
 # Tool integrations
 # ------------------------------
 eval "$(mise activate zsh)"

@@ -127,6 +127,118 @@ install_packages_arch() {
 }
 
 # ---------------------------------------------------------------------------
+# Arch: Hyprland desktop environment (Wayland, Dell laptop)
+# ---------------------------------------------------------------------------
+install_hyprland_arch() {
+  # Core Hyprland compositor + first-party ecosystem (all in [extra])
+  sudo pacman -S --needed --noconfirm \
+    hyprland \
+    xdg-desktop-portal-hyprland \
+    hyprpolkitagent \
+    hyprpaper \
+    hyprlock \
+    hypridle \
+    hyprpicker \
+    hyprsunset \
+    hyprcursor
+
+  # Status bar, launcher, notifications
+  sudo pacman -S --needed --noconfirm \
+    waybar \
+    rofi-wayland \
+    swaync
+
+  # Terminal + file managers
+  sudo pacman -S --needed --noconfirm \
+    ghostty \
+    yazi \
+    thunar thunar-volman gvfs tumbler
+
+  # Audio (PipeWire stack)
+  sudo pacman -S --needed --noconfirm \
+    pipewire wireplumber pipewire-audio pipewire-pulse \
+    pamixer
+
+  # Bluetooth
+  sudo pacman -S --needed --noconfirm \
+    bluez bluez-utils blueman
+
+  # Network
+  sudo pacman -S --needed --noconfirm \
+    networkmanager network-manager-applet
+
+  # Clipboard + screenshots
+  sudo pacman -S --needed --noconfirm \
+    wl-clipboard cliphist \
+    grim slurp swappy \
+    libnotify
+
+  # Display manager + Qt Wayland + XWayland compatibility
+  sudo pacman -S --needed --noconfirm \
+    sddm \
+    qt5-wayland qt6-wayland \
+    xorg-xwayland
+
+  # Fonts (JetBrains Mono Nerd is installed separately on Linux; add extras here)
+  sudo pacman -S --needed --noconfirm \
+    inter-font \
+    noto-fonts noto-fonts-emoji \
+    ttf-jetbrains-mono-nerd
+
+  # Theming tools + icons + hardware control
+  sudo pacman -S --needed --noconfirm \
+    nwg-look \
+    qt5ct qt6ct kvantum \
+    papirus-icon-theme \
+    brightnessctl playerctl
+
+  # Intel iGPU — installs both VA-API drivers; LIBVA_DRIVER_NAME in hyprland.conf
+  # picks the right one at runtime (i965 for Haswell, iHD for Broadwell+).
+  sudo pacman -S --needed --noconfirm \
+    mesa \
+    libva-intel-driver \
+    intel-media-driver \
+    vulkan-intel \
+    intel-gpu-tools \
+    libva-utils \
+    libvdpau-va-gl
+
+  # AUR: Gruvbox Material GTK theme + grimblast screenshot helper
+  local aur_helper=""
+  if command -v yay &>/dev/null; then
+    aur_helper="yay"
+  elif command -v paru &>/dev/null; then
+    aur_helper="paru"
+  fi
+
+  if [[ -n "$aur_helper" ]]; then
+    "$aur_helper" -S --needed --noconfirm \
+      gruvbox-material-gtk-theme-git \
+      grimblast-git
+  else
+    echo "Note: install AUR packages manually:"
+    echo "  yay -S gruvbox-material-gtk-theme-git grimblast-git"
+  fi
+
+  # Enable system services
+  sudo systemctl enable --now NetworkManager
+  sudo systemctl enable --now bluetooth
+  sudo systemctl enable sddm
+
+  # Enable user services (PipeWire starts via socket activation automatically)
+  systemctl --user enable --now pipewire pipewire-pulse wireplumber
+
+  # Apply i915 PSR fix — Panel Self Refresh causes flickering on Intel iGPUs
+  if [[ ! -f /etc/modprobe.d/i915.conf ]]; then
+    echo "options i915 enable_psr=0" | sudo tee /etc/modprobe.d/i915.conf
+    sudo mkinitcpio -P
+    echo "PSR fix applied — reboot required."
+  fi
+
+  echo "Hyprland stack installed. Reboot and select Hyprland at the SDDM login screen."
+}
+
+# ---------------------------------------------------------------------------
 # 2. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
 # ---------------------------------------------------------------------------
 install_jetbrains_mono_nerd_font() {
@@ -199,8 +311,11 @@ else
   DISTRO="$(detect_distro)"
   case "$DISTRO" in
     debian) install_packages_debian ;;
-    arch)   install_packages_arch ;;
-    *)      echo "Unsupported distro. Install packages manually, then re-run."; exit 1 ;;
+    arch)
+      install_packages_arch
+      install_hyprland_arch
+      ;;
+    *) echo "Unsupported distro. Install packages manually, then re-run."; exit 1 ;;
   esac
 fi
 

@@ -320,7 +320,109 @@ chezmoi edit ~/.zshrc
 
 ---
 
-## 11. Useful CLI Tools
+## 11. Hyprland Desktop (Arch Linux)
+
+### First boot
+
+After running bootstrap on Arch, reboot and select **Hyprland** at the SDDM login screen. The compositor starts Waybar, swaync, hyprpaper, and hypridle automatically.
+
+**Set a wallpaper:** Edit `~/.config/hypr/hyprpaper.conf`, uncomment the `preload` and `wallpaper` lines and point them at your image, then run `hyprctl reload`.
+
+### Opening apps
+
+```
+Super + Return         — Ghostty terminal
+Super + Space          — App launcher (rofi)
+Super + Shift + Space  — Run a command (rofi)
+Super + E              — File manager (Thunar)
+```
+
+### Switching workspaces
+
+```
+Super + 1..0           — jump to workspace 1–10
+Super + Shift + 1..0   — move current window to workspace 1–10
+Super + scroll wheel   — cycle through workspaces
+```
+
+### Moving and resizing windows
+
+Use vim keys to move focus and reposition windows:
+
+```
+Super + H/J/K/L              — move focus left/down/up/right
+Super + Shift + H/J/K/L      — move window in that direction
+```
+
+To resize, enter the resize submap:
+
+```
+Super + R         — enter resize mode
+H/J/K/L          — shrink/grow the window
+Escape or Enter   — exit resize mode
+```
+
+Drag windows with `Super + left-click`, resize with `Super + right-click`.
+
+### Scratchpads
+
+Scratchpads are hidden workspaces — windows that slide in and out without taking a workspace slot:
+
+```
+Super + S          — toggle a Ghostty terminal scratchpad
+Super + Shift + S  — send the current window to the scratchpad
+Super + V          — toggle volume mixer (pavucontrol) scratchpad
+```
+
+### Screenshots
+
+```
+Print              — drag to select a region → annotate in swappy
+Shift + Print      — capture full screen → annotate in swappy
+```
+
+### Notifications
+
+```
+Super + N          — open/close the notification centre
+```
+
+Right-click the bell icon in Waybar to toggle Do Not Disturb.
+
+### Clipboard history
+
+Every copied item is saved by `cliphist`. To paste from history:
+
+```
+Super + Shift + V   — open clipboard history in rofi → select to paste
+```
+
+Or from the shell alias:
+
+```bash
+ch   # equivalent shortcut
+```
+
+### Locking and sleep
+
+The screen dims after 2.5 minutes, locks after 5, turns the display off at 5.5, and suspends after 30 minutes (configured in `~/.config/hypr/hypridle.conf`). The lock screen is `hyprlock` — type your password and press Enter.
+
+### Adjusting the VA-API driver
+
+If hardware video decode isn't working, check which Intel generation your Dell has:
+
+```bash
+vainfo          # shows driver and supported profiles
+intel_gpu_top   # live GPU utilisation
+```
+
+Edit `LIBVA_DRIVER_NAME` in `~/.config/hypr/hyprland.conf`:
+- `i965` for Haswell (4th gen, HD 4000/4600)
+- `iHD` for Broadwell (5th gen, HD 5500) and newer
+
+---
+
+## 12. Useful CLI Tools
 
 A few tools from the Brewfile worth knowing:
 
