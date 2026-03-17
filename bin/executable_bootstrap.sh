@@ -37,6 +37,7 @@ install_packages_debian() {
     autoconf build-essential \
     curl wget rsync \
     direnv \
+    unzip \
     bat \
     broot \
     entr \
@@ -90,6 +91,7 @@ install_packages_arch() {
     autoconf base-devel \
     curl wget rsync \
     direnv \
+    unzip \
     bat \
     broot \
     entr \
@@ -125,7 +127,25 @@ install_packages_arch() {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Install broot shell launcher
+# 2. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
+# ---------------------------------------------------------------------------
+install_jetbrains_mono_nerd_font() {
+  local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
+  if [[ ! -d "$font_dir" ]]; then
+    local version="3.2.1"
+    local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v${version}/JetBrainsMono.zip"
+    local tmp_dir
+    tmp_dir="$(mktemp -d)"
+    curl -fsSL "$url" -o "$tmp_dir/JetBrainsMono.zip"
+    mkdir -p "$font_dir"
+    unzip -q "$tmp_dir/JetBrainsMono.zip" -d "$font_dir"
+    rm -rf "$tmp_dir"
+    fc-cache -fv "$font_dir"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# 3. Install broot shell launcher
 # ---------------------------------------------------------------------------
 install_broot_launcher() {
   if command -v broot &>/dev/null && [[ ! -f "$HOME/.config/broot/launcher/bash/1" ]]; then
@@ -134,7 +154,7 @@ install_broot_launcher() {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Install mise (language version manager)
+# 4. Install mise (language version manager)
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
@@ -144,7 +164,7 @@ install_mise() {
 }
 
 # ---------------------------------------------------------------------------
-# 4. Install chezmoi
+# 5. Install chezmoi
 # ---------------------------------------------------------------------------
 install_chezmoi() {
   if ! command -v chezmoi &>/dev/null; then
@@ -182,6 +202,11 @@ else
     arch)   install_packages_arch ;;
     *)      echo "Unsupported distro. Install packages manually, then re-run."; exit 1 ;;
   esac
+fi
+
+# Install JetBrains Mono Nerd Font (Linux only; macOS gets it via Brewfile cask)
+if [[ "$OS" != "Darwin" ]]; then
+  install_jetbrains_mono_nerd_font
 fi
 
 # Install broot shell launcher (enables the 'br' cd-on-exit function)

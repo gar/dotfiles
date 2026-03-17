@@ -14,6 +14,9 @@ opt.undofile = true
 -- Clipboard
 opt.clipboard = "unnamedplus"
 
+-- Font (GUI clients: Neovide, etc.)
+opt.guifont = "JetBrainsMono Nerd Font:h13"
+
 -- Appearance
 opt.cmdheight = 2
 opt.cursorline = true
