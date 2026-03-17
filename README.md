@@ -331,20 +331,103 @@ Configured in `hint` mode: the keypress still registers, you just get nudged. To
 
 A full keyboard-driven Wayland desktop, handcrafted — no ML4W, HyDE, or other frameworks. All colours are Gruvbox Material (medium background, material foreground), defined inline without external theme packages.
 
-### Stack
+### Arch setup process
 
-| Component | Package | Purpose |
+Running `bin/executable_bootstrap.sh` on Arch does the following, in order:
+
+1. **Base packages** — installs the standard CLI tools shared with other platforms (zsh, neovim, git, ripgrep, fzf, etc.) via `pacman`
+2. **AUR helper check** — uses `yay` or `paru` if available for AUR packages
+3. **Hyprland stack** — installs the full desktop environment (compositor, bar, terminal, audio, network, display manager — see components below) via `pacman` and AUR
+4. **Intel iGPU drivers** — installs both VA-API driver variants so the right one can be selected at runtime (see [Intel iGPU notes](#intel-igpu-notes))
+5. **System services** — enables `NetworkManager`, `bluetooth`, and `sddm` via systemd; enables PipeWire user services
+6. **PSR fix** — writes `options i915 enable_psr=0` to `/etc/modprobe.d/i915.conf` and rebuilds the initramfs to eliminate Intel iGPU flickering under Wayland
+7. **Dotfiles** — chezmoi applies all configs including the Hyprland, Waybar, Rofi, swaync, and Ghostty configs from this repo
+8. **Language runtimes** — mise installs Node, Erlang, Elixir, and Python
+
+After bootstrap completes, reboot and select **Hyprland** at the SDDM login screen.
+
+### Components
+
+Every package is from the official Arch `[extra]` repo unless marked AUR.
+
+#### Compositor layer
+
+| Component | Package | Role |
 |---|---|---|
-| Compositor | `hyprland` | Wayland compositor |
-| Lock screen | `hyprlock` | GPU-accelerated lock |
-| Idle daemon | `hypridle` | Screen dim/lock/sleep |
-| Wallpaper | `hyprpaper` | Static wallpaper |
-| Status bar | `waybar` | Top bar with workspaces, battery, audio |
-| Launcher | `rofi-wayland` | App/run/window launcher |
-| Notifications | `swaync` | Notification center with history |
-| Terminal | `ghostty` | GPU-accelerated terminal |
-| Audio | `pipewire` + `wireplumber` | PipeWire audio stack |
-| Display login | `sddm` | Wayland-compatible display manager |
+| **Compositor** | `hyprland` | The Wayland compositor itself. Manages windows, workspaces, animations, input, and output. Replaces a traditional window manager + display server. Config lives in `~/.config/hypr/hyprland.conf`. |
+| **XDG portal** | `xdg-desktop-portal-hyprland` | Implements the XDG desktop portal spec for Hyprland. Required for screen sharing, file picker dialogs, and sandboxed app permissions (Flatpak, browsers). Without this, screenshare in video calls will not work. |
+| **Polkit agent** | `hyprpolkitagent` | Handles privilege escalation prompts (e.g. mounting a drive, installing a system package from a GUI). When an app needs `sudo`-level access it asks polkit, which pops a graphical password dialog via this agent. |
+| **XWayland** | `xorg-xwayland` | Compatibility layer that lets X11 apps run inside the Wayland session. Most apps are native Wayland now, but some older tools (certain Electron apps, Java GUIs) still need this. |
+
+#### Session management
+
+| Component | Package | Role |
+|---|---|---|
+| **Display manager** | `sddm` | Greeter shown at boot before login. Launches the Hyprland session. Handles multi-user and session switching. |
+| **Lock screen** | `hyprlock` | GPU-accelerated lock screen. Triggered by `hypridle` on timeout or manually. Shows a clock, date, and password field. Config: `~/.config/hypr/hyprlock.conf`. |
+| **Idle daemon** | `hypridle` | Watches for inactivity and fires actions at configurable timeouts: dim the screen at 2.5 min, lock at 5 min, turn display off at 5.5 min, suspend at 30 min. Config: `~/.config/hypr/hypridle.conf`. |
+
+#### UI shell
+
+| Component | Package | Role |
+|---|---|---|
+| **Status bar** | `waybar` | Top bar showing workspaces, active window title, clock, battery, volume, network, and notifications. Driven by a JSON module config and a CSS stylesheet, both themed with Gruvbox Material colours. Config: `~/.config/waybar/`. |
+| **App launcher** | `rofi-wayland` | Keyboard-driven launcher for apps (`Super+Space`), commands (`Super+Shift+Space`), open windows, emoji, and clipboard history. Configured and themed entirely in `~/.config/rofi/config.rasi` — no external theme files. |
+| **Notifications** | `swaync` | Notification daemon and slide-out notification centre. Receives desktop notifications from apps, stacks them in a history panel (`Super+N`), and supports Do Not Disturb. Integrates with the Waybar bell icon. Config: `~/.config/swaync/`. |
+| **Wallpaper** | `hyprpaper` | Lightweight wallpaper setter. Loads images into memory at startup and sets them per monitor. IPC lets you change wallpapers without restarting. Config: `~/.config/hypr/hyprpaper.conf` — add your image path there. |
+
+#### Terminal
+
+| Component | Package | Role |
+|---|---|---|
+| **Terminal** | `ghostty` | Primary terminal emulator. GPU-accelerated, GTK4-native, zero-config on Linux. Configured with JetBrains Mono Nerd Font and Gruvbox Material colours defined inline. `gtk-titlebar = false` tells it to let Hyprland draw the window border. Config: `~/.config/ghostty/config`. |
+| **File manager (TUI)** | `yazi` | Keyboard-driven terminal file manager (Rust). Image previews, vim keybindings, fast directory traversal. For day-to-day file operations inside the terminal. |
+| **File manager (GUI)** | `thunar` | GTK file manager for drag-and-drop, USB mount dialogs, and bulk rename. `thunar-volman` + `gvfs` handle automounting removable media. |
+
+#### Audio
+
+| Component | Package | Role |
+|---|---|---|
+| **Audio server** | `pipewire` | Modern audio/video routing layer. Replaces PulseAudio and JACK simultaneously. Handles all audio hardware access, routing between apps, and Bluetooth audio. |
+| **Session manager** | `wireplumber` | Policy engine that sits on top of PipeWire. Decides which device to use, manages routing rules, and handles device hotplug. Required for PipeWire to function correctly. |
+| **PulseAudio compat** | `pipewire-pulse` | Drop-in replacement for the PulseAudio socket. Lets apps that talk PulseAudio (most apps) work with PipeWire without any changes. |
+| **Volume control** | `pamixer` | CLI tool for adjusting volume. Used by the Hyprland volume key bindings (`XF86AudioRaiseVolume` etc.). `pavucontrol` is also installed as a GUI mixer, available via the `Super+V` scratchpad. |
+
+#### Input / clipboard / screenshots
+
+| Component | Package | Role |
+|---|---|---|
+| **Clipboard manager** | `wl-clipboard` + `cliphist` | `wl-clipboard` provides `wl-copy`/`wl-paste` for Wayland clipboard access. `cliphist` watches the clipboard and stores every copied item persistently. Browse and paste from history with `Super+Shift+V`. |
+| **Screenshot** | `grim` + `slurp` | `grim` captures Wayland output; `slurp` provides an interactive region selector. Together: `grim -g "$(slurp)"` captures a selected region. Bound to `Print`. |
+| **Screenshot editor** | `swappy` | Receives the screenshot from grim and opens a lightweight annotation/crop tool before saving. |
+
+#### Networking and hardware
+
+| Component | Package | Role |
+|---|---|---|
+| **Network** | `networkmanager` + `network-manager-applet` | NetworkManager manages Wi-Fi and wired connections. The applet (`nm-applet`) provides a system tray icon and the `nm-connection-editor` GUI for managing saved networks. |
+| **Bluetooth** | `bluez` + `bluez-utils` + `blueman` | `bluez` is the Linux Bluetooth stack; `bluez-utils` provides `bluetoothctl` for CLI pairing; `blueman` is the GUI manager opened from the Waybar Bluetooth icon. |
+| **Backlight** | `brightnessctl` | Controls screen brightness via the kernel backlight interface. Used by `XF86MonBrightnessUp/Down` keybindings in Hyprland. |
+| **Media controls** | `playerctl` | Sends play/pause/next/previous commands to any MPRIS-compatible media player (Spotify, browsers, etc.). Used by the `XF86Audio*` media key bindings. |
+
+#### Intel iGPU drivers
+
+| Component | Package | Role |
+|---|---|---|
+| **Mesa** | `mesa` | Open-source OpenGL/Vulkan implementation. For Haswell (4th gen), Mesa uses the Crocus Gallium3D driver; for Broadwell+ it uses Iris. Hyprland uses GLES2 via Mesa. |
+| **VA-API (Haswell)** | `libva-intel-driver` | Hardware video decode for Haswell (4th gen, `i965` backend). Required for accelerated H.264/HEVC decode in browsers and video players on 4th-gen Intel. |
+| **VA-API (Broadwell+)** | `intel-media-driver` | Hardware video decode for Broadwell and newer (`iHD` backend). Actively maintained; the correct choice for 5th-gen Core and later. |
+| **Vulkan** | `vulkan-intel` | Intel Vulkan driver (HASVK). Incomplete on Haswell but not used by Hyprland — included for Vulkan-using apps. |
+| **Diagnostics** | `intel-gpu-tools` + `libva-utils` | `intel_gpu_top` monitors GPU load in real time; `vainfo` lists the supported VA-API decode profiles to confirm the driver is working. |
+
+#### Theming
+
+| Component | Package | Role |
+|---|---|---|
+| **GTK theme** | `gruvbox-material-gtk-theme-git` (AUR) | Applies Gruvbox Material colours to GTK3/4 apps (file dialogs, Thunar, etc.). Set via `gsettings` on startup. |
+| **Icon theme** | `papirus-icon-theme` | App icons in Rofi, Thunar, and the notification centre. |
+| **GTK settings** | `nwg-look` | Wayland-compatible replacement for `lxappearance`. GUI for selecting GTK theme, icons, fonts, and cursor. |
+| **Qt theming** | `qt5ct` + `qt6ct` + `kvantum` | Makes Qt apps respect the current theme. `qt5ct`/`qt6ct` set the platform theme; Kvantum applies a matching style engine. Set via `QT_QPA_PLATFORMTHEME=qt6ct`. |
 
 ### Hyprland keymaps
 
