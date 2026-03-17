@@ -127,7 +127,151 @@ install_packages_arch() {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
+# Arch: Hyprland desktop environment (Wayland, Dell laptop)
+# ---------------------------------------------------------------------------
+install_hyprland_arch() {
+  # Core Hyprland compositor + first-party ecosystem (all in [extra])
+  sudo pacman -S --needed --noconfirm \
+    hyprland \
+    xdg-desktop-portal-hyprland \
+    hyprpolkitagent \
+    hyprpaper \
+    hyprlock \
+    hypridle \
+    hyprpicker \
+    hyprsunset \
+    hyprcursor
+
+  # Status bar, launcher, notifications
+  sudo pacman -S --needed --noconfirm \
+    waybar \
+    rofi-wayland \
+    swaync
+
+  # Terminal + file managers
+  sudo pacman -S --needed --noconfirm \
+    ghostty \
+    yazi \
+    thunar thunar-volman gvfs tumbler
+
+  # Audio (PipeWire stack)
+  sudo pacman -S --needed --noconfirm \
+    pipewire wireplumber pipewire-audio pipewire-pulse \
+    pamixer
+
+  # Bluetooth
+  sudo pacman -S --needed --noconfirm \
+    bluez bluez-utils blueman
+
+  # Network
+  sudo pacman -S --needed --noconfirm \
+    networkmanager network-manager-applet
+
+  # Clipboard + screenshots
+  sudo pacman -S --needed --noconfirm \
+    wl-clipboard cliphist \
+    grim slurp swappy \
+    libnotify
+
+  # Display manager + Qt Wayland + XWayland compatibility
+  sudo pacman -S --needed --noconfirm \
+    sddm \
+    qt5-wayland qt6-wayland \
+    xorg-xwayland
+
+  # Fonts (JetBrains Mono Nerd is installed separately on Linux; add extras here)
+  sudo pacman -S --needed --noconfirm \
+    inter-font \
+    noto-fonts noto-fonts-emoji \
+    ttf-jetbrains-mono-nerd
+
+  # Theming tools + icons + hardware control
+  sudo pacman -S --needed --noconfirm \
+    nwg-look \
+    qt5ct qt6ct kvantum \
+    papirus-icon-theme \
+    brightnessctl playerctl
+
+  # Intel iGPU — installs both VA-API drivers; LIBVA_DRIVER_NAME in hyprland.conf
+  # picks the right one at runtime (i965 for Haswell, iHD for Broadwell+).
+  sudo pacman -S --needed --noconfirm \
+    mesa \
+    libva-intel-driver \
+    intel-media-driver \
+    vulkan-intel \
+    intel-gpu-tools \
+    libva-utils \
+    libvdpau-va-gl
+
+  # AUR: Gruvbox Material GTK theme + grimblast screenshot helper
+  local aur_helper=""
+  if command -v yay &>/dev/null; then
+    aur_helper="yay"
+  elif command -v paru &>/dev/null; then
+    aur_helper="paru"
+  fi
+
+  if [[ -n "$aur_helper" ]]; then
+    "$aur_helper" -S --needed --noconfirm \
+      gruvbox-material-gtk-theme-git \
+      grimblast-git \
+      flavours
+  else
+    echo "Note: install AUR packages manually:"
+    echo "  yay -S gruvbox-material-gtk-theme-git grimblast-git flavours"
+  fi
+
+  # Enable system services
+  sudo systemctl enable --now NetworkManager
+  sudo systemctl enable --now bluetooth
+  sudo systemctl enable sddm
+
+  # Enable user services (PipeWire starts via socket activation automatically)
+  systemctl --user enable --now pipewire pipewire-pulse wireplumber
+
+  # Apply i915 PSR fix — Panel Self Refresh causes flickering on Intel iGPUs
+  if [[ ! -f /etc/modprobe.d/i915.conf ]]; then
+    echo "options i915 enable_psr=0" | sudo tee /etc/modprobe.d/i915.conf
+    sudo mkinitcpio -P
+    echo "PSR fix applied — reboot required."
+  fi
+
+  echo "Hyprland stack installed. Reboot and select Hyprland at the SDDM login screen."
+}
+
+# ---------------------------------------------------------------------------
+# 2. Apply colour scheme via flavours (Arch/Hyprland only)
+# ---------------------------------------------------------------------------
+apply_flavours_theme() {
+  if ! command -v flavours &>/dev/null; then
+    echo "Note: flavours not installed — skipping colour scheme application"
+    return
+  fi
+
+  local flavours_data="$HOME/.local/share/flavours/base16"
+  local flavours_cfg="$HOME/.config/flavours"
+
+  # Link the bundled scheme into flavours's data directory
+  mkdir -p "$flavours_data/schemes/gruvbox-material"
+  if [[ ! -L "$flavours_data/schemes/gruvbox-material/gruvbox-material.yaml" ]]; then
+    ln -sf "$flavours_cfg/schemes/gruvbox-material/gruvbox-material.yaml" \
+           "$flavours_data/schemes/gruvbox-material/gruvbox-material.yaml"
+  fi
+
+  # Link each bundled template into flavours's data directory
+  for tpl in waybar rofi swaync hyprland; do
+    mkdir -p "$flavours_data/templates/$tpl/templates"
+    if [[ ! -L "$flavours_data/templates/$tpl/templates/colors.mustache" ]]; then
+      ln -sf "$flavours_cfg/templates/$tpl/templates/colors.mustache" \
+             "$flavours_data/templates/$tpl/templates/colors.mustache"
+    fi
+  done
+
+  flavours apply gruvbox-material
+}
+
+# ---------------------------------------------------------------------------
+# 4. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
 # ---------------------------------------------------------------------------
 install_jetbrains_mono_nerd_font() {
   local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
@@ -145,7 +289,7 @@ install_jetbrains_mono_nerd_font() {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Install broot shell launcher
+# 5. Install broot shell launcher
 # ---------------------------------------------------------------------------
 install_broot_launcher() {
   if command -v broot &>/dev/null && [[ ! -f "$HOME/.config/broot/launcher/bash/1" ]]; then
@@ -154,7 +298,7 @@ install_broot_launcher() {
 }
 
 # ---------------------------------------------------------------------------
-# 4. Install mise (language version manager)
+# 6. Install mise (language version manager)
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
@@ -164,7 +308,7 @@ install_mise() {
 }
 
 # ---------------------------------------------------------------------------
-# 5. Install chezmoi
+# 7. Install chezmoi
 # ---------------------------------------------------------------------------
 install_chezmoi() {
   if ! command -v chezmoi &>/dev/null; then
@@ -199,8 +343,11 @@ else
   DISTRO="$(detect_distro)"
   case "$DISTRO" in
     debian) install_packages_debian ;;
-    arch)   install_packages_arch ;;
-    *)      echo "Unsupported distro. Install packages manually, then re-run."; exit 1 ;;
+    arch)
+      install_packages_arch
+      install_hyprland_arch
+      ;;
+    *) echo "Unsupported distro. Install packages manually, then re-run."; exit 1 ;;
   esac
 fi
 
@@ -220,6 +367,11 @@ install_chezmoi
 
 # Apply dotfiles
 chezmoi init gar --apply
+
+# Apply colour scheme (Arch/Hyprland only — flavours installed above)
+if [[ "$(detect_distro)" == "arch" ]]; then
+  apply_flavours_theme
+fi
 
 # macOS-specific system preferences
 if [[ "$OS" == "Darwin" ]]; then

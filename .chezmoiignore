@@ -1,3 +1,11 @@
 {{- if ne .chezmoi.os "darwin" }}
 .macos
 {{- end }}
+
+{{- /* Hyprland / Wayland configs — only applied on Linux (Arch) */}}
+{{- if ne .chezmoi.os "linux" }}
+.config/hypr
+.config/waybar
+.config/rofi
+.config/swaync
+{{- end }}

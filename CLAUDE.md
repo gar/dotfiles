@@ -118,6 +118,20 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 
 `lua/features/git_worktree.lua` configures [git-worktree.nvim](https://github.com/ThePrimeagen/git-worktree.nvim) with Telescope integration. Keymaps use the `<leader>gw` prefix. Shell aliases (`gwl`, `gwa`, `gwd`, `gwp`) are defined in `dot_zshrc.tmpl`. Claude Code's native `--worktree` flag works independently of this plugin — the plugin adds in-editor switching via Telescope.
 
+### Colour theming (Hyprland/Arch only)
+
+Colours are managed by [flavours](https://github.com/Misterio77/flavours) (base16 theme manager). Individual apps **do not** have hardcoded palettes — they import/source generated files:
+
+- **Waybar / swaync**: `@import "colors.css"` → GTK CSS `@define-color` names (`@bg0`, `@fg0`, etc.)
+- **Rofi**: `@import "colors.rasi"` → Rofi variable names (`@bg0`, `@fg0`, etc.)
+- **Hyprland / hyprlock**: `source = ~/.config/hypr/colors.conf` → Hyprland variables (`$color_bg0`, etc.)
+- **Ghostty**: `theme = GruvboxMaterial` — uses Ghostty's built-in theme; no generated file needed
+- **Neovim**: `sainnhe/gruvbox-material` plugin handles its own palette
+
+The bundled scheme lives at `dot_config/flavours/schemes/gruvbox-material/`. Mustache templates for each app are in `dot_config/flavours/templates/<app>/templates/colors.mustache`. Bootstrap symlinks both into `~/.local/share/flavours/base16/` and runs `flavours apply gruvbox-material`.
+
+To switch the full desktop to a different base16 scheme: install its YAML into `~/.local/share/flavours/base16/schemes/`, then run `flavours apply <scheme-name>` and reload Waybar/swaync.
+
 ### When editing templates
 
 - Templates using `onepassword*` functions cannot be tested without 1Password auth

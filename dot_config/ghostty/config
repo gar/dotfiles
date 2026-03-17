@@ -1,0 +1,55 @@
+# Ghostty config — Gruvbox Material theme
+# JetBrains Mono Nerd Font, Hyprland/Wayland integration
+
+# ---------------------------------------------------------------------------
+# Font
+# ---------------------------------------------------------------------------
+font-family = JetBrainsMono Nerd Font
+font-size = 13
+font-feature = calt    # contextual alternates (ligatures)
+font-feature = liga    # standard ligatures
+font-feature = ss01    # stylistic set 1 (single-story a)
+
+# ---------------------------------------------------------------------------
+# Theme
+# Ghostty ships Gruvbox Material as a built-in theme.
+# Check available names with: ghostty +list-themes | grep -i gruvbox
+# ---------------------------------------------------------------------------
+theme = GruvboxMaterial
+
+# ---------------------------------------------------------------------------
+# Window
+# ---------------------------------------------------------------------------
+# Let Hyprland handle window chrome (no GTK titlebar)
+gtk-titlebar = false
+window-decoration = server
+
+window-padding-x = 8
+window-padding-y = 8
+
+# ---------------------------------------------------------------------------
+# Terminal behaviour
+# ---------------------------------------------------------------------------
+shell-integration = zsh
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+scrollback-limit = 10000
+
+# Confirm before closing window with running processes
+confirm-close-surface = true
+
+# ---------------------------------------------------------------------------
+# Keybinds
+# ---------------------------------------------------------------------------
+# New tab / split (Ghostty uses cmd on macOS; ctrl+shift on Linux)
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+n=new_window
+keybind = ctrl+shift+v=paste_from_clipboard
+keybind = ctrl+shift+c=copy_to_clipboard
+
+# Tab navigation
+keybind = ctrl+tab=next_tab
+keybind = ctrl+shift+tab=previous_tab
+
+# Quick terminal (toggle) — works with Hyprland scratchpad or Ghostty's quick terminal
+keybind = ctrl+grave_accent=toggle_quick_terminal

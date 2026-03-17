@@ -1,0 +1,182 @@
+// Waybar config — Gruvbox Material theme
+// Dell laptop, Hyprland
+{
+    "layer": "top",
+    "position": "top",
+    "height": 32,
+    "spacing": 4,
+    "margin-top": 4,
+    "margin-left": 8,
+    "margin-right": 8,
+
+    "modules-left": [
+        "hyprland/workspaces",
+        "hyprland/submap",
+        "hyprland/window"
+    ],
+
+    "modules-center": [
+        "clock"
+    ],
+
+    "modules-right": [
+        "tray",
+        "pulseaudio",
+        "bluetooth",
+        "network",
+        "battery",
+        "cpu",
+        "memory",
+        "backlight",
+        "custom/notification"
+    ],
+
+    // -----------------------------------------------------------------------
+    // Left modules
+    // -----------------------------------------------------------------------
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "1":  "1",
+            "2":  "2",
+            "3":  "3",
+            "4":  "4",
+            "5":  "5",
+            "6":  "6",
+            "7":  "7",
+            "8":  "8",
+            "9":  "9",
+            "10": "10",
+            "urgent":  "",
+            "focused": "",
+            "default": ""
+        },
+        "on-scroll-up": "hyprctl dispatch workspace e-1",
+        "on-scroll-down": "hyprctl dispatch workspace e+1"
+    },
+
+    "hyprland/submap": {
+        "format": "<span style='italic'>{}</span>",
+        "tooltip": false
+    },
+
+    "hyprland/window": {
+        "max-length": 60,
+        "separate-outputs": true
+    },
+
+    // -----------------------------------------------------------------------
+    // Center modules
+    // -----------------------------------------------------------------------
+    "clock": {
+        "format": " {:%H:%M}",
+        "format-alt": " {:%A, %B %-d  %H:%M}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode"          : "month",
+            "mode-mon-col"  : 3,
+            "on-scroll"     : 1,
+            "format": {
+                "months":     "<span color='#d4be98'><b>{}</b></span>",
+                "days":       "<span color='#d4be98'>{}</span>",
+                "weeks":      "<span color='#7daea3'><b>W{}</b></span>",
+                "weekdays":   "<span color='#a9b665'><b>{}</b></span>",
+                "today":      "<span color='#ea6962'><b><u>{}</u></b></span>"
+            }
+        }
+    },
+
+    // -----------------------------------------------------------------------
+    // Right modules
+    // -----------------------------------------------------------------------
+    "tray": {
+        "icon-size": 16,
+        "spacing": 6
+    },
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "󰝟 muted",
+        "format-bluetooth": "󰂰 {volume}%",
+        "format-icons": {
+            "headphone": "󰋋",
+            "default":   ["󰕿", "󰖀", "󰕾"]
+        },
+        "on-click": "pavucontrol",
+        "on-scroll-up": "pamixer -i 5",
+        "on-scroll-down": "pamixer -d 5",
+        "tooltip": true
+    },
+
+    "bluetooth": {
+        "format": "󰂯",
+        "format-connected": "󰂱 {num_connections}",
+        "format-disabled": "󰂲",
+        "on-click": "blueman-manager",
+        "tooltip-format": "{status}",
+        "tooltip-format-connected": "{device_alias}"
+    },
+
+    "network": {
+        "format-wifi": "󰖩 {essid}",
+        "format-ethernet": "󰈀 {ipaddr}",
+        "format-disconnected": "󰖪",
+        "tooltip-format": "{ifname}: {ipaddr}\n{gwaddr} via {gwaddr}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
+        "on-click": "nm-connection-editor",
+        "interval": 5
+    },
+
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "tooltip-format": "{timeTo}\nPower: {power}W",
+        "interval": 30
+    },
+
+    "cpu": {
+        "format": "󰻠 {usage}%",
+        "tooltip": false,
+        "interval": 2
+    },
+
+    "memory": {
+        "format": "󰍛 {used:.1f}G",
+        "tooltip-format": "{used:.1f}G / {total:.1f}G",
+        "interval": 5
+    },
+
+    "backlight": {
+        "format": "{icon} {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
+        "on-scroll-up": "brightnessctl set 5%+",
+        "on-scroll-down": "brightnessctl set 5%-"
+    },
+
+    "custom/notification": {
+        "tooltip": false,
+        "format": "{icon}",
+        "format-icons": {
+            "notification": "󰂚",
+            "none": "󰂜",
+            "dnd-notification": "󰂛",
+            "dnd-none": "󰂛",
+            "inhibited-notification": "󰂚",
+            "inhibited-none": "󰂜",
+            "dnd-inhibited-notification": "󰂛",
+            "dnd-inhibited-none": "󰂛"
+        },
+        "return-type": "json",
+        "exec-if": "which swaync-client",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true
+    }
+}

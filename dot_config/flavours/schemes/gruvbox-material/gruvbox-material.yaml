@@ -1,0 +1,19 @@
+scheme: "Gruvbox Material"
+author: "sainnhe (https://github.com/sainnhe/gruvbox-material)"
+# medium background, material foreground
+base00: "282828"  # bg0       — main background
+base01: "32302f"  # bg1       — statusline / popup background
+base02: "45403d"  # bg2       — selection background
+base03: "7c6f64"  # grey0     — comments, invisible text
+base04: "928374"  # grey1     — dark foreground (statusline)
+base05: "d4be98"  # fg0       — default foreground
+base06: "ddc7a1"  # fg1       — light foreground
+base07: "e2cca9"  # fg2       — lightest foreground
+base08: "ea6962"  # red
+base09: "e78a4e"  # orange
+base0A: "d8a657"  # yellow
+base0B: "a9b665"  # green
+base0C: "89b482"  # aqua/cyan
+base0D: "7daea3"  # blue
+base0E: "d3869b"  # purple
+base0F: "e78a4e"  # (reuse orange — for special syntax)

@@ -1,0 +1,23 @@
+# flavours config — manages colour scheme application across all apps
+# Run: flavours apply gruvbox-material
+# To switch theme: flavours apply <scheme-name>
+
+[[item]]
+template = "waybar"
+subtemplate = "colors"
+file = "~/.config/waybar/colors.css"
+
+[[item]]
+template = "rofi"
+subtemplate = "colors"
+file = "~/.config/rofi/colors.rasi"
+
+[[item]]
+template = "swaync"
+subtemplate = "colors"
+file = "~/.config/swaync/colors.css"
+
+[[item]]
+template = "hyprland"
+subtemplate = "colors"
+file = "~/.config/hypr/colors.conf"
