@@ -214,10 +214,11 @@ install_hyprland_arch() {
   if [[ -n "$aur_helper" ]]; then
     "$aur_helper" -S --needed --noconfirm \
       gruvbox-material-gtk-theme-git \
-      grimblast-git
+      grimblast-git \
+      flavours
   else
     echo "Note: install AUR packages manually:"
-    echo "  yay -S gruvbox-material-gtk-theme-git grimblast-git"
+    echo "  yay -S gruvbox-material-gtk-theme-git grimblast-git flavours"
   fi
 
   # Enable system services
@@ -239,7 +240,38 @@ install_hyprland_arch() {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
+# 2. Apply colour scheme via flavours (Arch/Hyprland only)
+# ---------------------------------------------------------------------------
+apply_flavours_theme() {
+  if ! command -v flavours &>/dev/null; then
+    echo "Note: flavours not installed — skipping colour scheme application"
+    return
+  fi
+
+  local flavours_data="$HOME/.local/share/flavours/base16"
+  local flavours_cfg="$HOME/.config/flavours"
+
+  # Link the bundled scheme into flavours's data directory
+  mkdir -p "$flavours_data/schemes/gruvbox-material"
+  if [[ ! -L "$flavours_data/schemes/gruvbox-material/gruvbox-material.yaml" ]]; then
+    ln -sf "$flavours_cfg/schemes/gruvbox-material/gruvbox-material.yaml" \
+           "$flavours_data/schemes/gruvbox-material/gruvbox-material.yaml"
+  fi
+
+  # Link each bundled template into flavours's data directory
+  for tpl in waybar rofi swaync hyprland; do
+    mkdir -p "$flavours_data/templates/$tpl/templates"
+    if [[ ! -L "$flavours_data/templates/$tpl/templates/colors.mustache" ]]; then
+      ln -sf "$flavours_cfg/templates/$tpl/templates/colors.mustache" \
+             "$flavours_data/templates/$tpl/templates/colors.mustache"
+    fi
+  done
+
+  flavours apply gruvbox-material
+}
+
+# ---------------------------------------------------------------------------
+# 4. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
 # ---------------------------------------------------------------------------
 install_jetbrains_mono_nerd_font() {
   local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
@@ -257,7 +289,7 @@ install_jetbrains_mono_nerd_font() {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Install broot shell launcher
+# 5. Install broot shell launcher
 # ---------------------------------------------------------------------------
 install_broot_launcher() {
   if command -v broot &>/dev/null && [[ ! -f "$HOME/.config/broot/launcher/bash/1" ]]; then
@@ -266,7 +298,7 @@ install_broot_launcher() {
 }
 
 # ---------------------------------------------------------------------------
-# 4. Install mise (language version manager)
+# 6. Install mise (language version manager)
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
@@ -276,7 +308,7 @@ install_mise() {
 }
 
 # ---------------------------------------------------------------------------
-# 5. Install chezmoi
+# 7. Install chezmoi
 # ---------------------------------------------------------------------------
 install_chezmoi() {
   if ! command -v chezmoi &>/dev/null; then
@@ -335,6 +367,11 @@ install_chezmoi
 
 # Apply dotfiles
 chezmoi init gar --apply
+
+# Apply colour scheme (Arch/Hyprland only — flavours installed above)
+if [[ "$(detect_distro)" == "arch" ]]; then
+  apply_flavours_theme
+fi
 
 # macOS-specific system preferences
 if [[ "$OS" == "Darwin" ]]; then
