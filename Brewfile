@@ -39,7 +39,7 @@ brew 'wxwidgets'
 brew 'zoxide'
 brew 'zsh'
 
-cask 'alfred'
+cask 'raycast'
 cask 'anki'
 cask 'dash'
 cask 'deepl'
