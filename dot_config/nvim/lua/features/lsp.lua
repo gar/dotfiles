@@ -11,11 +11,7 @@ return {
   {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { "williamboman/mason.nvim" },
-    config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "elixirls", "pyright", "ts_ls" },
-      })
-    end,
+    -- config is deferred to nvim-lspconfig block so capabilities/on_attach are available
   },
   {
     "neovim/nvim-lspconfig",
@@ -135,17 +131,20 @@ return {
       }
 
       -- Set up all servers installed via mason
-      require("mason-lspconfig").setup_handlers({
-        function(server_name)
-          local opts = {
-            on_attach = on_attach,
-            capabilities = capabilities,
-          }
-          if server_settings[server_name] then
-            opts = vim.tbl_deep_extend("force", opts, server_settings[server_name])
-          end
-          require("lspconfig")[server_name].setup(opts)
-        end,
+      require("mason-lspconfig").setup({
+        ensure_installed = { "lua_ls", "elixirls", "pyright", "ts_ls" },
+        handlers = {
+          function(server_name)
+            local opts = {
+              on_attach = on_attach,
+              capabilities = capabilities,
+            }
+            if server_settings[server_name] then
+              opts = vim.tbl_deep_extend("force", opts, server_settings[server_name])
+            end
+            require("lspconfig")[server_name].setup(opts)
+          end,
+        },
       })
     end,
   },
