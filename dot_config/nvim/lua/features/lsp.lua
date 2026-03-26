@@ -22,6 +22,9 @@ return {
       "saghen/blink.cmp",
     },
     config = function()
+      -- Reduce log verbosity to avoid unbounded log growth (default WARN produces ~30MB logs)
+      vim.lsp.set_log_level("ERROR")
+
       -- Diagnostic signs
       local signs = {
         { name = "DiagnosticSignError", text = "" },
