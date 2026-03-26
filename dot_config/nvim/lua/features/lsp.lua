@@ -120,18 +120,10 @@ return {
             },
           },
         },
-        elixirls = {
-          settings = {
-            elixirLS = {
-              dialyzerEnabled = true,
-              fetchDeps = false,
-            },
-          },
-        },
       }
 
       -- Set up all servers installed via mason
-      local servers = { "lua_ls", "elixirls", "pyright", "ts_ls" }
+      local servers = { "lua_ls", "pyright", "ts_ls" }
       require("mason-lspconfig").setup({
         ensure_installed = servers,
       })
@@ -145,6 +137,13 @@ return {
         end
         require("lspconfig")[server_name].setup(opts)
       end
+
+      -- expert: not yet in mason registry, installed separately via releases
+      require("lspconfig").expert.setup({
+        cmd = { "expert", "--stdio" },
+        on_attach = on_attach,
+        capabilities = capabilities,
+      })
     end,
   },
 }

@@ -10,10 +10,11 @@ return {
     },
     sources = {
       default = { "lsp", "path", "snippets", "buffer" },
+      cmdline = { "buffer", "cmdline" },
     },
     completion = {
       documentation = { auto_show = true, auto_show_delay_ms = 500 },
     },
-    fuzzy = { implementation = "prefer_rust_with_warning" },
+    fuzzy = { implementation = "prefer_rust" },
   },
 }
