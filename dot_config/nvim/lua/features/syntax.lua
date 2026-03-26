@@ -7,6 +7,7 @@ return {
       ensure_installed = "all",
       sync_install = false,
       ignore_install = { "norg" },
+      prefer_git = true,
       highlight = {
         enable = true,
         additional_vim_regex_highlighting = false,
