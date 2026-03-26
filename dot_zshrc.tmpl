@@ -10,16 +10,6 @@ setopt HIST_REDUCE_BLANKS     # remove superfluous blanks
 setopt HIST_VERIFY            # show expanded history before executing
 
 # ------------------------------
-# Completion
-# ------------------------------
-autoload -Uz compinit
-compinit
-
-zstyle ':completion:*' menu select                     # interactive menu
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'   # case-insensitive match
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}" # coloured completions
-
-# ------------------------------
 # Shell options
 # ------------------------------
 setopt AUTO_CD           # cd by typing directory name
@@ -94,6 +84,7 @@ export ERL_AFLAGS="-kernel shell_history enabled"
 # ------------------------------
 # Plugins
 # ------------------------------
+# Plugins are sourced before compinit so their fpath entries are available.
 {{- if eq .chezmoi.os "darwin" }}
 source $(brew --prefix)/share/zsh-you-should-use/you-should-use.plugin.zsh
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -110,6 +101,17 @@ for plugin_dir in /usr/share/zsh/plugins/fast-syntax-highlighting /usr/share/fas
   [[ -f "$plugin_dir/fast-syntax-highlighting.plugin.zsh" ]] && source "$plugin_dir/fast-syntax-highlighting.plugin.zsh" && break
 done
 {{- end }}
+
+# ------------------------------
+# Completion
+# ------------------------------
+autoload -Uz compinit
+# -i: silently ignore insecure files/dirs (e.g. group-writable Homebrew paths)
+compinit -i
+
+zstyle ':completion:*' menu select                     # interactive menu
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'   # case-insensitive match
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}" # coloured completions
 
 # ------------------------------
 # Prompt (robbyrussell-style)
