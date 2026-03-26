@@ -123,7 +123,7 @@ return {
       }
 
       -- Set up all servers installed via mason
-      local servers = { "lua_ls", "pyright", "ts_ls" }
+      local servers = { "lua_ls", "pyright", "ts_ls", "expert" }
       require("mason-lspconfig").setup({
         ensure_installed = servers,
       })
@@ -137,13 +137,6 @@ return {
         end
         require("lspconfig")[server_name].setup(opts)
       end
-
-      -- expert: not yet in mason registry, installed separately via releases
-      require("lspconfig").expert.setup({
-        cmd = { "expert", "--stdio" },
-        on_attach = on_attach,
-        capabilities = capabilities,
-      })
     end,
   },
 }
