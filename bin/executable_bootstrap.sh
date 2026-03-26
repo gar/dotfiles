@@ -154,7 +154,35 @@ install_broot_launcher() {
 }
 
 # ---------------------------------------------------------------------------
-# 4. Install mise (language version manager)
+# 4. Install expert (Elixir LSP — not yet in Homebrew/apt/pacman)
+# ---------------------------------------------------------------------------
+install_expert() {
+  if command -v expert &>/dev/null; then
+    return
+  fi
+
+  local os arch
+  case "$(uname -s)" in
+    Darwin) os="darwin" ;;
+    Linux)  os="linux" ;;
+    *)      echo "Note: expert LSP not supported on this OS, skipping"; return ;;
+  esac
+
+  case "$(uname -m)" in
+    arm64|aarch64) arch="arm64" ;;
+    x86_64)        arch="amd64" ;;
+    *)             echo "Note: expert LSP not supported on this architecture, skipping"; return ;;
+  esac
+
+  local install_dir="$HOME/.local/bin"
+  mkdir -p "$install_dir"
+  curl -fsSL "https://github.com/elixir-lang/expert/releases/latest/download/expert_${os}_${arch}" \
+    -o "$install_dir/expert"
+  chmod +x "$install_dir/expert"
+}
+
+# ---------------------------------------------------------------------------
+# 5. Install mise (language version manager)
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
@@ -164,7 +192,7 @@ install_mise() {
 }
 
 # ---------------------------------------------------------------------------
-# 5. Install chezmoi
+# 6. Install chezmoi
 # ---------------------------------------------------------------------------
 install_chezmoi() {
   if ! command -v chezmoi &>/dev/null; then
@@ -211,6 +239,9 @@ fi
 
 # Install broot shell launcher (enables the 'br' cd-on-exit function)
 install_broot_launcher
+
+# Install expert Elixir LSP (no package manager support yet — direct binary download)
+install_expert
 
 # Install mise and chezmoi (on macOS these come from Homebrew; on Linux install standalone)
 if [[ "$OS" != "Darwin" ]]; then
