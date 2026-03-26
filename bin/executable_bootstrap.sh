@@ -156,6 +156,8 @@ install_broot_launcher() {
 # ---------------------------------------------------------------------------
 # 4. Install expert (Elixir LSP — not yet in Homebrew/apt/pacman)
 # ---------------------------------------------------------------------------
+EXPERT_VERSION="v0.1.0-rc.6"  # https://github.com/elixir-lang/expert/releases
+
 install_expert() {
   if command -v expert &>/dev/null; then
     return
@@ -176,7 +178,7 @@ install_expert() {
 
   local install_dir="$HOME/.local/bin"
   mkdir -p "$install_dir"
-  curl -fsSL "https://github.com/elixir-lang/expert/releases/latest/download/expert_${os}_${arch}" \
+  curl -fsSL "https://github.com/elixir-lang/expert/releases/download/${EXPERT_VERSION}/expert_${os}_${arch}" \
     -o "$install_dir/expert"
   chmod +x "$install_dir/expert"
 }
