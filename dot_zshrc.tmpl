@@ -130,3 +130,8 @@ eval "$(chezmoi completion zsh)"
 command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
 # broot shell integration — provides the 'br' function (run 'broot --install' once to enable)
 [[ -f "$HOME/.config/broot/launcher/bash/1" ]] && source "$HOME/.config/broot/launcher/bash/1"
+
+# ------------------------------
+# Local overrides (device-specific, not checked in)
+# ------------------------------
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
