@@ -138,7 +138,7 @@ return {
         require("lspconfig")[server_name].setup(opts)
       end
 
-      -- expert: not yet in mason registry, installed separately at ~/bin/expert
+      -- expert: not managed by mason, installed separately at ~/bin/expert
       vim.lsp.config("expert", {
         cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
         root_markers = { "mix.exs", ".git" },
