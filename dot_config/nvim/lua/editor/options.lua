@@ -2,6 +2,13 @@ local opt = vim.opt
 
 local home = os.getenv("HOME")
 
+-- Ensure mise shims are in PATH so Mason can find npm, node, etc.
+-- Neovim launched outside a shell (GUI, launchd) doesn't inherit mise's PATH.
+local mise_shims = home .. "/.local/share/mise/shims"
+if vim.fn.isdirectory(mise_shims) == 1 then
+  vim.env.PATH = mise_shims .. ":" .. vim.env.PATH
+end
+
 -- Leader key (must be set before lazy.nvim loads plugins)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
