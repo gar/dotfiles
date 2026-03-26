@@ -139,16 +139,12 @@ return {
       end
 
       -- expert: not yet in mason registry, installed separately at ~/bin/expert
-      require("lspconfig").lexical.setup({
+      vim.lsp.config("expert", {
         cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
-        root_dir = function(fname)
-          return require("lspconfig").util.root_pattern("mix.exs", ".git")(fname) or vim.loop.cwd()
-        end,
+        root_markers = { "mix.exs", ".git" },
         filetypes = { "elixir", "eelixir", "heex" },
-        on_attach = on_attach,
-        capabilities = capabilities,
-        settings = {},
       })
+      vim.lsp.enable("expert")
     end,
   },
 }
