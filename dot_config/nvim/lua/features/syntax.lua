@@ -6,7 +6,7 @@ return {
     require("nvim-treesitter.configs").setup({
       ensure_installed = "all",
       sync_install = false,
-      ignore_install = { "norg" },
+      ignore_install = { "norg", "ipkg" },
       prefer_git = true,
       highlight = {
         enable = true,
