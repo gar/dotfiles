@@ -138,11 +138,16 @@ return {
         require("lspconfig")[server_name].setup(opts)
       end
 
-      -- expert: not yet in mason registry, installed separately via releases
-      require("lspconfig").expert.setup({
-        cmd = { "expert", "--stdio" },
+      -- expert: not yet in mason registry, installed separately at ~/bin/expert
+      require("lspconfig").lexical.setup({
+        cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
+        root_dir = function(fname)
+          return require("lspconfig").util.root_pattern("mix.exs", ".git")(fname) or vim.loop.cwd()
+        end,
+        filetypes = { "elixir", "eelixir", "heex" },
         on_attach = on_attach,
         capabilities = capabilities,
+        settings = {},
       })
     end,
   },
