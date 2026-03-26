@@ -40,7 +40,6 @@ brew 'zoxide'
 brew 'zsh'
 
 cask 'raycast'
-cask 'anki'
 cask 'dash'
 cask 'font-jetbrains-mono-nerd-font'
 cask 'firefox'
