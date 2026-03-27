@@ -105,6 +105,18 @@ return {
       -- Capabilities (enhanced with blink.cmp)
       local capabilities = require("blink.cmp").get_lsp_capabilities()
 
+      -- Register custom servers not in lspconfig's built-in registry
+      local lspconfig_configs = require("lspconfig.configs")
+      if not lspconfig_configs.expert then
+        lspconfig_configs.expert = {
+          default_config = {
+            cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
+            filetypes = { "elixir", "eelixir", "heex" },
+            root_dir = require("lspconfig").util.root_pattern("mix.exs", ".git"),
+          },
+        }
+      end
+
       -- Server-specific settings
       local server_settings = {
         lua_ls = {
@@ -120,20 +132,16 @@ return {
             },
           },
         },
-        expert = {
-          cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
-          root_dir = function(fname)
-            return require("lspconfig").util.root_pattern("mix.exs", ".git")(fname) or vim.loop.cwd()
-          end,
-          filetypes = { "elixir", "eelixir", "heex" },
-        },
       }
 
-      -- Set up all servers installed via mason
-      local servers = { "lua_ls", "pyright", "ts_ls", "expert" }
+      -- Mason-managed servers (custom servers like "expert" are excluded)
+      local mason_servers = { "lua_ls", "pyright", "ts_ls" }
       require("mason-lspconfig").setup({
-        ensure_installed = servers,
+        ensure_installed = mason_servers,
       })
+
+      -- All servers to configure (includes custom servers not managed by mason)
+      local servers = { "lua_ls", "pyright", "ts_ls", "expert" }
       for _, server_name in ipairs(servers) do
         local opts = {
           on_attach = on_attach,
