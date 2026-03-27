@@ -27,8 +27,8 @@ You still have regular `cd` when you need an exact path. Use `z` for everything 
 You're in Neovim and need to open a file you don't want to type the full path for.
 
 ```
-<C-p>   — fuzzy search filenames. Start typing any part of the name.
-<C-t>   — search across all file contents. Use this when you remember what's in the file but not what it's called.
+<leader>ff  — fuzzy search filenames. Start typing any part of the name.
+<leader>fg  — search across all file contents. Use this when you remember what's in the file but not what it's called.
 ```
 
 In the picker: `<C-j>/<C-k>` to move, `<Enter>` to open, `<C-v>` to open in a vertical split, `<C-x>` for horizontal split.

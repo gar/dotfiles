@@ -215,8 +215,8 @@ Leader key is `Space`.
 
 | Keymap | Mode | Action |
 |--------|------|--------|
-| `<C-p>` | normal | Find files |
-| `<C-t>` | normal | Live grep |
+| `<leader>ff` | normal | Find files |
+| `<leader>fg` | normal | Live grep |
 
 ### LSP
 
