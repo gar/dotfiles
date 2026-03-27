@@ -120,6 +120,13 @@ return {
             },
           },
         },
+        expert = {
+          cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
+          root_dir = function(fname)
+            return require("lspconfig").util.root_pattern("mix.exs", ".git")(fname) or vim.loop.cwd()
+          end,
+          filetypes = { "elixir", "eelixir", "heex" },
+        },
       }
 
       -- Set up all servers installed via mason
