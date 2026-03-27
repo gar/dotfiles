@@ -120,10 +120,17 @@ return {
             },
           },
         },
+        expert = {
+          cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
+          root_dir = function(fname)
+            return require("lspconfig").util.root_pattern("mix.exs", ".git")(fname) or vim.loop.cwd()
+          end,
+          filetypes = { "elixir", "eelixir", "heex" },
+        },
       }
 
       -- Set up all servers installed via mason
-      local servers = { "lua_ls", "pyright", "ts_ls" }
+      local servers = { "lua_ls", "pyright", "ts_ls", "expert" }
       require("mason-lspconfig").setup({
         ensure_installed = servers,
       })
@@ -137,14 +144,6 @@ return {
         end
         require("lspconfig")[server_name].setup(opts)
       end
-
-      -- expert: not managed by mason, installed separately at ~/bin/expert
-      vim.lsp.config("expert", {
-        cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
-        root_markers = { "mix.exs", ".git" },
-        filetypes = { "elixir", "eelixir", "heex" },
-      })
-      vim.lsp.enable("expert")
     end,
   },
 }
