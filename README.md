@@ -206,8 +206,6 @@ Leader key is `Space`.
 | `<A-Down>` | normal | Decrease window height |
 | `<A-Left>` | normal | Increase window width |
 | `<A-Right>` | normal | Decrease window width |
-| `J` | visual | Move selection down |
-| `K` | visual | Move selection up |
 | `p` | visual | Paste without overwriting clipboard |
 | `<C-\>` | normal | Toggle floating terminal |
 
