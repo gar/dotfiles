@@ -112,7 +112,9 @@ return {
           default_config = {
             cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
             filetypes = { "elixir", "eelixir", "heex" },
-            root_dir = require("lspconfig").util.root_pattern("mix.exs", ".git"),
+            root_dir = function(fname)
+              return require("lspconfig").util.root_pattern("mix.exs", ".git")(fname) or vim.loop.cwd()
+            end,
           },
         }
       end
