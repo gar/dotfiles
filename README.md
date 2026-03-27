@@ -243,6 +243,14 @@ Leader key is `Space`.
 | `gl` | normal | Line diagnostics |
 | `:Format` | command | Format buffer via LSP |
 
+### Git
+
+| Keymap | Mode | Action |
+|--------|------|--------|
+| `<leader>gb` | normal | Toggle inline git blame on current line |
+
+Inline blame appears as dimmed virtual text at the end of the current line (format: `author, date · commit summary`). It is enabled by default with a 300 ms delay.
+
 ### Git Worktrees
 
 | Keymap | Mode | Action |
