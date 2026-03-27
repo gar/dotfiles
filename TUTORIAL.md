@@ -27,11 +27,30 @@ You still have regular `cd` when you need an exact path. Use `z` for everything 
 You're in Neovim and need to open a file you don't want to type the full path for.
 
 ```
-<C-p>   — fuzzy search filenames. Start typing any part of the name.
-<C-t>   — search across all file contents. Use this when you remember what's in the file but not what it's called.
+<leader>ff  — fuzzy search filenames. Start typing any part of the name.
+<leader>fg  — search across all file contents (live grep).
+<leader>fw  — grep for the word under the cursor. No typing needed.
+<leader>fb  — switch between open buffers.
+<leader>fr  — recently opened files. Great for picking up where you left off.
+<leader>f.  — reopen the last picker with the same query.
 ```
 
 In the picker: `<C-j>/<C-k>` to move, `<Enter>` to open, `<C-v>` to open in a vertical split, `<C-x>` for horizontal split.
+
+### Browse code structure and problems
+
+```
+<leader>fs  — list all symbols in the current file (functions, classes, etc). Fuzzy-searchable.
+<leader>fd  — all LSP diagnostics across the project in one picker.
+```
+
+### Git from inside Neovim
+
+```
+<leader>gs   — changed files with a diff preview. Good for a quick pre-commit review.
+<leader>gc   — browse the full project commit history.
+<leader>gbc  — browse commits that touched the current buffer only.
+```
 
 ---
 

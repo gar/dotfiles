@@ -206,8 +206,6 @@ Leader key is `Space`.
 | `<A-Down>` | normal | Decrease window height |
 | `<A-Left>` | normal | Increase window width |
 | `<A-Right>` | normal | Decrease window width |
-| `J` | visual | Move selection down |
-| `K` | visual | Move selection up |
 | `p` | visual | Paste without overwriting clipboard |
 | `<C-\>` | normal | Toggle floating terminal |
 
@@ -215,8 +213,17 @@ Leader key is `Space`.
 
 | Keymap | Mode | Action |
 |--------|------|--------|
-| `<C-p>` | normal | Find files |
-| `<C-t>` | normal | Live grep |
+| `<leader>ff` | normal | Find files |
+| `<leader>fg` | normal | Live grep |
+| `<leader>fw` | normal | Grep word under cursor |
+| `<leader>fb` | normal | Find open buffers |
+| `<leader>fr` | normal | Recent files |
+| `<leader>fs` | normal | Document symbols (LSP) |
+| `<leader>fd` | normal | Diagnostics |
+| `<leader>gc` | normal | Git commits |
+| `<leader>gbc` | normal | Git commits for current buffer |
+| `<leader>gs` | normal | Git status |
+| `<leader>f.` | normal | Resume last picker |
 
 ### LSP
 
