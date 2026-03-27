@@ -5,7 +5,16 @@ return {
     { "<leader>ff", function()
       require("telescope.builtin").find_files(require("telescope.themes").get_dropdown({ previewer = false }))
     end, desc = "Find files" },
-    { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
+    { "<leader>fg", "<cmd>Telescope live_grep<cr>",          desc = "Live grep" },
+    { "<leader>fw", "<cmd>Telescope grep_string<cr>",        desc = "Grep word under cursor" },
+    { "<leader>fb", "<cmd>Telescope buffers<cr>",            desc = "Find buffers" },
+    { "<leader>fr", "<cmd>Telescope oldfiles<cr>",           desc = "Recent files" },
+    { "<leader>fs", "<cmd>Telescope lsp_document_symbols<cr>", desc = "Document symbols" },
+    { "<leader>fd", "<cmd>Telescope diagnostics<cr>",        desc = "Diagnostics" },
+    { "<leader>gc", "<cmd>Telescope git_commits<cr>",        desc = "Git commits" },
+    { "<leader>gbc", "<cmd>Telescope git_bcommits<cr>",      desc = "Git buffer commits" },
+    { "<leader>gs", "<cmd>Telescope git_status<cr>",         desc = "Git status" },
+    { "<leader>f.", "<cmd>Telescope resume<cr>",             desc = "Resume last picker" },
   },
   dependencies = {
     "nvim-lua/plenary.nvim",

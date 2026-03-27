@@ -215,6 +215,15 @@ Leader key is `Space`.
 |--------|------|--------|
 | `<leader>ff` | normal | Find files |
 | `<leader>fg` | normal | Live grep |
+| `<leader>fw` | normal | Grep word under cursor |
+| `<leader>fb` | normal | Find open buffers |
+| `<leader>fr` | normal | Recent files |
+| `<leader>fs` | normal | Document symbols (LSP) |
+| `<leader>fd` | normal | Diagnostics |
+| `<leader>gc` | normal | Git commits |
+| `<leader>gbc` | normal | Git commits for current buffer |
+| `<leader>gs` | normal | Git status |
+| `<leader>f.` | normal | Resume last picker |
 
 ### LSP
 
