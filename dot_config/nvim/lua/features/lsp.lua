@@ -105,7 +105,13 @@ return {
       -- Capabilities (enhanced with blink.cmp)
       local capabilities = require("blink.cmp").get_lsp_capabilities()
 
-      -- Register custom servers not in lspconfig's built-in registry
+      -- Register custom servers not in lspconfig's built-in registry.
+      -- Call vim.lsp.config first (Neovim 0.11+ requirement) then register with lspconfig.
+      vim.lsp.config("expert", {
+        cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
+        filetypes = { "elixir", "eelixir", "heex" },
+        root_markers = { "mix.exs", ".git" },
+      })
       local lspconfig_configs = require("lspconfig.configs")
       if not lspconfig_configs.expert then
         lspconfig_configs.expert = {
@@ -134,12 +140,27 @@ return {
             },
           },
         },
+        -- Override default filetypes to remove compound types (javascript.jsx,
+        -- typescript.tsx) that Neovim doesn't recognise as standard filetypes.
+        ts_ls = {
+          filetypes = {
+            "javascript",
+            "javascriptreact",
+            "typescript",
+            "typescriptreact",
+          },
+        },
       }
 
       -- Mason-managed servers (custom servers like "expert" are excluded)
       local mason_servers = { "lua_ls", "pyright", "ts_ls" }
       require("mason-lspconfig").setup({
         ensure_installed = mason_servers,
+        -- Exclude formatters/linters that mason installs but are not LSP servers;
+        -- automatic_enable would otherwise try to enable them and warn.
+        automatic_enable = {
+          exclude = { "stylua" },
+        },
       })
 
       -- All servers to configure (includes custom servers not managed by mason)
