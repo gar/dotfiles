@@ -101,6 +101,7 @@ for plugin_dir in /usr/share/zsh/plugins/fast-syntax-highlighting /usr/share/fas
   [[ -f "$plugin_dir/fast-syntax-highlighting.plugin.zsh" ]] && source "$plugin_dir/fast-syntax-highlighting.plugin.zsh" && break
 done
 {{- end }}
+bindkey '^ ' autosuggest-accept-word   # Ctrl+Space: accept next word of suggestion
 
 # ------------------------------
 # Completion
