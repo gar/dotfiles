@@ -128,13 +128,7 @@ PROMPT='%(?:%F{green}➜:%F{red}➜)%f %F{cyan}%c%f${vcs_info_msg_0_} '
 eval "$(mise activate zsh)"
 eval "$(direnv hook zsh)"
 eval "$(zoxide init zsh)"
-if command -v fzf &>/dev/null; then
-  eval "$(fzf --zsh)"
-  export FZF_DEFAULT_OPTS=" \
-    --color=bg+:#3c3836,bg:#282828,spinner:#fb4934,hl:#928374 \
-    --color=fg:#ebdbb2,header:#928374,info:#8ec07c,pointer:#fb4934 \
-    --color=marker:#fb4934,fg+:#ebdbb2,prompt:#fb4934,hl+:#fb4934"
-fi
+command -v fzf &>/dev/null && eval "$(fzf --zsh)"
 eval "$(chezmoi completion zsh)"
 command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
 # broot shell integration — provides the 'br' function (run 'broot --install' once to enable)
