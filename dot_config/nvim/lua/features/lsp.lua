@@ -76,6 +76,21 @@ return {
         map("gl", vim.diagnostic.open_float, "Line diagnostics")
         map("<leader>q", vim.diagnostic.setloclist, "Diagnostics to location list")
 
+        -- Register LSP keymaps with which-key so they appear in the popup
+        local ok, wk = pcall(require, "which-key")
+        if ok then
+          wk.add({
+            { "g",    buffer = bufnr, group = "Go to" },
+            { "gd",   buffer = bufnr, desc = "Go to definition" },
+            { "gD",   buffer = bufnr, desc = "Go to declaration" },
+            { "gi",   buffer = bufnr, desc = "Go to implementation" },
+            { "gr",   buffer = bufnr, desc = "Show references" },
+            { "K",    buffer = bufnr, desc = "Hover documentation" },
+            { "[d",   buffer = bufnr, desc = "Previous diagnostic" },
+            { "]d",   buffer = bufnr, desc = "Next diagnostic" },
+          })
+        end
+
         vim.api.nvim_buf_create_user_command(bufnr, "Format", function()
           vim.lsp.buf.format({ async = true })
         end, { desc = "Format buffer with LSP" })
