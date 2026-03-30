@@ -49,13 +49,6 @@ return {
         },
       })
 
-      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-        border = "rounded",
-      })
-      vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-        border = "rounded",
-      })
-
       -- On attach: set buffer-local keymaps and highlight references
       local on_attach = function(client, bufnr)
         local map = function(keys, func, desc)
@@ -64,9 +57,9 @@ return {
 
         map("gD", vim.lsp.buf.declaration, "Go to declaration")
         map("gd", vim.lsp.buf.definition, "Go to definition")
-        map("K", vim.lsp.buf.hover, "Hover documentation")
+        map("K", function() vim.lsp.buf.hover({ border = "rounded" }) end, "Hover documentation")
         map("gi", vim.lsp.buf.implementation, "Go to implementation")
-        map("<C-k>", vim.lsp.buf.signature_help, "Signature help")
+        map("<C-k>", function() vim.lsp.buf.signature_help({ border = "rounded" }) end, "Signature help")
         map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
         map("gr", vim.lsp.buf.references, "Show references")
         map("<leader>ca", vim.lsp.buf.code_action, "Code action")
