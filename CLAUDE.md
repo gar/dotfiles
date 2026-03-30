@@ -110,6 +110,21 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 - Test with `./bin/executable_test.sh lua-lint` and `./bin/executable_test.sh nvim-startup`
 - `vim` is a recognized global in luacheck — no need to declare it
 
+#### which-key registration
+
+which-key (`lua/features/whichkey.lua`) auto-discovers global keymaps that have a `desc`. **Buffer-local keymaps are not auto-discovered** — any keymap set with `buffer = bufnr` or inside an `on_attach` callback must be explicitly registered:
+
+```lua
+local ok, wk = pcall(require, "which-key")
+if ok then
+  wk.add({
+    { "gx", buffer = bufnr, desc = "My keymap" },
+  })
+end
+```
+
+Group labels for leader prefixes live in `wk.add()` inside `whichkey.lua`. Add a new group entry there when introducing a new `<leader>X` prefix.
+
 ### Claude Code inside Neovim
 
 `lua/features/claude.lua` configures [claudecode.nvim](https://github.com/coder/claudecode.nvim). All Claude keymaps use the `<leader>a` prefix — avoid assigning new keymaps there. Diff keymaps use `<leader>d`. See `README.md` for the full keymap reference.
