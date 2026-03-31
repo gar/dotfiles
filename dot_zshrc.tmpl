@@ -103,11 +103,6 @@ done
 {{- end }}
 
 # ------------------------------
-# zsh-autosuggestions
-# ------------------------------
-bindkey '^ ' autosuggest-accept   # ctrl+space to accept suggestion
-
-# ------------------------------
 # Completion
 # ------------------------------
 autoload -Uz compinit
@@ -138,6 +133,13 @@ eval "$(chezmoi completion zsh)"
 command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
 # broot shell integration — provides the 'br' function (run 'broot --install' once to enable)
 [[ -f "$HOME/.config/broot/launcher/bash/1" ]] && source "$HOME/.config/broot/launcher/bash/1"
+
+# ------------------------------
+# zsh-autosuggestions
+# ------------------------------
+# Bound here (after all evals) so nothing overrides it; $'\x00' is the NUL byte
+# that terminals send for Ctrl+Space, which is more reliable than '^ '
+bindkey $'\x00' autosuggest-accept   # ctrl+space to accept suggestion
 
 # ------------------------------
 # Local overrides (device-specific, not checked in)
