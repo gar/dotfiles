@@ -140,6 +140,8 @@ command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
 # Bound here (after all evals) so nothing overrides it; $'\x00' is the NUL byte
 # that terminals send for Ctrl+Space, which is more reliable than '^ '
 bindkey '^O' autosuggest-accept   # ctrl+o ("okay") to accept suggestion
+bindkey '^P' up-line-or-history   # history prev (consistent with readline)
+bindkey '^N' down-line-or-history # history next (consistent with readline)
 
 # ------------------------------
 # Local overrides (device-specific, not checked in)
