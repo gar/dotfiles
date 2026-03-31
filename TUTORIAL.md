@@ -339,7 +339,63 @@ chezmoi edit ~/.zshrc
 
 ---
 
-## 11. Useful CLI Tools
+## 11. Machine-local Config
+
+Some tools or settings belong only to a specific machine — work LSP servers, private plugins, credentials — and should not be committed to a public repo. Two places exist for this.
+
+### Extra Neovim config
+
+Create `~/.config/nvim/lua/local.lua`. Neovim loads it automatically at startup if it exists. chezmoi never touches this file.
+
+```bash
+# create the file (or open it in your editor)
+nvim ~/.config/nvim/lua/local.lua
+```
+
+Example — registering an LSP server that's only installed on this machine:
+
+```lua
+-- ~/.config/nvim/lua/local.lua
+vim.lsp.config('my-work-lsp', {
+  cmd = { 'my-work-lsp', 'lsp' },
+  root_markers = { '.git', 'mix.exs' },
+  filetypes = { 'elixir', 'eelixir' },
+})
+vim.lsp.enable 'my-work-lsp'
+```
+
+This works alongside `expert` or any other LSP already configured in the dotfiles.
+
+### Extra mise tools
+
+`~/.mise.local.toml` sits next to `~/.mise.toml` and is never touched by chezmoi. Use it for machine-specific tools, including plugins from internal or private registries:
+
+```bash
+nvim ~/.mise.local.toml
+```
+
+```toml
+# ~/.mise.local.toml  (not in git)
+[plugins]
+my-work-tool = "git@gitlab.com:my-org/mise-my-work-tool.git"
+
+[tools]
+my-work-tool = "latest"
+```
+
+The `[plugins]` section is how you point mise at a plugin from a custom git URL. Without it, mise looks up the plugin in the public registry only.
+
+Then install:
+
+```bash
+mise install
+```
+
+mise merges `~/.mise.local.toml` with `~/.mise.toml` at runtime, so you never need to modify the chezmoi-managed file.
+
+---
+
+## 12. Useful CLI Tools
 
 A few tools from the Brewfile worth knowing:
 

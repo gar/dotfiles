@@ -125,6 +125,13 @@ end
 
 Group labels for leader prefixes live in `wk.add()` inside `whichkey.lua`. Add a new group entry there when introducing a new `<leader>X` prefix.
 
+### Machine-local config
+
+Two escape hatches for machine-specific settings that must not be committed:
+
+- **Neovim:** `~/.config/nvim/lua/local.lua` — loaded at the end of `init.lua` via `dofile()` if present. Not in the chezmoi source, so chezmoi never creates or overwrites it. Use for local LSP servers (`vim.lsp.config` / `vim.lsp.enable`), private plugins, etc.
+- **mise:** `~/.mise.local.toml` — mise merges this with `~/.mise.toml` at runtime. The dotfiles only manage `~/.mise.toml`; this path is never touched by chezmoi. Use `[plugins]` here to register tools from private git URLs.
+
 ### Claude Code inside Neovim
 
 `lua/features/claude.lua` configures [claudecode.nvim](https://github.com/coder/claudecode.nvim). All Claude keymaps use the `<leader>a` prefix — avoid assigning new keymaps there. Diff keymaps use `<leader>d`. See `README.md` for the full keymap reference.

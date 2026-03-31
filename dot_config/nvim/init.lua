@@ -21,3 +21,11 @@ require("editor.autocmds")
 require("lazy").setup("features", {
   ui = { border = "rounded" },
 })
+
+-- Load machine-local config if present.
+-- Create ~/.config/nvim/lua/local.lua for settings specific to this machine
+-- (e.g. work LSP servers, private plugins). Not managed by chezmoi.
+local local_config = vim.fn.stdpath("config") .. "/lua/local.lua"
+if vim.uv.fs_stat(local_config) then
+  dofile(local_config)
+end
