@@ -339,7 +339,58 @@ chezmoi edit ~/.zshrc
 
 ---
 
-## 11. Useful CLI Tools
+## 11. Machine-local Config
+
+Some tools or settings belong only to a specific machine — work LSP servers, private plugins, credentials — and should not be committed to a public repo. Two places exist for this.
+
+### Extra Neovim config
+
+Create `~/.config/nvim/lua/local.lua`. Neovim loads it automatically at startup if it exists. chezmoi never touches this file.
+
+```bash
+# create the file (or open it in your editor)
+nvim ~/.config/nvim/lua/local.lua
+```
+
+Example — registering an LSP server that's only installed on this machine:
+
+```lua
+-- ~/.config/nvim/lua/local.lua
+vim.lsp.config('my-work-lsp', {
+  cmd = { 'my-work-lsp', 'lsp' },
+  root_markers = { '.git', 'mix.exs' },
+  filetypes = { 'elixir', 'eelixir' },
+})
+vim.lsp.enable 'my-work-lsp'
+```
+
+This works alongside `expert` or any other LSP already configured in the dotfiles.
+
+### Extra mise tools
+
+`~/.config/mise/config.toml` is not managed by chezmoi. Add machine-specific tools there:
+
+```bash
+# open in editor
+nvim ~/.config/mise/config.toml
+```
+
+```toml
+[tools]
+my-work-tool = "latest"
+```
+
+Then install it:
+
+```bash
+mise install
+```
+
+mise merges `~/.mise.toml` (the chezmoi-managed global config) with `~/.config/mise/config.toml`, so adding to one doesn't affect the other.
+
+---
+
+## 12. Useful CLI Tools
 
 A few tools from the Brewfile worth knowing:
 

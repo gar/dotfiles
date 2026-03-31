@@ -75,6 +75,40 @@ mise install
 mise use node@20
 ```
 
+## Machine-local Config
+
+Some settings belong to a specific machine (work tools, private plugins, local LSP servers) and should not be committed to a public repo. Two escape hatches are provided for this:
+
+### Neovim
+
+Create `~/.config/nvim/lua/local.lua`. This file is loaded automatically at startup if it exists. It is never created or overwritten by chezmoi.
+
+Use it to register extra LSP servers, override settings, or load private plugins:
+
+```lua
+-- ~/.config/nvim/lua/local.lua  (not in git)
+vim.lsp.config('my-private-lsp', {
+  cmd = { 'my-lsp', 'lsp' },
+  root_markers = { '.git', 'mix.exs' },
+  filetypes = { 'elixir', 'eelixir' },
+})
+vim.lsp.enable 'my-private-lsp'
+```
+
+Any valid Neovim Lua is fine here — the file runs after all plugins are loaded.
+
+### mise
+
+`~/.config/mise/config.toml` is not managed by chezmoi (chezmoi only manages `~/.mise.toml`). Add machine-specific tools there:
+
+```toml
+# ~/.config/mise/config.toml  (not in git)
+[tools]
+my-private-tool = "latest"
+```
+
+mise reads both files and merges them.
+
 ## Managing Packages
 
 **macOS:** Add packages to the `Brewfile`, then:
