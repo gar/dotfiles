@@ -129,6 +129,7 @@ brew bundle
 | Tool | Purpose |
 |------|---------|
 | `btop` | System monitor — CPU, memory, disk, network, processes with graphs and per-core view |
+| `hexyl` | Hex viewer — colorized, human-readable `xxd` replacement (`xxd` is aliased to `hexyl`) |
 | `hyperfine` | Command benchmarking with statistics (mean/stddev, warmup runs, parameter sweeps) |
 | `procs` | Modern `ps` replacement — color output, keyword search, process tree view |
 
