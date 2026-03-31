@@ -42,6 +42,7 @@ install_packages_debian() {
     broot \
     entr \
     fd-find \
+    hexyl \
     fzf \
     gh \
     git \
@@ -97,6 +98,7 @@ install_packages_arch() {
     entr \
     eza \
     fd \
+    hexyl \
     fzf \
     github-cli \
     git \

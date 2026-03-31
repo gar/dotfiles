@@ -410,6 +410,7 @@ A few tools from the Brewfile worth knowing:
 | `tree` | Interactive directory tree (broot) | `tree src/` — fuzzy search, Alt+Enter to cd |
 | `ls` | Directory listing (eza) | `ls` or `ll` for long form with git status |
 | `cat` | File viewer (bat) | `cat file.ex` — syntax highlighted, with line numbers |
+| `xxd` | Hex viewer (hexyl) | `xxd file` — colorized hex dump with ASCII sidebar |
 
 ### eza — better ls
 
@@ -431,6 +432,16 @@ cat file.ex         # syntax highlighted with line numbers
 bat -A file         # show non-printable characters (tabs, line endings)
 bat --diff file     # show only changed lines (requires git)
 man ls              # man pages are also rendered via bat
+```
+
+### hexyl — better xxd
+
+`xxd` is aliased to `hexyl`:
+
+```bash
+xxd file.bin        # colorized hex dump with ASCII sidebar
+xxd -n 256 file     # show first 256 bytes only
+hexyl --border none file | head  # strip border for piping
 ```
 
 ### broot — interactive tree explorer
