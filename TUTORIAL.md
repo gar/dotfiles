@@ -368,25 +368,30 @@ This works alongside `expert` or any other LSP already configured in the dotfile
 
 ### Extra mise tools
 
-`~/.config/mise/config.toml` is not managed by chezmoi. Add machine-specific tools there:
+`~/.mise.local.toml` sits next to `~/.mise.toml` and is never touched by chezmoi. Use it for machine-specific tools, including plugins from internal or private registries:
 
 ```bash
-# open in editor
-nvim ~/.config/mise/config.toml
+nvim ~/.mise.local.toml
 ```
 
 ```toml
+# ~/.mise.local.toml  (not in git)
+[plugins]
+my-work-tool = "git@gitlab.com:my-org/mise-my-work-tool.git"
+
 [tools]
 my-work-tool = "latest"
 ```
 
-Then install it:
+The `[plugins]` section is how you point mise at a plugin from a custom git URL. Without it, mise looks up the plugin in the public registry only.
+
+Then install:
 
 ```bash
 mise install
 ```
 
-mise merges `~/.mise.toml` (the chezmoi-managed global config) with `~/.config/mise/config.toml`, so adding to one doesn't affect the other.
+mise merges `~/.mise.local.toml` with `~/.mise.toml` at runtime, so you never need to modify the chezmoi-managed file.
 
 ---
 

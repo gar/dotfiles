@@ -99,15 +99,18 @@ Any valid Neovim Lua is fine here — the file runs after all plugins are loaded
 
 ### mise
 
-`~/.config/mise/config.toml` is not managed by chezmoi (chezmoi only manages `~/.mise.toml`). Add machine-specific tools there:
+`~/.mise.local.toml` sits next to the chezmoi-managed `~/.mise.toml` and is never touched by chezmoi. Use it for machine-specific tools and plugins from internal or private registries:
 
 ```toml
-# ~/.config/mise/config.toml  (not in git)
+# ~/.mise.local.toml  (not in git)
+[plugins]
+my-private-tool = "git@github.com:my-org/mise-my-private-tool.git"
+
 [tools]
 my-private-tool = "latest"
 ```
 
-mise reads both files and merges them.
+The `[plugins]` section registers a plugin from a custom git URL — equivalent to `mise plugin add <name> <url>`. mise merges this file with `~/.mise.toml` at runtime.
 
 ## Managing Packages
 
