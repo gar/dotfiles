@@ -13,7 +13,7 @@ map("n", "<A-Right>", ":vertical resize -2<CR>", { desc = "Decrease window width
 map("v", "p", '"_dP', { desc = "Paste without yanking replaced text" })
 
 -- Clear search highlight
-map("n", "<Esc><Esc>", "<cmd>nohl<CR>", { desc = "Clear search highlight" })
+map("n", "<C-l>", "<cmd>nohl<CR>", { desc = "Clear search highlight" })
 
 -- Terminal navigation
 map("t", "<C-w>h", "<C-\\><C-N><C-w>h", { desc = "Terminal: move to left split" })

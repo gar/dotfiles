@@ -31,17 +31,6 @@ return {
   config = function()
     local actions = require("telescope.actions")
 
-    -- Esc in telescope normal mode should close immediately, not wait for the
-    -- global <Esc><Esc> nohl sequence.
-    vim.api.nvim_create_autocmd("FileType", {
-      pattern = "TelescopePrompt",
-      callback = function(ev)
-        vim.keymap.set("n", "<Esc>", function()
-          actions.close(vim.api.nvim_get_current_buf())
-        end, { buffer = ev.buf, nowait = true })
-      end,
-    })
-
     require("telescope").setup({
       defaults = {
         prompt_prefix = " ",
