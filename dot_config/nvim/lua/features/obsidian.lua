@@ -37,7 +37,7 @@ local function grep_todos()
 end
 
 return {
-  "epwalsh/obsidian.nvim",
+  "obsidian-nvim/obsidian.nvim",
   version = "*",
   lazy = true,
   -- Load when opening any markdown file inside the vault
@@ -96,9 +96,8 @@ return {
     -- Use telescope for all pickers
     picker = { name = "telescope.nvim" },
 
-    -- Disable nvim-cmp integration (using blink.cmp instead)
     completion = {
-      nvim_cmp = false,
+      blink = true,
       min_chars = 2,
     },
 
