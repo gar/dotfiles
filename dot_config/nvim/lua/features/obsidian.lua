@@ -31,16 +31,12 @@ local function add_todo_to_daily()
   vim.ui.input({ prompt = "Todo: " }, function(input)
     if not input or input == "" then return end
 
-    local client = require("obsidian").get_client()
-    -- daily_note_path() returns an obsidian.Path object + note id
-    local path = tostring(client:daily_note_path())
+    -- today() creates the note with template+frontmatter if it doesn't exist,
+    -- or loads it if it does. It does NOT open a buffer (that's note:open(),
+    -- which the :Obsidian today command calls after — we skip that here).
+    local note = require("obsidian.daily").today()
+    local path = tostring(note.path)
     local todo_line = "- [ ] " .. input
-
-    -- Let obsidian create the note (applies template, frontmatter, etc.)
-    -- client:today() writes the file to disk but does NOT open a buffer.
-    if vim.fn.filereadable(path) == 0 then
-      client:today()
-    end
 
     local lines = vim.fn.readfile(path)
 
