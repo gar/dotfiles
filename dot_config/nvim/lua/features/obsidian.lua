@@ -40,20 +40,44 @@ local function add_todo_to_daily()
 
     local lines = vim.fn.readfile(path)
 
-    -- Find insertion point: first non-blank line after the first heading.
-    -- New todo becomes the first item in that section.
-    local insert_pos = #lines + 1
-    local found_heading = false
+    -- Find the first level-1 heading
+    local heading_pos = nil
     for i, line in ipairs(lines) do
-      if not found_heading and line:match("^#") then
-        found_heading = true
-      elseif found_heading and line ~= "" then
-        insert_pos = i
+      if line:match("^# ") then
+        heading_pos = i
         break
       end
     end
 
-    table.insert(lines, insert_pos, todo_line)
+    if not heading_pos then
+      table.insert(lines, todo_line)
+      vim.fn.writefile(lines, path)
+      return
+    end
+
+    -- Ensure a blank line immediately after the heading
+    if heading_pos + 1 > #lines or lines[heading_pos + 1] ~= "" then
+      table.insert(lines, heading_pos + 1, "")
+    end
+
+    -- Find the last consecutive list item starting at heading_pos + 2
+    local last_todo = nil
+    local pos = heading_pos + 2
+    while pos <= #lines and lines[pos]:match("^[%*%-] ") do
+      last_todo = pos
+      pos = pos + 1
+    end
+
+    -- Append after last existing todo, or insert at heading_pos + 2 if none
+    local insert_at = last_todo and (last_todo + 1) or (heading_pos + 2)
+    table.insert(lines, insert_at, todo_line)
+
+    -- Ensure a blank line after the todo block before any following content
+    local after = insert_at + 1
+    if after <= #lines and lines[after] ~= "" then
+      table.insert(lines, after, "")
+    end
+
     vim.fn.writefile(lines, path)
 
     -- Refresh the buffer if it happens to be open
