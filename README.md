@@ -347,6 +347,20 @@ Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim w
 
 **Templates:** Put markdown files in `~/notes/templates/`. Reference them by filename with `<leader>nT`. Daily/weekly notes auto-apply `templates/daily.md` / `templates/weekly.md` if those files exist.
 
+### Markdown Folding
+
+Headings at all levels fold their content. Folds start open — use these to collapse sections you're not focused on:
+
+| Keymap | Action |
+|--------|--------|
+| `zc` | Close fold under cursor |
+| `zo` | Open fold under cursor |
+| `za` | Toggle fold under cursor |
+| `zO` | Recursively open all folds under cursor |
+| `zM` | Close all folds |
+| `zR` | Open all folds |
+| `<leader>zf` | Focus: close everything, reveal only current heading |
+
 ## Shell Aliases
 
 ### Modern CLI tools
