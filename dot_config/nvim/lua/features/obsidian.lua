@@ -27,6 +27,45 @@ local function browse_journal(subfolder, title)
   })
 end
 
+local function add_todo_to_daily()
+  vim.ui.input({ prompt = "Todo: " }, function(input)
+    if not input or input == "" then return end
+
+    -- today() creates the note with template+frontmatter if it doesn't exist,
+    -- or loads it if it does. It does NOT open a buffer (that's note:open(),
+    -- which the :Obsidian today command calls after — we skip that here).
+    local note = require("obsidian.daily").today()
+    local path = tostring(note.path)
+    local todo_line = "- [ ] " .. input
+
+    local lines = vim.fn.readfile(path)
+
+    -- Find insertion point: first non-blank line after the first heading.
+    -- New todo becomes the first item in that section.
+    local insert_pos = #lines + 1
+    local found_heading = false
+    for i, line in ipairs(lines) do
+      if not found_heading and line:match("^#") then
+        found_heading = true
+      elseif found_heading and line ~= "" then
+        insert_pos = i
+        break
+      end
+    end
+
+    table.insert(lines, insert_pos, todo_line)
+    vim.fn.writefile(lines, path)
+
+    -- Refresh the buffer if it happens to be open
+    local bufnr = vim.fn.bufnr(path)
+    if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) then
+      vim.api.nvim_buf_call(bufnr, function() vim.cmd("checktime") end)
+    end
+
+    vim.notify('Todo captured: "' .. input .. '"', vim.log.levels.INFO)
+  end)
+end
+
 local function grep_todos()
   require("telescope.builtin").grep_string({
     search = "- \\[ \\]",
@@ -76,7 +115,8 @@ return {
     { "<leader>nL", "<cmd>Obsidian link<cr>",         mode = "v", desc = "Link selection" },
     { "<leader>nK", "<cmd>Obsidian link_new<cr>",     mode = "v", desc = "Link selection to new note" },
     -- Todos
-    { "<leader>n?", grep_todos, desc = "Open TODOs" },
+    { "<leader>ni", add_todo_to_daily, desc = "Capture todo to daily note" },
+    { "<leader>n?", grep_todos,        desc = "Open TODOs" },
   },
   opts = {
     workspaces = {
