@@ -12,6 +12,14 @@ local function open_monthly_note()
   vim.cmd("e " .. dir .. os.date("%Y-%m") .. ".md")
 end
 
+local function browse_journal(subfolder, title)
+  require("telescope.builtin").find_files({
+    prompt_title = title,
+    cwd = vim.fn.expand("~/notes/journal/" .. subfolder),
+    hidden = false,
+  })
+end
+
 local function grep_todos()
   require("telescope.builtin").grep_string({
     search = "- \\[ \\]",
@@ -38,8 +46,10 @@ return {
   keys = {
     -- Journal
     { "<leader>nd", "<cmd>ObsidianToday<cr>",       desc = "Daily note" },
-    { "<leader>nD", "<cmd>ObsidianDailies<cr>",     desc = "Browse daily notes" },
-    { "<leader>nw", "<cmd>ObsidianWeekly<cr>",      desc = "Weekly note" },
+    { "<leader>nD", "<cmd>ObsidianDailies<cr>",                               desc = "Browse daily notes" },
+    { "<leader>nw", "<cmd>ObsidianWeekly<cr>",                                desc = "Weekly note" },
+    { "<leader>nW", function() browse_journal("weekly",  "Weekly Notes") end,  desc = "Browse weekly notes" },
+    { "<leader>nM", function() browse_journal("monthly", "Monthly Notes") end, desc = "Browse monthly notes" },
     { "<leader>nm", open_monthly_note,              desc = "Monthly note" },
     -- Notes
     { "<leader>nn", "<cmd>ObsidianNew<cr>",         desc = "New note" },
