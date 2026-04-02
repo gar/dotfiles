@@ -25,7 +25,9 @@ autocmd("FileType", {
         end
       end
       vim.opt_local.foldlevel = level - 1
-      vim.cmd("normal! zv")
+      vim.schedule(function()
+        vim.cmd("normal! zv")
+      end)
     end, {
       buffer = ev.buf,
       desc = "Focus current heading",
