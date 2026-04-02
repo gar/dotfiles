@@ -321,6 +321,32 @@ Shell aliases:
 
 **Worktrees + Claude Code:** Run `claude --worktree <name>` in a terminal to start an isolated Claude session on its own branch. Use `<leader>gwl` to switch between worktree directories in Neovim. Multiple worktrees let you run parallel Claude sessions without conflicts.
 
+### Notes (Obsidian)
+
+Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim works alongside the Obsidian app — point the app at the same folder for mobile sync.
+
+| Keymap | Action |
+|--------|--------|
+| `<leader>nd` | Open today's daily note |
+| `<leader>nD` | Browse all daily notes |
+| `<leader>nw` | Open this week's note |
+| `<leader>nW` | Browse all weekly notes |
+| `<leader>nm` | Open this month's note |
+| `<leader>nM` | Browse all monthly notes |
+| `<leader>nn` | New note (prompts for title) |
+| `<leader>nf` | Find note (Telescope) |
+| `<leader>ng` | Full-text search across vault |
+| `<leader>nt` | Browse notes by tag |
+| `<leader>nb` | Backlinks to current note |
+| `<leader>nT` | Insert template into current buffer |
+| `<leader>n?` | Find all open todos across vault |
+
+**New note from template:** `<leader>nn` to create and open → `<leader>nT` to insert a template.
+
+**Checkboxes:** `- [ ]` renders as `○`, `- [x]` as `✓`. Use `<leader>n?` to grep open todos vault-wide.
+
+**Templates:** Put markdown files in `~/notes/templates/`. Reference them by filename with `<leader>nT`. Daily/weekly notes auto-apply `templates/daily.md` / `templates/weekly.md` if those files exist.
+
 ## Shell Aliases
 
 ### Modern CLI tools
