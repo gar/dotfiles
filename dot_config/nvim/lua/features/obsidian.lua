@@ -71,13 +71,13 @@ return {
     daily_notes = {
       folder   = "journal/daily",
       date_format = "%Y-%m-%d",
-      template = "templates/daily.md",
+      template = "daily.md",
     },
 
     weekly_notes = {
       folder   = "journal/weekly",
       date_format = "%Y-W%V",
-      template = "templates/weekly.md",
+      template = "weekly.md",
     },
 
     templates = {
@@ -89,9 +89,9 @@ return {
     -- Use telescope for all pickers
     picker = { name = "telescope.nvim" },
 
-    -- Wire into nvim-cmp for [[link]] completion
+    -- Disable nvim-cmp integration (using blink.cmp instead)
     completion = {
-      nvim_cmp = true,
+      nvim_cmp = false,
       min_chars = 2,
     },
 
