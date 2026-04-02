@@ -101,6 +101,8 @@ return {
       time_format = "%H:%M",
     },
 
+    legacy_commands = false,
+
     -- Use telescope for all pickers
     picker = { name = "telescope.nvim" },
 
