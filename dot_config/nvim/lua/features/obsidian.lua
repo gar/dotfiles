@@ -9,7 +9,14 @@
 local function open_monthly_note()
   local dir = vim.fn.expand("~/notes/journal/monthly/")
   vim.fn.mkdir(dir, "p")
-  vim.cmd("e " .. dir .. os.date("%Y-%m") .. ".md")
+  local path = dir .. os.date("%Y-%m") .. ".md"
+  local is_new = vim.fn.filereadable(path) == 0
+  vim.cmd("e " .. vim.fn.fnameescape(path))
+  if is_new then
+    vim.defer_fn(function()
+      vim.cmd("ObsidianTemplate monthly.md")
+    end, 100)
+  end
 end
 
 local function browse_journal(subfolder, title)
