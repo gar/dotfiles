@@ -68,7 +68,7 @@ return {
     { "<leader>nl", "<cmd>Obsidian links<cr>",          desc = "Links in note" },
     { "<leader>n=", "<cmd>Obsidian toc<cr>",            desc = "Table of contents" },
     { "<leader>nT", "<cmd>Obsidian template<cr>",       desc = "Insert template" },
-    { "<leader>nc", "<cmd>Obsidian toggle_checkbox<cr>", desc = "Toggle checkbox" },
+    { "<leader>nx", "<cmd>Obsidian toggle_checkbox<cr>", desc = "Toggle checkbox" },
     { "<leader>nr", "<cmd>Obsidian rename<cr>",         desc = "Rename note" },
     { "<leader>np", "<cmd>Obsidian paste_img<cr>",      desc = "Paste image" },
     -- Visual mode
