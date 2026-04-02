@@ -27,61 +27,22 @@ local function browse_journal(subfolder, title)
   })
 end
 
--- Apply obsidian.nvim-compatible template substitutions to a list of lines.
--- Handles {{title}}, {{date}}, {{time}}, and {{date:FORMAT}} (moment.js tokens).
-local function apply_template(tmpl_lines, vars)
-  -- Ordered longest-first to avoid partial token replacement (e.g. MM before MMMM)
-  local moment_to_strftime = {
-    { "MMMM", "%%B" }, { "MMM", "%%b" },
-    { "YYYY", "%%Y" }, { "YY",  "%%y" },
-    { "MM",   "%%m" }, { "DD",  "%%d" },
-    { "HH",   "%%H" }, { "hh",  "%%I" },
-    { "mm",   "%%M" }, { "ss",  "%%S" },
-    { "dddd", "%%A" }, { "ddd", "%%a" },
-    { "A",    "%%p" },
-  }
-  local out = {}
-  for _, line in ipairs(tmpl_lines) do
-    line = line:gsub("{{title}}", vars.title)
-    line = line:gsub("{{date}}",  vars.date)
-    line = line:gsub("{{time}}",  vars.time)
-    line = line:gsub("{{date:([^}]+)}}", function(fmt)
-      local sfmt = fmt
-      for _, pair in ipairs(moment_to_strftime) do
-        sfmt = sfmt:gsub(pair[1], pair[2])
-      end
-      return os.date(sfmt)
-    end)
-    table.insert(out, line)
-  end
-  return out
-end
-
 local function add_todo_to_daily()
   vim.ui.input({ prompt = "Todo: " }, function(input)
     if not input or input == "" then return end
 
-    local daily_dir = vim.fn.expand("~/notes/journal/daily/")
-    vim.fn.mkdir(daily_dir, "p")
-    local date_str = os.date("%Y-%m-%d")
-    local path     = daily_dir .. date_str .. ".md"
+    local client = require("obsidian").get_client()
+    -- daily_note_path() returns an obsidian.Path object + note id
+    local path = tostring(client:daily_note_path())
     local todo_line = "- [ ] " .. input
 
-    local lines
-    if vim.fn.filereadable(path) == 1 then
-      lines = vim.fn.readfile(path)
-    else
-      local tmpl_path = vim.fn.expand("~/notes/templates/daily.md")
-      if vim.fn.filereadable(tmpl_path) == 1 then
-        lines = apply_template(vim.fn.readfile(tmpl_path), {
-          title = date_str,
-          date  = date_str,
-          time  = os.date("%H:%M"),
-        })
-      else
-        lines = { "# " .. date_str, "" }
-      end
+    -- Let obsidian create the note (applies template, frontmatter, etc.)
+    -- client:today() writes the file to disk but does NOT open a buffer.
+    if vim.fn.filereadable(path) == 0 then
+      client:today()
     end
+
+    local lines = vim.fn.readfile(path)
 
     -- Find insertion point: first non-blank line after the first heading.
     -- New todo becomes the first item in that section.
