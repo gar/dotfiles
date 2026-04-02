@@ -14,7 +14,7 @@ local function open_monthly_note()
   vim.cmd("e " .. vim.fn.fnameescape(path))
   if is_new then
     vim.defer_fn(function()
-      vim.cmd("ObsidianTemplate monthly.md")
+      vim.cmd("Obsidian template monthly.md")
     end, 100)
   end
 end
@@ -52,23 +52,31 @@ return {
   },
   keys = {
     -- Journal
-    { "<leader>nd", "<cmd>ObsidianToday<cr>",       desc = "Daily note" },
-    { "<leader>nD", "<cmd>ObsidianDailies<cr>",                               desc = "Browse daily notes" },
-    { "<leader>nw", "<cmd>ObsidianWeekly<cr>",                                desc = "Weekly note" },
+    { "<leader>nd", "<cmd>Obsidian today<cr>",                                 desc = "Daily note (today)" },
+    { "<leader>nD", "<cmd>Obsidian dailies<cr>",                               desc = "Browse daily notes" },
+    { "<leader>nw", "<cmd>Obsidian weekly<cr>",                                desc = "Weekly note" },
     { "<leader>nW", function() browse_journal("weekly",  "Weekly Notes") end,  desc = "Browse weekly notes" },
+    { "<leader>nm", open_monthly_note,                                         desc = "Monthly note" },
     { "<leader>nM", function() browse_journal("monthly", "Monthly Notes") end, desc = "Browse monthly notes" },
-    { "<leader>nm", open_monthly_note,              desc = "Monthly note" },
     -- Notes
-    { "<leader>nn", "<cmd>ObsidianNew<cr>",         desc = "New note" },
-    { "<leader>nf", "<cmd>ObsidianQuickSwitch<cr>", desc = "Find note" },
-    { "<leader>ng", "<cmd>ObsidianSearch<cr>",      desc = "Grep notes" },
-    { "<leader>nt", "<cmd>ObsidianTags<cr>",        desc = "Find by tag" },
-    -- In-note navigation
-    { "<leader>nb", "<cmd>ObsidianBacklinks<cr>",   desc = "Backlinks" },
-    { "<leader>nl", "<cmd>ObsidianLinks<cr>",       desc = "Links in note" },
-    { "<leader>nT", "<cmd>ObsidianTemplate<cr>",    desc = "Insert template" },
+    { "<leader>nn", "<cmd>Obsidian new<cr>",          desc = "New note" },
+    { "<leader>nf", "<cmd>Obsidian quick_switch<cr>", desc = "Find note" },
+    { "<leader>ng", "<cmd>Obsidian search<cr>",       desc = "Grep notes" },
+    { "<leader>nt", "<cmd>Obsidian tags<cr>",         desc = "Find by tag" },
+    -- In-note actions
+    { "<leader>nb", "<cmd>Obsidian backlinks<cr>",      desc = "Backlinks" },
+    { "<leader>nl", "<cmd>Obsidian links<cr>",          desc = "Links in note" },
+    { "<leader>n=", "<cmd>Obsidian toc<cr>",            desc = "Table of contents" },
+    { "<leader>nT", "<cmd>Obsidian template<cr>",       desc = "Insert template" },
+    { "<leader>nc", "<cmd>Obsidian toggle_checkbox<cr>", desc = "Toggle checkbox" },
+    { "<leader>nr", "<cmd>Obsidian rename<cr>",         desc = "Rename note" },
+    { "<leader>np", "<cmd>Obsidian paste_img<cr>",      desc = "Paste image" },
+    -- Visual mode
+    { "<leader>ne", "<cmd>Obsidian extract_note<cr>", mode = "v", desc = "Extract to new note" },
+    { "<leader>nL", "<cmd>Obsidian link<cr>",         mode = "v", desc = "Link selection" },
+    { "<leader>nK", "<cmd>Obsidian link_new<cr>",     mode = "v", desc = "Link selection to new note" },
     -- Todos
-    { "<leader>n?", grep_todos,                     desc = "Open TODOs" },
+    { "<leader>n?", grep_todos, desc = "Open TODOs" },
   },
   opts = {
     workspaces = {
