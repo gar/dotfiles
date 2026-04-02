@@ -119,6 +119,10 @@ return {
       return tostring(os.time())
     end,
 
+    checkbox = {
+      order = { " ", "x", ">", "~" },
+    },
+
     ui = {
       enable = true,
       checkboxes = {
