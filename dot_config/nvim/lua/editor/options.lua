@@ -38,6 +38,7 @@ opt.signcolumn = "yes"
 opt.splitbelow = true
 opt.splitright = true
 opt.termguicolors = true
+opt.conceallevel = 1
 opt.wrap = false
 
 -- Text editing
