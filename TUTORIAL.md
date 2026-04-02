@@ -244,7 +244,40 @@ When Claude proposes edits, they appear as a diff. While reviewing:
 
 ---
 
-## 8. Managing Language Versions with mise
+## 8. Notes and Daily Journal
+
+Notes live in `~/notes`. Open today's daily note with `<leader>nd` — it auto-applies the daily template if one exists at `~/notes/templates/daily.md`.
+
+### Folding to stay focused
+
+Daily notes often accumulate many headings throughout the day. Use folding to hide sections you're not currently working on:
+
+```
+## Support requests          ← zc to collapse this whole section
+### Ask Alex about setup     ← currently working here
+### Database migration        ← zc to hide this for now
+## Meetings
+### 1:1 with manager
+```
+
+**Focus on one heading:** Put the cursor inside the heading you're working on and press `<leader>zf`. This collapses everything else and keeps just that section visible.
+
+**Open/close individual headings:** `zo` opens, `zc` closes. A `##` heading folds all its `###` and `####` children too — `zO` (capital O) recursively expands them all at once.
+
+**Reset the view:** `zR` opens everything again.
+
+### Finding things
+
+| Keymap | Action |
+|--------|--------|
+| `<leader>ng` | Full-text search across all notes |
+| `<leader>n?` | Find all open `- [ ]` todos vault-wide |
+| `<leader>nf` | Jump to any note by name |
+| `<leader>nb` | See what links to the current note |
+
+---
+
+## 10. Managing Language Versions with mise
 
 `mise` manages your Node, Python, Erlang, and Elixir versions. It activates automatically per directory based on `.mise.toml` or `.tool-versions` files.
 
@@ -275,7 +308,7 @@ mise ls-remote node
 
 ---
 
-## 9. Per-directory Environments with direnv
+## 11. Per-directory Environments with direnv
 
 Create a `.envrc` in a project directory to automatically set environment variables when you `cd` in.
 
@@ -295,7 +328,7 @@ After that, variables are set when you enter the directory and unset when you le
 
 ---
 
-## 10. Managing Dotfiles with chezmoi
+## 12. Managing Dotfiles with chezmoi
 
 ### Apply changes from the repo to your machine
 
@@ -339,7 +372,7 @@ chezmoi edit ~/.zshrc
 
 ---
 
-## 11. Machine-local Config
+## 13. Machine-local Config
 
 Some tools or settings belong only to a specific machine — work LSP servers, private plugins, credentials — and should not be committed to a public repo. Two places exist for this.
 
@@ -395,7 +428,7 @@ mise merges `~/.mise.local.toml` with `~/.mise.toml` at runtime, so you never ne
 
 ---
 
-## 12. Useful CLI Tools
+## 14. Useful CLI Tools
 
 A few tools from the Brewfile worth knowing:
 
