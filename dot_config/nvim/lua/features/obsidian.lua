@@ -27,6 +27,48 @@ local function browse_journal(subfolder, title)
   })
 end
 
+local function add_todo_to_daily()
+  vim.ui.input({ prompt = "Todo: " }, function(input)
+    if not input or input == "" then return end
+
+    local daily_dir = vim.fn.expand("~/notes/journal/daily/")
+    vim.fn.mkdir(daily_dir, "p")
+    local path = daily_dir .. os.date("%Y-%m-%d") .. ".md"
+    local todo_line = "- [ ] " .. input
+
+    local lines
+    if vim.fn.filereadable(path) == 1 then
+      lines = vim.fn.readfile(path)
+    else
+      lines = { "# " .. os.date("%Y-%m-%d"), "" }
+    end
+
+    -- Find insertion point: first non-blank line after the first heading.
+    -- New todo becomes the first item in that section.
+    local insert_pos = #lines + 1
+    local found_heading = false
+    for i, line in ipairs(lines) do
+      if not found_heading and line:match("^#") then
+        found_heading = true
+      elseif found_heading and line ~= "" then
+        insert_pos = i
+        break
+      end
+    end
+
+    table.insert(lines, insert_pos, todo_line)
+    vim.fn.writefile(lines, path)
+
+    -- Refresh the buffer if it happens to be open
+    local bufnr = vim.fn.bufnr(path)
+    if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) then
+      vim.api.nvim_buf_call(bufnr, function() vim.cmd("checktime") end)
+    end
+
+    vim.notify('Todo captured: "' .. input .. '"', vim.log.levels.INFO)
+  end)
+end
+
 local function grep_todos()
   require("telescope.builtin").grep_string({
     search = "- \\[ \\]",
@@ -76,7 +118,8 @@ return {
     { "<leader>nL", "<cmd>Obsidian link<cr>",         mode = "v", desc = "Link selection" },
     { "<leader>nK", "<cmd>Obsidian link_new<cr>",     mode = "v", desc = "Link selection to new note" },
     -- Todos
-    { "<leader>n?", grep_todos, desc = "Open TODOs" },
+    { "<leader>ni", add_todo_to_daily, desc = "Capture todo to daily note" },
+    { "<leader>n?", grep_todos,        desc = "Open TODOs" },
   },
   opts = {
     workspaces = {
