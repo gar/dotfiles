@@ -189,7 +189,7 @@ return {
     },
 
     ui = {
-      enable = true,
+      enable = false, -- render-markdown.nvim handles all visual rendering
     },
   },
 }
