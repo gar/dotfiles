@@ -38,6 +38,13 @@ local function add_todo_to_daily()
     local path = tostring(note.path)
     local todo_line = "- [ ] " .. input
 
+    -- Save the buffer first if it's open with unsaved changes, so readfile
+    -- picks up the latest content and checktime doesn't prompt for a reload.
+    local bufnr = vim.fn.bufnr(path)
+    if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].modified then
+      vim.api.nvim_buf_call(bufnr, function() vim.cmd("write") end)
+    end
+
     local lines = vim.fn.readfile(path)
 
     -- Find the first level-1 heading
@@ -81,7 +88,6 @@ local function add_todo_to_daily()
     vim.fn.writefile(lines, path)
 
     -- Refresh the buffer if it happens to be open
-    local bufnr = vim.fn.bufnr(path)
     if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) then
       vim.api.nvim_buf_call(bufnr, function() vim.cmd("checktime") end)
     end
