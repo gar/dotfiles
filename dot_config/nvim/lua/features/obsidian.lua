@@ -116,6 +116,7 @@ return {
   keys = {
     -- Journal
     { "<leader>nd", "<cmd>Obsidian today<cr>",                                 desc = "Daily note (today)" },
+    { "<leader>ny", "<cmd>Obsidian yesterday<cr>",                             desc = "Daily note (yesterday)" },
     { "<leader>nD", "<cmd>Obsidian dailies<cr>",                               desc = "Browse daily notes" },
     { "<leader>nw", "<cmd>Obsidian weekly<cr>",                                desc = "Weekly note" },
     { "<leader>nW", function() browse_journal("weekly",  "Weekly Notes") end,  desc = "Browse weekly notes" },
