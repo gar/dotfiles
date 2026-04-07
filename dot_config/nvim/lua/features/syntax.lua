@@ -1,29 +1,27 @@
 return {
   "nvim-treesitter/nvim-treesitter",
-  build = ":TSUpdate",
-  event = "BufReadPost",
+  branch = "main",
+  lazy = false,
+  build = function()
+    require("nvim-treesitter").install({ "all" }):wait(300000)
+  end,
   config = function()
-    require("nvim-treesitter.configs").setup({
-      ensure_installed = "all",
-      sync_install = false,
-      ignore_install = { "norg", "ipkg" },
-      prefer_git = true,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false,
-      },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "gnn",
-          node_incremental = "grn",
-          scope_incremental = "grc",
-          node_decremental = "grm",
-        },
-      },
-      indent = {
-        enable = true,
-      },
+    require("nvim-treesitter").setup({
+      install_dir = vim.fn.stdpath("data") .. "/site",
+    })
+
+    -- Enable treesitter highlighting for all filetypes that have a parser
+    vim.api.nvim_create_autocmd("FileType", {
+      callback = function()
+        pcall(vim.treesitter.start)
+      end,
+    })
+
+    -- Enable treesitter-based indentation
+    vim.api.nvim_create_autocmd("FileType", {
+      callback = function()
+        vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end,
     })
   end,
 }

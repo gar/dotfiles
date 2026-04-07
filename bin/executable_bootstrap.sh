@@ -60,6 +60,7 @@ install_packages_debian() {
     sd \
     shellcheck \
     tree \
+    tree-sitter \
     zoxide
 
   # eza is available in Ubuntu 24.04+ — skip silently on older releases
@@ -116,6 +117,7 @@ install_packages_arch() {
     sd \
     shellcheck \
     tree \
+    tree-sitter \
     zoxide
 
   # AUR packages (zsh-you-should-use, zsh-fast-syntax-highlighting)
