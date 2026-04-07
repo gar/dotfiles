@@ -2,18 +2,8 @@ return {
   "nvim-telescope/telescope.nvim",
   cmd = "Telescope",
   keys = {
-    { "<leader><space>", function()
-      require("telescope.builtin").find_files({
-        layout_strategy = "horizontal",
-        layout_config = { width = 0.8, height = 0.8 },
-      })
-    end, desc = "Find files" },
-    { "<leader>ff", function()
-      require("telescope.builtin").find_files({
-        layout_strategy = "horizontal",
-        layout_config = { width = 0.8, height = 0.8 },
-      })
-    end, desc = "Find files" },
+    { "<leader><space>", "<cmd>Telescope find_files<cr>", desc = "Find files" },
+    { "<leader>ff",      "<cmd>Telescope find_files<cr>", desc = "Find files" },
     { "<leader>fg", "<cmd>Telescope live_grep<cr>",          desc = "Live grep" },
     { "<leader>fw", "<cmd>Telescope grep_string<cr>",        desc = "Grep word under cursor" },
     { "<leader>fb", "<cmd>Telescope buffers<cr>",            desc = "Find buffers" },
