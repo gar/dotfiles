@@ -3,7 +3,9 @@ return {
   branch = "main",
   lazy = false,
   build = function()
-    require("nvim-treesitter").install({ "all" }):wait(300000)
+    if not vim.env.CI then
+      require("nvim-treesitter").install({ "all" }):wait(300000)
+    end
   end,
   config = function()
     require("nvim-treesitter").setup({
