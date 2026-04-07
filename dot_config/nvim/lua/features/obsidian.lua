@@ -122,6 +122,7 @@ return {
   keys = {
     -- Journal
     { "<leader>nd", "<cmd>Obsidian today<cr>",                                 desc = "Daily note (today)" },
+    { "<leader>no", "<cmd>Obsidian tomorrow<cr>",                              desc = "Daily note (tomorrow)" },
     { "<leader>ny", "<cmd>Obsidian yesterday<cr>",                             desc = "Daily note (yesterday)" },
     { "<leader>nD", "<cmd>Obsidian dailies<cr>",                               desc = "Browse daily notes" },
     { "<leader>nw", "<cmd>Obsidian weekly<cr>",                                desc = "Weekly note" },
