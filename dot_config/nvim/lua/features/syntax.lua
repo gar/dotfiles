@@ -17,6 +17,14 @@ return {
       end,
     })
 
+    -- Also enable vim regex highlighting for markdown so injected code blocks highlight correctly
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "markdown",
+      callback = function()
+        vim.bo.syntax = "ON"
+      end,
+    })
+
     -- Enable treesitter-based indentation
     vim.api.nvim_create_autocmd("FileType", {
       callback = function()
