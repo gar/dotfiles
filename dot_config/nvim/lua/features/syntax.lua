@@ -2,15 +2,20 @@ return {
   "nvim-treesitter/nvim-treesitter",
   branch = "main",
   lazy = false,
-  build = function()
-    require("nvim-treesitter").install({ "all" }):wait(300000)
-  end,
+  build = ":TSUpdate",
   config = function()
-    require("nvim-treesitter").setup({
+    local ts = require("nvim-treesitter")
+
+    ts.setup({
       install_dir = vim.fn.stdpath("data") .. "/site",
     })
 
-    -- Enable treesitter highlighting for all filetypes that have a parser
+    -- Install all parsers on first run (when none are present yet)
+    if #ts.get_installed() == 0 then
+      ts.install({ "all" })
+    end
+
+    -- Enable treesitter highlighting for filetypes that have a parser
     vim.api.nvim_create_autocmd("FileType", {
       callback = function()
         pcall(vim.treesitter.start)
