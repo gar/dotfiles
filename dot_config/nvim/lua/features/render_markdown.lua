@@ -3,9 +3,6 @@ return {
   dependencies = { "nvim-treesitter/nvim-treesitter" },
   ft = { "markdown" },
   opts = {
-    sign = {
-      enabled = false,
-    },
     code = {
       language_icon = false,
       highlight_language = "Comment",
