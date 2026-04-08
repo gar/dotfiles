@@ -85,6 +85,44 @@ jobs:
           fi
           echo "Neovim started cleanly"
 
+      - name: Neovim filetype smoke tests
+        run: |
+          # Open a minimal file for each filetype so lazy-loaded plugins (e.g.
+          # lsp.lua on BufReadPre, render-markdown on ft=markdown) actually run
+          # their config functions. Plugin cache is warm from the previous step.
+          export XDG_CONFIG_HOME="$PWD/dot_config"
+          FAILED=0
+          # ext:content pairs — content just needs to trigger filetype detection
+          for pair in \
+            "lua:-- test" \
+            "md:# test" \
+            "py:# test" \
+            "sh:#!/bin/bash" \
+            "ts:// test" \
+            "js:// test" \
+            "ex:# test" \
+            "rs:// test" \
+            "c:// test" \
+            "rb:# test"
+          do
+            ext="${pair%%:*}"
+            content="${pair#*:}"
+            TMP=$(mktemp --suffix=".$ext")
+            printf '%s\n' "$content" > "$TMP"
+            ERR=$(nvim --headless "$TMP" \
+              "+lua vim.cmd('qall!')" 2>&1) || true
+            ERR=$(echo "$ERR" | grep -iE "^e[0-9]+:|error" || true)
+            rm -f "$TMP"
+            if [ -n "$ERR" ]; then
+              echo "::error::Neovim errors opening .$ext file:"
+              echo "$ERR"
+              FAILED=1
+            else
+              echo "OK: .$ext"
+            fi
+          done
+          exit $FAILED
+
   git-config:
     name: Git config
     runs-on: ubuntu-latest
