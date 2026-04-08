@@ -181,6 +181,7 @@ _theme_apply() {
   local btop_conf="$HOME/.config/btop/btop.conf"
   if [[ -f "$btop_conf" ]]; then
     if [[ "$mode" == "light" ]]; then
+      # "Default" inherits the terminal palette — btop has no gruvbox light theme
       sed -i 's/^color_theme = .*/color_theme = "Default"/' "$btop_conf"
     else
       sed -i 's/^color_theme = .*/color_theme = "gruvbox_dark_v2"/' "$btop_conf"
