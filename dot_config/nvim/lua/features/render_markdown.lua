@@ -4,6 +4,7 @@ return {
   ft = { "markdown" },
   opts = {
     code = {
+      language_name = false,
       language_icon = false,
       highlight_language = "Comment",
     },
