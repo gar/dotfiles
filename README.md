@@ -432,28 +432,6 @@ When you press `h`/`j`/`k`/`l` (or the arrow keys) more than 4 times in quick su
 
 Configured in `hint` mode: the keypress still registers, you just get nudged. To switch to blocking mode (the key is swallowed until you use a better motion), set `restriction_mode = "block"` in `dot_config/nvim/lua/features/hardtime.lua`.
 
-## Theme Switching
-
-The default theme is **Gruvbox Material Dark** across all tools. To switch to the light variant for outdoor/daylight use:
-
-```zsh
-theme-light   # switch to Gruvbox Material Light
-theme-dark    # switch back to Gruvbox Material Dark
-```
-
-This updates all tools simultaneously:
-
-| Tool | Dark | Light |
-|------|------|-------|
-| Ghostty | Gruvbox Material Dark | Gruvbox Material Light |
-| Neovim | gruvbox-material (dark bg) | gruvbox-material (light bg) |
-| bat | gruvbox-dark | gruvbox-light |
-| btop | gruvbox_dark_v2 | Default (inherits terminal palette) |
-
-The chosen theme persists across new terminal sessions. Ghostty reloads immediately; Neovim switches live in running instances. Running `chezmoi apply` will reset btop back to dark.
-
-The theme is **not** linked to macOS system light/dark mode — switch it manually whenever you need it.
-
 ## OS Support
 
 | Feature | macOS | Ubuntu/Debian | Arch/Manjaro |

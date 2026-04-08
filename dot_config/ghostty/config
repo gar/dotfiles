@@ -1,3 +1,2 @@
 font-family = JetBrainsMono Nerd Font Mono
-# Theme is managed via theme.conf — run theme-light / theme-dark in the shell to switch.
 config-file = theme.conf
