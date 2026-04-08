@@ -3,6 +3,9 @@ return {
   dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
   ft = { "markdown" },
   opts = {
+    sign = {
+      enabled = false,
+    },
     code = {
       language_name = false,
     },
