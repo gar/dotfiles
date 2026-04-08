@@ -31,12 +31,29 @@ local function add_todo_to_daily()
   vim.ui.input({ prompt = "Todo: " }, function(input)
     if not input or input == "" then return end
 
-    -- today() creates the note with template+frontmatter if it doesn't exist,
-    -- or loads it if it does. It does NOT open a buffer (that's note:open(),
-    -- which the :Obsidian today command calls after — we skip that here).
-    local note = require("obsidian.daily").today()
-    local path = tostring(note.path)
-    local todo_line = "- [ ] " .. input
+    -- If input starts with YYYY-MM-DD, route to that date's note instead of today.
+    local date_str, todo_text = input:match("^(%d%d%d%d%-%d%d%-%d%d)%s+(.+)$")
+
+    local path
+    if date_str then
+      -- Construct the path directly from the known vault layout.
+      local dir = vim.fn.expand("~/notes/journal/daily/")
+      vim.fn.mkdir(dir, "p")
+      path = dir .. date_str .. ".md"
+      -- Create a minimal daily note if it doesn't exist yet.
+      if vim.fn.filereadable(path) == 0 then
+        vim.fn.writefile({ "# " .. date_str, "" }, path)
+      end
+    else
+      -- today() creates the note with template+frontmatter if it doesn't exist,
+      -- or loads it if it does. It does NOT open a buffer (that's note:open(),
+      -- which the :Obsidian today command calls after — we skip that here).
+      todo_text = input
+      local note = require("obsidian.daily").today()
+      path = tostring(note.path)
+    end
+
+    local todo_line = "- [ ] " .. todo_text
 
     -- Save the buffer first if it's open with unsaved changes, so readfile
     -- picks up the latest content and checktime doesn't prompt for a reload.
@@ -92,7 +109,8 @@ local function add_todo_to_daily()
       vim.api.nvim_buf_call(bufnr, function() vim.cmd("checktime") end)
     end
 
-    vim.notify('Todo captured: "' .. input .. '"', vim.log.levels.INFO)
+    local label = date_str or "today"
+    vim.notify('Todo captured to ' .. label .. ': "' .. todo_text .. '"', vim.log.levels.INFO)
   end)
 end
 
