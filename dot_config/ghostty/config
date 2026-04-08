@@ -1,2 +1,2 @@
 font-family = JetBrainsMono Nerd Font Mono
-config-file = theme.conf
+theme = Gruvbox Material Dark
