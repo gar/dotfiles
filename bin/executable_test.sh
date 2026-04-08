@@ -116,7 +116,6 @@ fi
 # ---------------------------------------------------------------------------
 if run_check "nvim-startup" "$FILTER"; then
   if command -v nvim &>/dev/null; then
-    NVIM_DIR="$REPO_DIR/dot_config/nvim"
     # Launch nvim with our config dir, install plugins, then quit.
     # Capture stderr — any errors or warnings indicate a broken config.
     NVIM_ERR=$(XDG_CONFIG_HOME="$REPO_DIR/dot_config" \
@@ -133,6 +132,46 @@ if run_check "nvim-startup" "$FILTER"; then
     fi
   else
     pass "nvim headless startup (skipped — nvim not available)"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 4b. Neovim filetype smoke tests — open one file per filetype so lazy-loaded
+#     plugins (lsp.lua on BufReadPre, render-markdown on ft=markdown, etc.)
+#     actually execute their config functions.  Plugin cache is warm from 4.
+# ---------------------------------------------------------------------------
+if run_check "nvim-filetypes" "$FILTER"; then
+  if command -v nvim &>/dev/null; then
+    for pair in \
+      "lua:-- test" \
+      "md:# test" \
+      "py:# test" \
+      "sh:#!/bin/bash" \
+      "ts:// test" \
+      "js:// test" \
+      "ex:# test" \
+      "rs:// test" \
+      "c:// test" \
+      "rb:# test"
+    do
+      ext="${pair%%:*}"
+      content="${pair#*:}"
+      TMP=$(mktemp --suffix=".$ext")
+      printf '%s\n' "$content" > "$TMP"
+      NVIM_ERR=$(XDG_CONFIG_HOME="$REPO_DIR/dot_config" \
+        nvim --headless "$TMP" \
+          "+lua vim.cmd('qall!')" 2>&1) || true
+      NVIM_ERR=$(echo "$NVIM_ERR" | grep -iE "^e[0-9]+:|error" || true)
+      rm -f "$TMP"
+      if [[ -z "$NVIM_ERR" ]]; then
+        pass "nvim filetype .$ext"
+      else
+        printf "%s\n" "$NVIM_ERR"
+        fail "nvim filetype .$ext"
+      fi
+    done
+  else
+    pass "nvim filetypes (skipped — nvim not available)"
   fi
 fi
 

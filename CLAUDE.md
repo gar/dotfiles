@@ -54,7 +54,7 @@ Run a single check:
 ./bin/executable_test.sh <check_name>
 ```
 
-Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `git-config`, `chezmoi-template`.
+Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `nvim-filetypes`, `git-config`, `chezmoi-template`.
 
 ### What the tests verify
 
@@ -64,12 +64,13 @@ Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `git
 | `shell-syntax` | `bash -n` on scripts, `zsh -n` on rendered zshrc |
 | `lua-lint` | `luacheck` on neovim config (globals: `vim`, no unused-args, no max-line-length) |
 | `nvim-startup` | Headless neovim launch with plugin install — catches broken config |
+| `nvim-filetypes` | Opens a temp file per filetype (lua, md, py, sh, ts, js, ex, rs, c, rb) — exercises lazy-loaded plugin configs |
 | `git-config` | Renders and parses `dot_gitconfig.tmpl` |
 | `chezmoi-template` | Renders all `.tmpl` files (1Password-dependent templates are skipped) |
 
 ### CI
 
-GitHub Actions runs the same checks on every PR and push to `main` — five parallel jobs. See `.github/workflows/ci.yml`.
+GitHub Actions runs the same checks on every PR and push to `main` — five parallel jobs, with the `neovim` job running startup and filetype smoke tests as sequential steps. See `.github/workflows/ci.yml`.
 
 ## Key Files to Know
 
