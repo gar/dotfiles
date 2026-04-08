@@ -34,24 +34,19 @@ local function add_todo_to_daily()
     -- If input starts with YYYY-MM-DD, route to that date's note instead of today.
     local date_str, todo_text = input:match("^(%d%d%d%d%-%d%d%-%d%d)%s+(.+)$")
 
-    local path
+    -- daily() creates the note with template+frontmatter if it doesn't exist,
+    -- or loads it if it does. It does NOT open a buffer (that's note:open(),
+    -- which the :Obsidian today command calls after — we skip that here).
+    local note
     if date_str then
-      -- Construct the path directly from the known vault layout.
-      local dir = vim.fn.expand("~/notes/journal/daily/")
-      vim.fn.mkdir(dir, "p")
-      path = dir .. date_str .. ".md"
-      -- Create a minimal daily note if it doesn't exist yet.
-      if vim.fn.filereadable(path) == 0 then
-        vim.fn.writefile({ "# " .. date_str, "" }, path)
-      end
+      local y, m, d = date_str:match("(%d+)-(%d+)-(%d+)")
+      local ts = os.time({ year = tonumber(y), month = tonumber(m), day = tonumber(d), hour = 12, min = 0, sec = 0 })
+      note = require("obsidian.daily").daily({ date = ts })
     else
-      -- today() creates the note with template+frontmatter if it doesn't exist,
-      -- or loads it if it does. It does NOT open a buffer (that's note:open(),
-      -- which the :Obsidian today command calls after — we skip that here).
       todo_text = input
-      local note = require("obsidian.daily").today()
-      path = tostring(note.path)
+      note = require("obsidian.daily").today()
     end
+    local path = tostring(note.path)
 
     local todo_line = "- [ ] " .. todo_text
 
