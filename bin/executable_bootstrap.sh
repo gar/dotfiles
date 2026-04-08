@@ -39,6 +39,7 @@ install_packages_debian() {
     direnv \
     unzip \
     bat \
+    python3-pip \
     broot \
     entr \
     fd-find \
@@ -131,7 +132,18 @@ install_packages_arch() {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
+# 2. Install Python CLI tools (Linux only — macOS gets these via Homebrew)
+# ---------------------------------------------------------------------------
+install_python_tools() {
+  if ! command -v termgraph &>/dev/null; then
+    python3 -m pip install --user termgraph 2>/dev/null \
+      || python3 -m pip install --user --break-system-packages termgraph 2>/dev/null \
+      || echo "Note: could not install termgraph automatically — run: pip install termgraph"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# 3. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
 # ---------------------------------------------------------------------------
 install_jetbrains_mono_nerd_font() {
   local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
@@ -211,6 +223,7 @@ fi
 # Install JetBrains Mono Nerd Font (Linux only; macOS gets it via Brewfile cask)
 if [[ "$OS" != "Darwin" ]]; then
   install_jetbrains_mono_nerd_font
+  install_python_tools
 fi
 
 # Install broot shell launcher (enables the 'br' cd-on-exit function)
