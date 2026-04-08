@@ -149,6 +149,66 @@ command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
 bindkey '^O' autosuggest-accept   # ctrl+o ("okay") to accept suggestion
 
 # ------------------------------
+# Theme switching (light / dark)
+# ------------------------------
+# Single source of truth: ~/.config/theme-mode ("light" or "dark").
+# Ghostty auto-reloads when theme.conf changes. Neovim watches the file and
+# switches live. bat reads BAT_THEME from the environment. btop config is
+# updated in place (note: chezmoi apply will reset btop to dark).
+_theme_apply() {
+  local mode="$1"
+  mkdir -p "$HOME/.config"
+  echo "$mode" > "$HOME/.config/theme-mode"
+
+  # Ghostty: rewrite included theme.conf (auto-reloads on change)
+  local ghostty_theme="$HOME/.config/ghostty/theme.conf"
+  if [[ -d "$HOME/.config/ghostty" ]]; then
+    if [[ "$mode" == "light" ]]; then
+      echo "theme = Gruvbox Material Light" > "$ghostty_theme"
+    else
+      echo "theme = Gruvbox Material Dark" > "$ghostty_theme"
+    fi
+  fi
+
+  # bat: BAT_THEME env var overrides the config file
+  if [[ "$mode" == "light" ]]; then
+    export BAT_THEME="gruvbox-light"
+  else
+    export BAT_THEME="gruvbox-dark"
+  fi
+
+  # btop: update live config (note: chezmoi apply resets this to dark)
+  local btop_conf="$HOME/.config/btop/btop.conf"
+  if [[ -f "$btop_conf" ]]; then
+    if [[ "$mode" == "light" ]]; then
+      sed -i 's/^color_theme = .*/color_theme = "solarized_light"/' "$btop_conf"
+    else
+      sed -i 's/^color_theme = .*/color_theme = "gruvbox_dark_v2"/' "$btop_conf"
+    fi
+  fi
+
+  # zsh-autosuggestions: darken suggestions on light backgrounds for readability
+  if [[ "$mode" == "light" ]]; then
+    export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#888888"
+  else
+    unset ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE
+  fi
+}
+
+theme-light() { _theme_apply light  && echo "Switched to light theme" }
+theme-dark()  { _theme_apply dark   && echo "Switched to dark theme"  }
+
+# Restore saved theme on every new shell (sets env vars; skips file writes)
+if [[ -f "$HOME/.config/theme-mode" ]]; then
+  _theme_mode_saved="$(< "$HOME/.config/theme-mode")"
+  if [[ "$_theme_mode_saved" == "light" ]]; then
+    export BAT_THEME="gruvbox-light"
+    export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#888888"
+  fi
+  unset _theme_mode_saved
+fi
+
+# ------------------------------
 # Local overrides (device-specific, not checked in)
 # ------------------------------
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"

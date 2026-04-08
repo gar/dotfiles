@@ -502,3 +502,25 @@ gh pr list            # see open PRs
 gh pr checkout 42     # check out PR #42 locally
 gh pr view --web      # open current PR in browser
 ```
+
+## 15. Switching to a Light Theme
+
+When working outdoors or in bright sunlight, switch everything to the light variant of Gruvbox Material in one command:
+
+```zsh
+theme-light
+```
+
+Switch back when you're done:
+
+```zsh
+theme-dark
+```
+
+What changes immediately:
+- **Ghostty** reloads its terminal colours automatically (no restart needed)
+- **Neovim** switches live in any running instance
+- **bat** picks up the new theme on the next invocation
+- **btop** switches to solarized light (press `ESC` then re-open btop if it's running)
+
+The choice persists across new shell sessions — your next terminal window will open in whichever mode you last set. This is independent of the system light/dark mode setting.
