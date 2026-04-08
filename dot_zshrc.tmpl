@@ -160,14 +160,20 @@ _theme_apply() {
   mkdir -p "$HOME/.config"
   echo "$mode" > "$HOME/.config/theme-mode"
 
-  # Ghostty: rewrite theme.conf (Ghostty watches all config-file includes and
-  # reloads automatically, so this is enough to switch existing windows + new tabs)
-  local ghostty_dir="$HOME/.config/ghostty"
-  if [[ -d "$ghostty_dir" ]]; then
+  # Ghostty: update theme = line in theme.conf in place (Ghostty watches all
+  # config-file includes and reloads automatically on change)
+  local ghostty_conf="$HOME/.config/ghostty/theme.conf"
+  if [[ -d "$HOME/.config/ghostty" ]]; then
+    local ghostty_theme
     if [[ "$mode" == "light" ]]; then
-      echo "theme = Gruvbox Material Light" > "$ghostty_dir/theme.conf"
+      ghostty_theme="Gruvbox Material Light"
     else
-      echo "theme = Gruvbox Material Dark" > "$ghostty_dir/theme.conf"
+      ghostty_theme="Gruvbox Material Dark"
+    fi
+    if [[ -f "$ghostty_conf" ]] && grep -q '^theme = ' "$ghostty_conf"; then
+      perl -pi -e "s/^theme = .*/theme = $ghostty_theme/" "$ghostty_conf"
+    else
+      echo "theme = $ghostty_theme" >> "$ghostty_conf"
     fi
   fi
 
