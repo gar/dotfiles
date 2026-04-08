@@ -150,7 +150,9 @@ return {
         },
       })
 
-      -- Custom server not managed by mason
+      -- Custom server not managed by mason.
+      -- Binary must be manually downloaded from its GitHub releases page and placed at ~/bin/expert.
+      -- If the binary is absent, vim.lsp.enable() is a no-op so startup is unaffected.
       vim.lsp.config("expert", {
         cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
         filetypes = { "elixir", "eelixir", "heex" },
