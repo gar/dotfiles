@@ -170,12 +170,22 @@ _theme_apply() {
     fi
   fi
 
-  # bat: BAT_THEME env var overrides the config file
+  # bat: write theme to config file (takes effect in all shells) and export for
+  # the current shell (env var takes precedence over config file within this session)
+  local bat_config bat_theme
+  bat_config="${BAT_CONFIG_PATH:-$HOME/.config/bat/config}"
   if [[ "$mode" == "light" ]]; then
-    export BAT_THEME="gruvbox-light"
+    bat_theme="gruvbox-light"
   else
-    export BAT_THEME="gruvbox-dark"
+    bat_theme="gruvbox-dark"
   fi
+  mkdir -p "$(dirname "$bat_config")"
+  if [[ -f "$bat_config" ]] && grep -q '^--theme=' "$bat_config"; then
+    perl -pi -e "s/^--theme=.*/--theme=$bat_theme/" "$bat_config"
+  else
+    echo "--theme=$bat_theme" >> "$bat_config"
+  fi
+  export BAT_THEME="$bat_theme"
 
   # btop: update live config (note: chezmoi apply resets this to dark)
   local btop_conf="$HOME/.config/btop/btop.conf"
@@ -205,6 +215,8 @@ if [[ -f "$HOME/.config/theme-mode" ]]; then
   if [[ "$_theme_mode_saved" == "light" ]]; then
     export BAT_THEME="gruvbox-light"
     export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#888888"
+  else
+    export BAT_THEME="gruvbox-dark"
   fi
   unset _theme_mode_saved
 fi
