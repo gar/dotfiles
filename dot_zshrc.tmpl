@@ -160,14 +160,16 @@ _theme_apply() {
   mkdir -p "$HOME/.config"
   echo "$mode" > "$HOME/.config/theme-mode"
 
-  # Ghostty: rewrite included theme.conf (auto-reloads on change)
-  local ghostty_theme="$HOME/.config/ghostty/theme.conf"
-  if [[ -d "$HOME/.config/ghostty" ]]; then
+  # Ghostty: rewrite included theme.conf, then touch the main config to trigger
+  # a reload — Ghostty watches the main config for changes, not included files.
+  local ghostty_dir="$HOME/.config/ghostty"
+  if [[ -d "$ghostty_dir" ]]; then
     if [[ "$mode" == "light" ]]; then
-      echo "theme = Gruvbox Material Light" > "$ghostty_theme"
+      echo "theme = Gruvbox Material Light" > "$ghostty_dir/theme.conf"
     else
-      echo "theme = Gruvbox Material Dark" > "$ghostty_theme"
+      echo "theme = Gruvbox Material Dark" > "$ghostty_dir/theme.conf"
     fi
+    touch "$ghostty_dir/config"
   fi
 
   # bat: write theme to config file (takes effect in all shells) and export for
