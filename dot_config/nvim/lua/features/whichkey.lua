@@ -21,6 +21,7 @@ return {
       { "<leader>g",  group = "Git" },
       { "<leader>gw", group = "Worktrees" },
       { "<leader>n",  group = "Notes (Obsidian)" },
+      { "<leader>t",  group = "Terminal" },
       { "<leader>z",  group = "Folds" },
     })
   end,
