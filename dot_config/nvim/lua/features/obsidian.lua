@@ -96,6 +96,106 @@ local function add_todo_to_daily()
   end)
 end
 
+local function move_todos_to_tomorrow()
+  local start_line = vim.fn.line("'<")
+  local end_line   = vim.fn.line("'>")
+  local bufnr      = vim.api.nvim_get_current_buf()
+
+  -- Collect open todos from the selection
+  local selected = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
+  local todo_lines   = {}
+  local todo_lnums   = {}
+  for i, line in ipairs(selected) do
+    if line:match("^%s*%- %[ %] ") then
+      table.insert(todo_lines, line)
+      table.insert(todo_lnums, start_line + i - 1)
+    end
+  end
+
+  if #todo_lines == 0 then
+    vim.notify("No open todos in selection", vim.log.levels.WARN)
+    return
+  end
+
+  -- Tomorrow's note path
+  local tomorrow_ts   = os.time() + 86400
+  local tomorrow_date = os.date("%Y-%m-%d", tomorrow_ts)
+  local daily_dir     = vim.fn.expand("~/notes/journal/daily/")
+  local tomorrow_path = daily_dir .. tomorrow_date .. ".md"
+
+  -- If tomorrow's buffer is open with unsaved changes, flush it first
+  local tbufnr = vim.fn.bufnr(tomorrow_path)
+  if tbufnr ~= -1 and vim.api.nvim_buf_is_loaded(tbufnr) and vim.bo[tbufnr].modified then
+    vim.api.nvim_buf_call(tbufnr, function() vim.cmd("write") end)
+  end
+
+  -- Read or seed tomorrow's note
+  local lines
+  if vim.fn.filereadable(tomorrow_path) == 1 then
+    lines = vim.fn.readfile(tomorrow_path)
+  else
+    vim.fn.mkdir(daily_dir, "p")
+    lines = { "# " .. tomorrow_date, "" }
+  end
+
+  -- Find first level-1 heading
+  local heading_pos = nil
+  for i, line in ipairs(lines) do
+    if line:match("^# ") then
+      heading_pos = i
+      break
+    end
+  end
+
+  if not heading_pos then
+    -- No heading: append at the end
+    for _, todo in ipairs(todo_lines) do
+      table.insert(lines, todo)
+    end
+  else
+    -- Ensure blank line immediately after heading
+    if heading_pos + 1 > #lines or lines[heading_pos + 1] ~= "" then
+      table.insert(lines, heading_pos + 1, "")
+    end
+
+    -- Find last consecutive list item after the heading
+    local last_todo = nil
+    local pos = heading_pos + 2
+    while pos <= #lines and lines[pos]:match("^[%*%-] ") do
+      last_todo = pos
+      pos = pos + 1
+    end
+
+    local insert_at = last_todo and (last_todo + 1) or (heading_pos + 2)
+
+    for i = #todo_lines, 1, -1 do
+      table.insert(lines, insert_at, todo_lines[i])
+    end
+
+    -- Ensure blank line after the todo block
+    local after = insert_at + #todo_lines
+    if after <= #lines and lines[after] ~= "" then
+      table.insert(lines, after, "")
+    end
+  end
+
+  vim.fn.writefile(lines, tomorrow_path)
+
+  -- Refresh tomorrow's buffer if open
+  if tbufnr ~= -1 and vim.api.nvim_buf_is_loaded(tbufnr) then
+    vim.api.nvim_buf_call(tbufnr, function() vim.cmd("checktime") end)
+  end
+
+  -- Mark moved todos as [>] in the current buffer
+  for _, lnum in ipairs(todo_lnums) do
+    local line = vim.api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, false)[1]
+    local new_line = line:gsub("^(%s*%- )%[ %]( )", "%1[>]%2", 1)
+    vim.api.nvim_buf_set_lines(bufnr, lnum - 1, lnum, false, { new_line })
+  end
+
+  vim.notify(#todo_lines .. " todo(s) moved to " .. tomorrow_date, vim.log.levels.INFO)
+end
+
 local function grep_todos()
   require("telescope.builtin").grep_string({
     search = "- \\[ \\]",
@@ -147,8 +247,9 @@ return {
     { "<leader>nL", "<cmd>Obsidian link<cr>",         mode = "v", desc = "Link selection" },
     { "<leader>nK", "<cmd>Obsidian link_new<cr>",     mode = "v", desc = "Link selection to new note" },
     -- Todos
-    { "<leader>ni", add_todo_to_daily, desc = "Capture todo to daily note" },
-    { "<leader>n?", grep_todos,        desc = "Open TODOs" },
+    { "<leader>ni", add_todo_to_daily,      desc = "Capture todo to daily note" },
+    { "<leader>n?", grep_todos,             desc = "Open TODOs" },
+    { "<leader>nO", move_todos_to_tomorrow, mode = "v", desc = "Move todos to tomorrow" },
   },
   opts = {
     workspaces = {
