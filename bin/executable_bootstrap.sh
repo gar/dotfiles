@@ -39,12 +39,14 @@ install_packages_debian() {
     direnv \
     unzip \
     bat \
+    pipx \
     broot \
     entr \
     fd-find \
     hexyl \
     fzf \
     gh \
+    pipx \
     git \
     gnupg \
     btop \
@@ -102,6 +104,7 @@ install_packages_arch() {
     hexyl \
     fzf \
     github-cli \
+    python-pipx \
     git \
     gnupg \
     btop \
@@ -131,7 +134,18 @@ install_packages_arch() {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
+# 2. Install Python CLI tools via pipx
+# ---------------------------------------------------------------------------
+install_python_tools() {
+  if command -v pipx &>/dev/null; then
+    pipx install termgraph 2>/dev/null || true
+  else
+    echo "Note: pipx not found — install termgraph manually: pipx install termgraph"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# 3. Install JetBrains Mono Nerd Font (Linux only — macOS uses Homebrew cask)
 # ---------------------------------------------------------------------------
 install_jetbrains_mono_nerd_font() {
   local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
@@ -212,6 +226,9 @@ fi
 if [[ "$OS" != "Darwin" ]]; then
   install_jetbrains_mono_nerd_font
 fi
+
+# Install Python CLI tools via pipx (all platforms)
+install_python_tools
 
 # Install broot shell launcher (enables the 'br' cd-on-exit function)
 install_broot_launcher

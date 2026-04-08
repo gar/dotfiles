@@ -444,6 +444,7 @@ A few tools from the Brewfile worth knowing:
 | `ls` | Directory listing (eza) | `ls` or `ll` for long form with git status |
 | `cat` | File viewer (bat) | `cat file.ex` — syntax highlighted, with line numbers |
 | `xxd` | Hex viewer (hexyl) | `xxd file` — colorized hex dump with ASCII sidebar |
+| `termgraph` | Terminal bar charts | `echo "Jan,100\nFeb,120" \| termgraph` |
 
 ### eza — better ls
 
