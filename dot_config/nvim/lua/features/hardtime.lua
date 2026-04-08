@@ -22,6 +22,6 @@ return {
     max_count = 4,
 
     -- Disable inside these filetypes (navigating these with hjkl is fine).
-    disabled_filetypes = { "qf", "netrw", "NvimTree", "lazy", "mason", "oil" },
+    disabled_filetypes = { "qf", "netrw", "lazy", "mason" },
   },
 }

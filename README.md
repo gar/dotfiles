@@ -218,6 +218,8 @@ These modern tools are installed and aliased over their traditional counterparts
 | `g` | `git` |
 | `ga` | `git add` |
 | `gaa` | `git add --all` |
+| `gap` | `git add -p` (interactive patch) |
+| `gbr` | `git branch` (formatted with date + author) |
 | `gc` | `git commit` |
 | `gcm` | `git commit -m` |
 | `gco` | `git checkout` |
@@ -226,6 +228,7 @@ These modern tools are installed and aliased over their traditional counterparts
 | `gl` | `git pull` |
 | `glog` | `git log --oneline --decorate --graph` |
 | `gp` | `git push` |
+| `gpu` | `git push -u` (push and set upstream) |
 | `grb` | `git rebase` |
 | `gst` | `git status` |
 | `gsw` | `git switch` |
@@ -251,6 +254,7 @@ Leader key is `Space`.
 
 | Keymap | Mode | Action |
 |--------|------|--------|
+| `<leader><space>` | normal | Find files (alternative) |
 | `<leader>ff` | normal | Find files |
 | `<leader>fg` | normal | Live grep |
 | `<leader>fw` | normal | Grep word under cursor |
@@ -328,6 +332,8 @@ Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim w
 | Keymap | Action |
 |--------|--------|
 | `<leader>nd` | Open today's daily note |
+| `<leader>no` | Open tomorrow's daily note |
+| `<leader>ny` | Open yesterday's daily note |
 | `<leader>nD` | Browse all daily notes |
 | `<leader>nw` | Open this week's note |
 | `<leader>nW` | Browse all weekly notes |
@@ -338,8 +344,17 @@ Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim w
 | `<leader>ng` | Full-text search across vault |
 | `<leader>nt` | Browse notes by tag |
 | `<leader>nb` | Backlinks to current note |
+| `<leader>nl` | Links in current note |
+| `<leader>n=` | Table of contents |
 | `<leader>nT` | Insert template into current buffer |
+| `<leader>nx` | Toggle checkbox |
+| `<leader>nr` | Rename note |
+| `<leader>np` | Paste image |
+| `<leader>ni` | Capture todo to today's daily note |
 | `<leader>n?` | Find all open todos across vault |
+| `<leader>ne` | Extract selection to new note (visual) |
+| `<leader>nL` | Link selection (visual) |
+| `<leader>nK` | Link selection to new note (visual) |
 
 **New note from template:** `<leader>nn` to create and open → `<leader>nT` to insert a template.
 
@@ -382,6 +397,8 @@ Headings at all levels fold their content. Folds start open — use these to col
 | `g` | `git` |
 | `ga` | `git add` |
 | `gaa` | `git add --all` |
+| `gap` | `git add -p` (interactive patch) |
+| `gbr` | `git branch` (formatted with date + author) |
 | `gc` | `git commit` |
 | `gcm` | `git commit -m` |
 | `gco` | `git checkout` |
@@ -390,6 +407,7 @@ Headings at all levels fold their content. Folds start open — use these to col
 | `gl` | `git pull` |
 | `glog` | `git log --oneline --decorate --graph` |
 | `gp` | `git push` |
+| `gpu` | `git push -u` (push and set upstream) |
 | `grb` | `git rebase` |
 | `gst` | `git status` |
 | `gsw` | `git switch` |
