@@ -4,8 +4,6 @@ set -euo pipefail
 # Dotfiles CI test suite
 # Run all checks: ./bin/executable_test.sh
 # Run one check:  ./bin/executable_test.sh <check_name>
-#
-# Checks: shellcheck, shell-syntax, lua-lint, nvim-startup, chezmoi-template, git-config
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
