@@ -429,7 +429,7 @@ This updates all tools simultaneously:
 | Ghostty | Gruvbox Material Dark | Gruvbox Material Light |
 | Neovim | gruvbox-material (dark bg) | gruvbox-material (light bg) |
 | bat | gruvbox-dark | gruvbox-light |
-| btop | gruvbox_dark_v2 | solarized_light |
+| btop | gruvbox_dark_v2 | Default (inherits terminal palette) |
 
 The chosen theme persists across new terminal sessions. Ghostty reloads immediately; Neovim switches live in running instances. Running `chezmoi apply` will reset btop back to dark.
 

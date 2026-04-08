@@ -181,7 +181,7 @@ _theme_apply() {
   local btop_conf="$HOME/.config/btop/btop.conf"
   if [[ -f "$btop_conf" ]]; then
     if [[ "$mode" == "light" ]]; then
-      sed -i 's/^color_theme = .*/color_theme = "solarized_light"/' "$btop_conf"
+      sed -i 's/^color_theme = .*/color_theme = "Default"/' "$btop_conf"
     else
       sed -i 's/^color_theme = .*/color_theme = "gruvbox_dark_v2"/' "$btop_conf"
     fi
