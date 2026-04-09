@@ -9,7 +9,13 @@ return {
       nerd_font_variant = "mono",
     },
     sources = {
-      default = { "lsp", "path", "snippets", "buffer", "obsidian", "obsidian_new", "obsidian_tags" },
+      default = function()
+        local providers = { "lsp", "path", "snippets", "buffer" }
+        if package.loaded["obsidian"] then
+          vim.list_extend(providers, { "obsidian", "obsidian_new", "obsidian_tags" })
+        end
+        return providers
+      end,
     },
     cmdline = {
       sources = { "buffer", "cmdline" },
