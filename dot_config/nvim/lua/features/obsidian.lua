@@ -208,6 +208,23 @@ local function do_move_todos(bufnr, todo_lines, todo_lnums, target_path, target_
   vim.notify(#todo_lines .. " todo(s) moved to " .. target_date, vim.log.levels.INFO)
 end
 
+-- Parse a date string that may be natural language (e.g. "tomorrow", "next tuesday",
+-- "april 14", "3 weeks"). Returns a YYYY-MM-DD string on success, or nil on failure.
+-- Uses GNU date -d (Linux) with a gdate fallback (macOS + Homebrew).
+local function parse_natural_date(input)
+  input = vim.trim(input)
+  if input:match("^%d%d%d%d%-%d%d%-%d%d$") then
+    return input
+  end
+  for _, cmd in ipairs({ "date", "gdate" }) do
+    local result = vim.fn.trim(vim.fn.system({ cmd, "-d", input, "+%Y-%m-%d" }))
+    if vim.v.shell_error == 0 and result:match("^%d%d%d%d%-%d%d%-%d%d$") then
+      return result
+    end
+  end
+  return nil
+end
+
 -- Prompt for a target date then move todo_lines/todo_lnums to it.
 -- Shared by both the visual-selection and heading-group move commands.
 local function prompt_and_move_todos(bufnr, todo_lines, todo_lnums, empty_msg)
@@ -216,18 +233,17 @@ local function prompt_and_move_todos(bufnr, todo_lines, todo_lnums, empty_msg)
     return
   end
 
-  local tomorrow_date = os.date("%Y-%m-%d", os.time() + 86400)
-  local daily_dir     = vim.fn.expand("~/notes/journal/daily/")
+  local daily_dir = vim.fn.expand("~/notes/journal/daily/")
 
   vim.ui.input({
-    prompt  = "Move to date (YYYY-MM-DD): ",
-    default = tomorrow_date,
+    prompt  = "Move to date: ",
+    default = "tomorrow",
   }, function(input)
     if not input or input == "" then return end
 
-    local target_date = vim.trim(input)
-    if not target_date:match("^%d%d%d%d%-%d%d%-%d%d$") then
-      vim.notify("Invalid date — expected YYYY-MM-DD", vim.log.levels.ERROR)
+    local target_date = parse_natural_date(input)
+    if not target_date then
+      vim.notify("Could not parse date: " .. input, vim.log.levels.ERROR)
       return
     end
 
