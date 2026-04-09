@@ -125,7 +125,11 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}" # coloured completions
 # ------------------------------
 autoload -Uz vcs_info
 precmd() { vcs_info }
-zstyle ':vcs_info:git:*' formats ' %F{red}(%b)%f'
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' stagedstr '●'
+zstyle ':vcs_info:git:*' unstagedstr '○'
+zstyle ':vcs_info:git:*' formats ' %F{red}(%b)%f%F{yellow}%u%c%f'
+zstyle ':vcs_info:git:*' actionformats ' %F{red}(%b|%a)%f%F{yellow}%u%c%f'
 setopt PROMPT_SUBST
 PROMPT='%(?:%F{green}➜:%F{red}➜)%f %F{cyan}%c%f${vcs_info_msg_0_} '
 
