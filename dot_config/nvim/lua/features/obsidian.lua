@@ -159,35 +159,16 @@ end
 local function create_daily_note_with_template(path, date_str)
   vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
 
-  -- Compute integer day offset from today so we can call the right obsidian.daily fn.
-  -- obsidian.daily.today/tomorrow/yesterday create the file+frontmatter from the
-  -- daily template without opening a buffer (same pattern as add_todo_to_daily).
-  local today_t  = os.date("*t")
-  local y, m, d  = date_str:match("(%d%d%d%d)-(%d%d)-(%d%d)")
-  local target_ts = os.time({ year=tonumber(y), month=tonumber(m), day=tonumber(d), hour=12, min=0, sec=0 })
-  local today_ts  = os.time({ year=today_t.year, month=today_t.month, day=today_t.day, hour=12, min=0, sec=0 })
-  local offset    = math.floor((target_ts - today_ts) / 86400 + 0.5)
+  local y, m, d   = date_str:match("(%d%d%d%d)-(%d%d)-(%d%d)")
+  local target_ts  = os.time({ year=tonumber(y), month=tonumber(m), day=tonumber(d), hour=12, min=0, sec=0 })
 
+  -- daily.daily({ date = ts }) creates the note for any target date and passes
+  -- that date to template substitution — same call used in add_todo_to_daily.
   local created = false
-
   local daily_ok, daily = pcall(require, "obsidian.daily")
-  if daily_ok then
-    local fn = (offset == -1 and daily.yesterday)
-            or (offset ==  0 and daily.today)
-            or (offset ==  1 and daily.tomorrow)
-    if fn then
-      pcall(fn)
-      created = vim.fn.filereadable(path) == 1
-    end
-  end
-
-  -- For offsets beyond ±1, try the obsidian client's daily(offset) method
-  if not created then
-    local ok, client = pcall(function() return require("obsidian").get_client() end)
-    if ok and client and type(client.daily) == "function" then
-      pcall(function() client:daily(offset) end)
-      created = vim.fn.filereadable(path) == 1
-    end
+  if daily_ok and type(daily.daily) == "function" then
+    pcall(function() daily.daily({ date = target_ts }) end)
+    created = vim.fn.filereadable(path) == 1
   end
 
   -- Last resort: bare heading (no template)
@@ -196,24 +177,42 @@ local function create_daily_note_with_template(path, date_str)
   end
 end
 
-local function move_todos_to_date()
-  local start_line = vim.fn.line("'<")
-  local end_line   = vim.fn.line("'>")
-  local bufnr      = vim.api.nvim_get_current_buf()
-
-  -- Collect open todos from the selection
-  local selected   = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
-  local todo_lines = {}
-  local todo_lnums = {}
-  for i, line in ipairs(selected) do
-    if line:match("^%s*%- %[ %] ") then
-      table.insert(todo_lines, line)
-      table.insert(todo_lnums, start_line + i - 1)
-    end
+-- Shared logic: move `todo_lines` (at buffer line numbers `todo_lnums`) in
+-- `bufnr` to `target_path`, creating the target note if needed.
+local function do_move_todos(bufnr, todo_lines, todo_lnums, target_path, target_date)
+  -- Flush target buffer if it has unsaved changes
+  local tbufnr = vim.fn.bufnr(target_path)
+  if tbufnr ~= -1 and vim.api.nvim_buf_is_loaded(tbufnr) and vim.bo[tbufnr].modified then
+    vim.api.nvim_buf_call(tbufnr, function() vim.cmd("write") end)
   end
 
+  if vim.fn.filereadable(target_path) == 0 then
+    create_daily_note_with_template(target_path, target_date)
+  end
+
+  insert_todos_into_file(target_path, todo_lines)
+
+  -- Reload target buffer if open
+  tbufnr = vim.fn.bufnr(target_path)
+  if tbufnr ~= -1 and vim.api.nvim_buf_is_loaded(tbufnr) then
+    vim.api.nvim_buf_call(tbufnr, function() vim.cmd("checktime") end)
+  end
+
+  -- Mark todos as moved [>] in the current buffer
+  for _, lnum in ipairs(todo_lnums) do
+    local line     = vim.api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, false)[1]
+    local new_line = line:gsub("^(%s*%- )%[ %]( )", "%1[>]%2", 1)
+    vim.api.nvim_buf_set_lines(bufnr, lnum - 1, lnum, false, { new_line })
+  end
+
+  vim.notify(#todo_lines .. " todo(s) moved to " .. target_date, vim.log.levels.INFO)
+end
+
+-- Prompt for a target date then move todo_lines/todo_lnums to it.
+-- Shared by both the visual-selection and heading-group move commands.
+local function prompt_and_move_todos(bufnr, todo_lines, todo_lnums, empty_msg)
   if #todo_lines == 0 then
-    vim.notify("No open todos in selection", vim.log.levels.WARN)
+    vim.notify(empty_msg or "No open todos in selection", vim.log.levels.WARN)
     return
   end
 
@@ -232,35 +231,67 @@ local function move_todos_to_date()
       return
     end
 
-    local target_path = daily_dir .. target_date .. ".md"
-
-    -- Flush target buffer if it has unsaved changes
-    local tbufnr = vim.fn.bufnr(target_path)
-    if tbufnr ~= -1 and vim.api.nvim_buf_is_loaded(tbufnr) and vim.bo[tbufnr].modified then
-      vim.api.nvim_buf_call(tbufnr, function() vim.cmd("write") end)
-    end
-
-    if vim.fn.filereadable(target_path) == 0 then
-      create_daily_note_with_template(target_path, target_date)
-    end
-
-    insert_todos_into_file(target_path, todo_lines)
-
-    -- Reload target buffer if open
-    tbufnr = vim.fn.bufnr(target_path)
-    if tbufnr ~= -1 and vim.api.nvim_buf_is_loaded(tbufnr) then
-      vim.api.nvim_buf_call(tbufnr, function() vim.cmd("checktime") end)
-    end
-
-    -- Mark todos as moved [>] in the current buffer
-    for _, lnum in ipairs(todo_lnums) do
-      local line     = vim.api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, false)[1]
-      local new_line = line:gsub("^(%s*%- )%[ %]( )", "%1[>]%2", 1)
-      vim.api.nvim_buf_set_lines(bufnr, lnum - 1, lnum, false, { new_line })
-    end
-
-    vim.notify(#todo_lines .. " todo(s) moved to " .. target_date, vim.log.levels.INFO)
+    do_move_todos(bufnr, todo_lines, todo_lnums, daily_dir .. target_date .. ".md", target_date)
   end)
+end
+
+-- Called via the MoveOpenTodosToDate user command (range = true), so start_line
+-- and end_line are the visual selection boundaries evaluated by vim at `:` time —
+-- more reliable than reading '< / '> marks inside Lua after lazy plugin loading.
+local function move_todos_to_date(start_line, end_line)
+  local bufnr    = vim.api.nvim_get_current_buf()
+  local selected = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
+
+  local todo_lines = {}
+  local todo_lnums = {}
+  for i, line in ipairs(selected) do
+    if line:match("^%s*%- %[ %] ") then
+      table.insert(todo_lines, line)
+      table.insert(todo_lnums, start_line + i - 1)
+    end
+  end
+
+  prompt_and_move_todos(bufnr, todo_lines, todo_lnums, "No open todos in selection")
+end
+
+-- Normal-mode companion to the visual <leader>nO: auto-collects all open todos
+-- in the group under the first # heading (blank line after heading, consecutive
+-- list items) then prompts for a target date — same prompt as visual mode.
+local function move_open_todos_from_heading()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local lines  = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+  -- Find the first # heading
+  local heading_pos = nil
+  for i, line in ipairs(lines) do
+    if line:match("^# ") then
+      heading_pos = i
+      break
+    end
+  end
+
+  if not heading_pos then
+    vim.notify("No heading found in current buffer", vim.log.levels.WARN)
+    return
+  end
+
+  -- Skip the blank line after the heading, then walk the consecutive list block
+  local pos = heading_pos + 1
+  if pos <= #lines and lines[pos] == "" then
+    pos = pos + 1
+  end
+
+  local todo_lines = {}
+  local todo_lnums = {}
+  while pos <= #lines and lines[pos]:match("^[%*%-] ") do
+    if lines[pos]:match("^%s*%- %[ %] ") then
+      table.insert(todo_lines, lines[pos])
+      table.insert(todo_lnums, pos)
+    end
+    pos = pos + 1
+  end
+
+  prompt_and_move_todos(bufnr, todo_lines, todo_lnums, "No open todos found in heading group")
 end
 
 local function grep_todos()
@@ -271,6 +302,13 @@ local function grep_todos()
     prompt_title = "Open TODOs",
   })
 end
+
+-- User command with range so vim evaluates '< / '> at the point ':' is pressed
+-- in visual mode, before Lua ever runs. This avoids stale-mark issues caused by
+-- lazy plugin loading happening between keypress and function execution.
+vim.api.nvim_create_user_command("MoveOpenTodosToDate", function(opts)
+  move_todos_to_date(opts.line1, opts.line2)
+end, { range = true })
 
 return {
   "obsidian-nvim/obsidian.nvim",
@@ -314,9 +352,10 @@ return {
     { "<leader>nL", "<cmd>Obsidian link<cr>",         mode = "v", desc = "Link selection" },
     { "<leader>nK", "<cmd>Obsidian link_new<cr>",     mode = "v", desc = "Link selection to new note" },
     -- Todos
-    { "<leader>ni", add_todo_to_daily,      desc = "Capture todo to daily note" },
-    { "<leader>n?", grep_todos,             desc = "Open TODOs" },
-    { "<leader>nO", move_todos_to_date,      mode = "v", desc = "Move todos to date…" },
+    { "<leader>ni", add_todo_to_daily,                                         desc = "Capture todo to daily note" },
+    { "<leader>n?", grep_todos,                                                desc = "Open TODOs" },
+    { "<leader>nO", ":MoveOpenTodosToDate<CR>",        mode = "v",             desc = "Move todos to date…" },
+    { "<leader>nO", move_open_todos_from_heading,       mode = "n",             desc = "Move open todos to date…" },
   },
   opts = {
     workspaces = {
