@@ -175,21 +175,6 @@ local function create_daily_note_with_template(path, date_str)
   if not created then
     vim.fn.writefile({ "# " .. date_str, "" }, path)
   end
-
-  -- Safety net: if the template still substituted today's date instead of the
-  -- note's date, patch the # heading so it matches the filename.
-  if vim.fn.filereadable(path) == 1 then
-    local file_lines = vim.fn.readfile(path)
-    for i, line in ipairs(file_lines) do
-      if line:match("^# ") then
-        if line ~= "# " .. date_str then
-          file_lines[i] = "# " .. date_str
-          vim.fn.writefile(file_lines, path)
-        end
-        break
-      end
-    end
-  end
 end
 
 -- Shared logic: move `todo_lines` (at buffer line numbers `todo_lnums`) in
