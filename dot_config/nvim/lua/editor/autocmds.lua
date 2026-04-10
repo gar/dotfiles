@@ -83,6 +83,8 @@ local function md_reflow(lines, tw)
     or first:match("^%s*|") then
     return nil -- let Neovim handle it
   end
+  -- Reference link definitions ([label]: url "title") — preserve verbatim
+  if first:match("^%s*%[.-%]:%s") then return lines end
 
   local para = table.concat(lines, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")
   if para == "" then return { "" } end
