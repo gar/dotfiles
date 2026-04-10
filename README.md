@@ -356,6 +356,9 @@ Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim w
 | `<leader>ne` | Extract selection to new note (visual) |
 | `<leader>nL` | Link selection (visual) |
 | `<leader>nK` | Link selection to new note (visual) |
+| `<leader>nRd` | Recent notes changed in the last 24 hours |
+| `<leader>nRw` | Recent notes changed in the last 7 days |
+| `<leader>nRm` | Recent notes changed in the last 30 days |
 
 **New note from template:** `<leader>nn` to create and open → `<leader>nT` to insert a template.
 

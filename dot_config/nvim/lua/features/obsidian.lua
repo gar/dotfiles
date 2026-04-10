@@ -319,6 +319,33 @@ local function grep_todos()
   })
 end
 
+local function browse_recent_notes(fd_duration, label)
+  local notes_dir = vim.fn.expand("~/notes")
+  local results = vim.fn.systemlist({
+    "fd", "--extension", "md",
+    "--changed-within", fd_duration,
+    "--absolute-path",
+    "--exclude", "templates",
+    notes_dir,
+  })
+  if #results == 0 then
+    vim.notify("No notes changed in the last " .. label, vim.log.levels.INFO)
+    return
+  end
+  table.sort(results, function(a, b)
+    return vim.fn.getftime(a) > vim.fn.getftime(b)
+  end)
+  require("telescope.pickers").new({}, {
+    prompt_title = "Recent Notes: " .. label,
+    finder = require("telescope.finders").new_table({
+      results = results,
+      entry_maker = require("telescope.make_entry").gen_from_file({ cwd = notes_dir }),
+    }),
+    sorter = require("telescope.config").values.file_sorter({}),
+    previewer = require("telescope.config").values.file_previewer({}),
+  }):find()
+end
+
 -- User command with range so vim evaluates '< / '> at the point ':' is pressed
 -- in visual mode, before Lua ever runs. This avoids stale-mark issues caused by
 -- lazy plugin loading happening between keypress and function execution.
@@ -367,6 +394,10 @@ return {
     { "<leader>ne", "<cmd>Obsidian extract_note<cr>", mode = "v", desc = "Extract to new note" },
     { "<leader>nL", "<cmd>Obsidian link<cr>",         mode = "v", desc = "Link selection" },
     { "<leader>nK", "<cmd>Obsidian link_new<cr>",     mode = "v", desc = "Link selection to new note" },
+    -- Recent notes
+    { "<leader>nRd", function() browse_recent_notes("1day",  "24 hours") end, desc = "Recent notes (24h)" },
+    { "<leader>nRw", function() browse_recent_notes("7days", "7 days")   end, desc = "Recent notes (7d)"  },
+    { "<leader>nRm", function() browse_recent_notes("30days","30 days")  end, desc = "Recent notes (30d)" },
     -- Todos
     { "<leader>ni", add_todo_to_daily,                                         desc = "Capture todo to daily note" },
     { "<leader>n?", grep_todos,                                                desc = "Open TODOs" },
