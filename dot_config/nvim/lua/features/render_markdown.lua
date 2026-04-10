@@ -12,6 +12,9 @@ return {
       width = "block",
       icons = { "# ", "## ", "### ", "#### ", "##### ", "###### " },
     },
+    bullet = {
+      icons = { "- ", "- ", "- ", "- " },
+    },
     checkbox = {
       unchecked = {
         icon = "○ ",
