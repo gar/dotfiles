@@ -62,10 +62,14 @@ local function update_md_url_conceals(bufnr, cursor_row)
 end
 
 augroup("MdUrlConceal", { clear = true })
-autocmd({ "BufEnter", "CursorMoved", "CursorMovedI", "TextChanged", "TextChangedI" }, {
+autocmd({ "BufEnter", "CursorMoved", "CursorMovedI", "TextChanged", "TextChangedI", "InsertEnter", "InsertLeave" }, {
   group = "MdUrlConceal",
   pattern = "*.md",
   callback = function(ev)
+    if vim.api.nvim_get_mode().mode:sub(1, 1) == "i" then
+      vim.api.nvim_buf_clear_namespace(ev.buf, md_url_ns, 0, -1)
+      return
+    end
     local cursor_row = vim.api.nvim_win_get_cursor(0)[1] - 1
     update_md_url_conceals(ev.buf, cursor_row)
   end,
