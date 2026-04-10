@@ -107,14 +107,7 @@ autocmd("FileType", {
 
     local ok, wk = pcall(require, "which-key")
     if ok then
-      wk.add({
-        { "<leader>zf", buffer = ev.buf, desc = "Focus current heading" },
-        { "z=",         buffer = ev.buf, desc = "Spell: suggest corrections" },
-        { "zg",         buffer = ev.buf, desc = "Spell: add word to dictionary" },
-        { "zw",         buffer = ev.buf, desc = "Spell: mark word as wrong" },
-        { "]s",         buffer = ev.buf, desc = "Next misspelled word" },
-        { "[s",         buffer = ev.buf, desc = "Prev misspelled word" },
-      })
+      wk.add({ { "<leader>zf", buffer = ev.buf, desc = "Focus current heading" } })
     end
   end,
 })
