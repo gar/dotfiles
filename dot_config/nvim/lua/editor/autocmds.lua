@@ -158,6 +158,27 @@ _G._md_formatexpr = function()
   return 0
 end
 
+-- Reflow every prose paragraph in a buffer, preserving structural blocks.
+local function md_format_buffer(bufnr)
+  local tw = vim.bo[bufnr].textwidth
+  if tw <= 0 then tw = 80 end
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local out, block = {}, {}
+  local function flush()
+    if #block > 0 then
+      local r = md_reflow(block, tw) or block
+      for _, l in ipairs(r) do out[#out + 1] = l end
+      block = {}
+    end
+  end
+  for _, line in ipairs(lines) do
+    if line:match("^%s*$") then flush(); out[#out + 1] = line
+    else block[#block + 1] = line end
+  end
+  flush()
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, out)
+end
+
 augroup("FileTypeSettings", { clear = true })
 autocmd("FileType", {
   group = "FileTypeSettings",
@@ -166,6 +187,17 @@ autocmd("FileType", {
     vim.opt_local.textwidth = 80
     vim.opt_local.formatoptions:remove({ "t", "c" })
     vim.opt_local.formatexpr = "v:lua._md_formatexpr()"
+
+    autocmd("BufWritePre", {
+      group = "FileTypeSettings",
+      buffer = ev.buf,
+      callback = function(e)
+        local view = vim.fn.winsaveview()
+        md_format_buffer(e.buf)
+        vim.fn.winrestview(view)
+      end,
+    })
+
     vim.opt_local.foldmethod = "expr"
     vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     vim.opt_local.foldlevel = 99
