@@ -71,12 +71,99 @@ autocmd({ "BufEnter", "CursorMoved", "CursorMovedI", "TextChanged", "TextChanged
   end,
 })
 
+-- ---------------------------------------------------------------------------
+-- Markdown gq: reflow prose at textwidth, treating [[wikilinks]],
+-- ![[embeds]], and [text](url) links as atomic tokens never split across lines.
+-- Falls back to Neovim default for headings, list items, fences, and tables.
+-- ---------------------------------------------------------------------------
+local function md_reflow(lines, tw)
+  local first = lines[1] or ""
+  if first:match("^%s*[#>]") or first:match("^%s*[-*+] ")
+    or first:match("^%s*%d+%. ") or first:match("^%s*```")
+    or first:match("^%s*|") then
+    return nil -- let Neovim handle it
+  end
+
+  local para = table.concat(lines, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")
+  if para == "" then return { "" } end
+
+  local tokens, i = {}, 1
+  while i <= #para do
+    while i <= #para and para:sub(i, i) == " " do i = i + 1 end
+    if i > #para then break end
+
+    local token, ni
+
+    -- ![[obsidian embed]]
+    if para:sub(i, i + 2) == "![[" then
+      local j = para:find("%]%]", i + 3)
+      if j then token, ni = para:sub(i, j + 1), j + 2 end
+    end
+
+    -- [[wikilink]] or [[wikilink|alias with spaces]]
+    if not token and para:sub(i, i + 1) == "[[" then
+      local j = para:find("%]%]", i + 2)
+      if j then token, ni = para:sub(i, j + 1), j + 2 end
+    end
+
+    -- ![alt](url) or [text](url) — walk brackets to handle nesting
+    if not token and (para:sub(i, i + 1) == "![" or para:sub(i, i) == "[") then
+      local start = para:sub(i, i) == "!" and i + 1 or i
+      local depth, j = 1, start + 1
+      while j <= #para and depth > 0 do
+        local c = para:sub(j, j)
+        if c == "[" then depth = depth + 1
+        elseif c == "]" then depth = depth - 1 end
+        j = j + 1
+      end
+      if depth == 0 and para:sub(j, j) == "(" then
+        local k = para:find("%)", j + 1)
+        if k then token, ni = para:sub(i, k), k + 1 end
+      end
+    end
+
+    -- plain word
+    if not token then
+      local j = para:find(" ", i)
+      if j then token, ni = para:sub(i, j - 1), j + 1
+      else token, ni = para:sub(i), #para + 1 end
+    end
+
+    if token ~= "" then table.insert(tokens, token) end
+    i = ni
+  end
+
+  local result, cur = {}, ""
+  for _, tok in ipairs(tokens) do
+    if cur == "" then cur = tok
+    elseif #cur + 1 + #tok <= tw then cur = cur .. " " .. tok
+    else table.insert(result, cur); cur = tok end
+  end
+  if cur ~= "" then table.insert(result, cur) end
+  return #result > 0 and result or { "" }
+end
+
+-- Exposed via _G so formatexpr can reference it with v:lua
+_G._md_formatexpr = function()
+  local tw = vim.bo.textwidth
+  if tw <= 0 then return 1 end
+  local s = vim.v.lnum - 1
+  local n = vim.v.count
+  local lines = vim.api.nvim_buf_get_lines(0, s, s + n, false)
+  local result = md_reflow(lines, tw)
+  if not result then return 1 end
+  vim.api.nvim_buf_set_lines(0, s, s + n, false, result)
+  return 0
+end
+
 augroup("FileTypeSettings", { clear = true })
 autocmd("FileType", {
   group = "FileTypeSettings",
   pattern = "markdown",
   callback = function(ev)
-    vim.opt_local.textwidth = 0
+    vim.opt_local.textwidth = 80
+    vim.opt_local.formatoptions:remove({ "t", "c" })
+    vim.opt_local.formatexpr = "v:lua._md_formatexpr()"
     vim.opt_local.foldmethod = "expr"
     vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     vim.opt_local.foldlevel = 99
