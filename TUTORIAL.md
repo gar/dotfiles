@@ -274,6 +274,9 @@ Daily notes often accumulate many headings throughout the day. Use folding to hi
 | `<leader>n?` | Find all open `- [ ]` todos vault-wide |
 | `<leader>nf` | Jump to any note by name |
 | `<leader>nb` | See what links to the current note |
+| `<leader>nRd` | Notes changed in the last 24 hours |
+| `<leader>nRw` | Notes changed in the last 7 days |
+| `<leader>nRm` | Notes changed in the last 30 days |
 
 ---
 
