@@ -82,7 +82,7 @@ autocmd("FileType", {
     vim.opt_local.foldlevel = 99
     vim.opt_local.foldenable = true
     vim.opt_local.spell = true
-    vim.opt_local.spelllang = "en_us"
+    vim.opt_local.spelllang = "en_gb"
 
     -- Focus current heading: collapse sibling/child folds, keep ancestors open
     vim.keymap.set("n", "<leader>zf", function()
