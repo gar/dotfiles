@@ -81,6 +81,8 @@ autocmd("FileType", {
     vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     vim.opt_local.foldlevel = 99
     vim.opt_local.foldenable = true
+    vim.opt_local.spell = true
+    vim.opt_local.spelllang = "en_us"
 
     -- Focus current heading: collapse sibling/child folds, keep ancestors open
     vim.keymap.set("n", "<leader>zf", function()
@@ -105,7 +107,14 @@ autocmd("FileType", {
 
     local ok, wk = pcall(require, "which-key")
     if ok then
-      wk.add({ { "<leader>zf", buffer = ev.buf, desc = "Focus current heading" } })
+      wk.add({
+        { "<leader>zf", buffer = ev.buf, desc = "Focus current heading" },
+        { "z=",         buffer = ev.buf, desc = "Spell: suggest corrections" },
+        { "zg",         buffer = ev.buf, desc = "Spell: add word to dictionary" },
+        { "zw",         buffer = ev.buf, desc = "Spell: mark word as wrong" },
+        { "]s",         buffer = ev.buf, desc = "Next misspelled word" },
+        { "[s",         buffer = ev.buf, desc = "Prev misspelled word" },
+      })
     end
   end,
 })
