@@ -10,7 +10,10 @@ return {
     },
     heading = {
       width = "block",
-      icons = { "# ", "## ", "### ", "#### ", "##### ", "###### " },
+      icons = { "Ⅰ ", "Ⅱ ", "Ⅲ ", "Ⅳ ", "Ⅴ ", "Ⅵ " },
+    },
+    bullet = {
+      icons = { "· ", "· ", "· ", "· " },
     },
     checkbox = {
       unchecked = {
