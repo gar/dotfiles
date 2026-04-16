@@ -22,6 +22,9 @@ require("lazy").setup("features", {
   ui = { border = "rounded" },
 })
 
+-- Time tracking (Watson integration for vault todos — no plugin required)
+require("timetracking")
+
 -- Load machine-local config if present.
 -- Create ~/.config/nvim/lua/local.lua for settings specific to this machine
 -- (e.g. work LSP servers, private plugins). Not managed by chezmoi.

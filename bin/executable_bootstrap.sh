@@ -139,8 +139,9 @@ install_packages_arch() {
 install_python_tools() {
   if command -v pipx &>/dev/null; then
     pipx install termgraph 2>/dev/null || true
+    pipx install td-watson 2>/dev/null || true
   else
-    echo "Note: pipx not found — install termgraph manually: pipx install termgraph"
+    echo "Note: pipx not found — install manually: pipx install termgraph td-watson"
   fi
 }
 
