@@ -72,10 +72,6 @@ elif command -v batcat &>/dev/null; then
 fi
 command -v broot &>/dev/null && alias tree='broot'
 command -v hexyl &>/dev/null && alias xxd='hexyl'
-if command -v watson &>/dev/null; then
-  alias wts='watson status'
-  alias wtr='watson report --week'
-fi
 
 # git worktree
 alias gwl="g worktree list"

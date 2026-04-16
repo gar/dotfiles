@@ -1,40 +1,34 @@
 -- Watson-based time tracking for todos in the Obsidian vault.
--- Keymaps (<leader>nc*) are buffer-local, active only in ~/notes/**/*.md.
+-- Keymaps are buffer-local, active only in ~/notes/**/*.md.
 --
--- Workflow:
---   <leader>ncs  toggle timer: start on current todo, or stop + complete it
---   <leader>ncS  stop timer only (no checkbox change)
---   <leader>ncr  show this week's Watson report in a floating window
+-- <leader>ns  smart timer toggle:
+--               not running + on open todo  → start
+--               running + on same todo      → stop + complete [x]
+--               running + on different todo → stop + start new
+--               running + not on a todo     → stop only
+-- <leader>nS  weekly summary in a floating window
 --
 -- Watson project is derived from context:
---   - Nearest markdown heading above cursor  (any level)
---   - Filename stem if in a journal note and no heading found
---   - First H1 heading (or filename stem) for all other notes
+--   - Nearest markdown heading above cursor (any level)
+--   - Filename stem for journal notes (YYYY-MM-DD / YYYY-Wnn / YYYY-MM)
+--   - First H1 heading or filename stem for all other notes
 
 -- ---------------------------------------------------------------------------
 -- Markdown stripping
 -- ---------------------------------------------------------------------------
 
--- Remove common markdown formatting from a string so it is suitable as a
--- Watson project name or tag.  Order matters: handle multi-char delimiters
--- before their single-char subsets.
+-- Remove common markdown formatting so text is suitable as a Watson project
+-- name or tag.  Order matters: handle multi-char delimiters before subsets.
 local function strip_markdown(text)
-  -- [[wikilinks]] → inner text
-  text = text:gsub("%[%[(.-)%]%]", "%1")
-  -- [display](url) → display text
-  text = text:gsub("%[(.-)%]%((.-)%)", "%1")
-  -- ~~strikethrough~~
-  text = text:gsub("~~(.-)~~", "%1")
-  -- **bold** and __bold__
-  text = text:gsub("%*%*(.-)%*%*", "%1")
-  text = text:gsub("__(.-)__", "%1")
-  -- *italic* and _italic_
-  text = text:gsub("%*(.-)%*", "%1")
-  text = text:gsub("_(.-)_", "%1")
-  -- `inline code`
-  text = text:gsub("`(.-)`", "%1")
-  -- leading heading markers (e.g. "## Section")
-  text = text:gsub("^#+%s*", "")
+  text = text:gsub("%[%[(.-)%]%]", "%1")        -- [[wikilinks]]
+  text = text:gsub("%[(.-)%]%((.-)%)", "%1")    -- [display](url)
+  text = text:gsub("~~(.-)~~", "%1")            -- ~~strikethrough~~
+  text = text:gsub("%*%*(.-)%*%*", "%1")        -- **bold**
+  text = text:gsub("__(.-)__", "%1")            -- __bold__
+  text = text:gsub("%*(.-)%*", "%1")            -- *italic*
+  text = text:gsub("_(.-)_", "%1")              -- _italic_
+  text = text:gsub("`(.-)`", "%1")              -- `code`
+  text = text:gsub("^#+%s*", "")                -- ## heading prefix
   return vim.trim(text)
 end
 
@@ -42,37 +36,34 @@ end
 -- Context helpers
 -- ---------------------------------------------------------------------------
 
+-- True if the current line is an open todo (checkbox state " ").
+local function is_open_todo()
+  return vim.api.nvim_get_current_line():match("^%s*[%-%*]%s*%[ %]%s*(.+)$") ~= nil
+end
+
 -- Extract the task description from the current line, stripping the checkbox
--- prefix (e.g. "- [ ] ", "  * [x] ") and any residual markdown.
+-- prefix and any residual markdown.
 local function get_todo_text()
   local line = vim.api.nvim_get_current_line()
-  -- Capture everything after the checkbox marker
   local text = line:match("^%s*[%-%*]%s*%[.%]%s*(.+)$")
-  -- Fall back to text after a bare list marker
-  if not text then
-    text = line:match("^%s*[%-%*]%s*(.+)$") or vim.trim(line)
-  end
+    or line:match("^%s*[%-%*]%s*(.+)$")
+    or vim.trim(line)
   return strip_markdown(vim.trim(text))
 end
 
--- Walk backwards from the cursor line and return the first markdown heading
--- found (any level), with formatting stripped.  Returns nil if none found.
+-- Walk backwards from the cursor and return the nearest heading (any level),
+-- markdown-stripped.  Returns nil if none found.
 local function get_nearest_heading()
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  local cursor_line = vim.api.nvim_win_get_cursor(0)[1] -- 1-indexed
+  local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
   for i = cursor_line, 1, -1 do
-    local heading = lines[i]:match("^#+%s+(.+)$")
-    if heading then
-      return strip_markdown(heading)
-    end
+    local h = lines[i]:match("^#+%s+(.+)$")
+    if h then return strip_markdown(h) end
   end
   return nil
 end
 
--- Derive a Watson project string from the current buffer and cursor position:
---   1. Nearest heading above cursor (any level)
---   2. Filename stem for journal notes (daily / weekly / monthly)
---   3. First H1 heading in the file, or the filename stem
+-- Derive a Watson project string from the current buffer + cursor position.
 local function get_project()
   local bufname = vim.api.nvim_buf_get_name(0)
 
@@ -84,11 +75,9 @@ local function get_project()
     or bufname:match("/journal/monthly/")
 
   if is_journal then
-    -- Stem is already a date/period string: 2026-04-16, 2026-W16, 2026-04
     return vim.fn.fnamemodify(bufname, ":t:r")
   end
 
-  -- Non-journal: use the first H1 heading or the filename stem
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   for _, line in ipairs(lines) do
     local h1 = line:match("^#%s+(.+)$")
@@ -105,8 +94,6 @@ local function watson_available()
   return vim.fn.executable("watson") == 1
 end
 
--- Returns true when Watson has a running frame.
--- "No project started." is Watson's idle message.
 local function watson_is_running()
   local out = vim.fn.trim(vim.fn.system({ "watson", "status" }))
   return not out:match("^No project started")
@@ -118,9 +105,7 @@ end
 
 local ns = vim.api.nvim_create_namespace("timetracking")
 
--- Tracks the single active timer's location so the gutter icon can be
--- cleared or re-applied across buffer reloads.
--- Shape: { bufnr, line (0-indexed), extmark_id }  or  nil
+-- { bufnr, line (0-indexed), extmark_id }  or  nil
 local active = nil
 
 local function clear_extmark()
@@ -137,99 +122,90 @@ local function set_extmark(bufnr, line_0)
   })
 end
 
--- ---------------------------------------------------------------------------
--- Timer actions
--- ---------------------------------------------------------------------------
+local function start_on_current_line()
+  local project = get_project()
+  local todo    = get_todo_text()
+  -- Pass tag as a single arg prefixed with "+".  No shell is involved so
+  -- special characters in `todo` (including "+") need no escaping.
+  vim.fn.system({ "watson", "start", project, "+" .. todo })
+  if vim.v.shell_error ~= 0 then
+    vim.notify("watson start failed", vim.log.levels.ERROR)
+    return false
+  end
+  local bufnr  = vim.api.nvim_get_current_buf()
+  local line_0 = vim.api.nvim_win_get_cursor(0)[1] - 1
+  active = { bufnr = bufnr, line = line_0, extmark_id = set_extmark(bufnr, line_0) }
+  vim.notify(("⏱ [%s] %s"):format(project, todo), vim.log.levels.INFO)
+  return true
+end
 
-local function start_timer()
+-- ---------------------------------------------------------------------------
+-- Smart toggle  (<leader>ns)
+-- ---------------------------------------------------------------------------
+--
+-- State machine:
+--   not running + on open todo  → start
+--   not running + not on todo   → warn
+--   running + on same todo      → stop + mark [x]
+--   running + on different todo → stop + start new
+--   running + not on a todo     → stop only
+
+local function handle_ns()
   if not watson_available() then
     vim.notify("watson not found — install it first", vim.log.levels.ERROR)
     return
   end
 
-  local project = get_project()
-  local todo    = get_todo_text()
+  local running = watson_is_running()
+  local on_todo = is_open_todo()
 
-  if todo == "" then
-    vim.notify("No todo text on current line", vim.log.levels.WARN)
+  if not running then
+    if not on_todo then
+      vim.notify("No open todo on current line", vim.log.levels.WARN)
+      return
+    end
+    start_on_current_line()
     return
   end
 
-  -- Watson errors if you start while a frame is open; stop silently first.
-  if watson_is_running() then
-    vim.fn.system({ "watson", "stop" })
-    clear_extmark()
-  end
-
-  -- Pass the tag as a single arg prefixed with "+".  Because we use a table
-  -- (no shell), special characters in `todo` (including "+") need no escaping
-  -- — they are passed verbatim to Watson as one argument.
-  vim.fn.system({ "watson", "start", project, "+" .. todo })
-
-  if vim.v.shell_error ~= 0 then
-    vim.notify("watson start failed", vim.log.levels.ERROR)
-    return
-  end
+  -- Timer is running — always stop it first.
+  vim.fn.system({ "watson", "stop" })
 
   local bufnr  = vim.api.nvim_get_current_buf()
   local line_0 = vim.api.nvim_win_get_cursor(0)[1] - 1
-  local eid    = set_extmark(bufnr, line_0)
-  active = { bufnr = bufnr, line = line_0, extmark_id = eid }
+  local on_same = active
+    and bufnr == active.bufnr
+    and line_0 == active.line
 
-  vim.notify(("⏱ [%s] %s"):format(project, todo), vim.log.levels.INFO)
-end
-
--- Stop the running timer.  When `complete` is true, also toggle the checkbox
--- on the current line from [ ] to [x].
-local function stop_timer(complete)
-  if not watson_available() then
-    vim.notify("watson not found — install it first", vim.log.levels.ERROR)
-    return
-  end
-
-  if not watson_is_running() then
-    vim.notify("No timer running", vim.log.levels.WARN)
-    return
-  end
-
-  vim.fn.system({ "watson", "stop" })
   clear_extmark()
 
-  if complete then
-    local line     = vim.api.nvim_get_current_line()
-    local new_line = line:gsub("^(%s*[%-%*]%s*)%[ %]", "%1[x]", 1)
-    if new_line ~= line then
-      vim.api.nvim_set_current_line(new_line)
-    end
+  if on_same then
+    -- Completed the task we were timing → mark checkbox done
+    local line = vim.api.nvim_get_current_line()
+    local new  = line:gsub("^(%s*[%-%*]%s*)%[ %]", "%1[x]", 1)
+    if new ~= line then vim.api.nvim_set_current_line(new) end
     vim.notify("⏹ Done", vim.log.levels.INFO)
+  elseif on_todo then
+    -- Moved to a different todo → transition straight into it
+    start_on_current_line()
   else
+    -- Not on a todo → plain stop
     vim.notify("⏹ Stopped", vim.log.levels.INFO)
   end
 end
 
--- Single keymap: start if idle, stop+complete if running.
-local function toggle_timer()
-  if watson_is_running() then
-    stop_timer(true)
-  else
-    start_timer()
-  end
-end
-
 -- ---------------------------------------------------------------------------
--- Report floating window
+-- Weekly summary  (<leader>nS)
 -- ---------------------------------------------------------------------------
 
-local function show_report()
+local function show_summary()
   if not watson_available() then
     vim.notify("watson not found — install it first", vim.log.levels.ERROR)
     return
   end
 
   local lines = vim.fn.systemlist({ "watson", "report", "--week" })
-  if #lines == 0 then
-    lines = { "No time entries this week." }
-  end
+  if #lines == 0 then lines = { "No time entries this week." } end
 
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
@@ -238,15 +214,15 @@ local function show_report()
   local width  = math.min(80, vim.o.columns - 4)
   local height = math.min(math.max(#lines, 3), vim.o.lines - 6)
   local win = vim.api.nvim_open_win(buf, true, {
-    relative   = "editor",
-    width      = width,
-    height     = height,
-    row        = math.floor((vim.o.lines - height) / 2),
-    col        = math.floor((vim.o.columns - width) / 2),
-    style      = "minimal",
-    border     = "rounded",
-    title      = " Watson: this week ",
-    title_pos  = "center",
+    relative  = "editor",
+    width     = width,
+    height    = height,
+    row       = math.floor((vim.o.lines - height) / 2),
+    col       = math.floor((vim.o.columns - width) / 2),
+    style     = "minimal",
+    border    = "rounded",
+    title     = " Watson: this week ",
+    title_pos = "center",
   })
 
   for _, key in ipairs({ "q", "<Esc>" }) do
@@ -260,19 +236,13 @@ end
 -- Extmark persistence across buffer reloads
 -- ---------------------------------------------------------------------------
 
--- When re-entering the buffer that holds the active timer, re-apply the gutter
--- icon in case the buffer was reloaded (which destroys extmarks).
 vim.api.nvim_create_autocmd("BufEnter", {
   group = vim.api.nvim_create_augroup("timetracking_extmark", { clear = true }),
   callback = function()
     if not active then return end
-    if not watson_is_running() then
-      active = nil
-      return
-    end
+    if not watson_is_running() then active = nil; return end
     local bufnr = vim.api.nvim_get_current_buf()
     if bufnr ~= active.bufnr then return end
-    -- Delete stale extmark (no-op if already gone), then re-apply.
     pcall(vim.api.nvim_buf_del_extmark, bufnr, ns, active.extmark_id)
     active.extmark_id = set_extmark(bufnr, active.line)
   end,
@@ -282,29 +252,22 @@ vim.api.nvim_create_autocmd("BufEnter", {
 -- Buffer-local keymaps (vault files only)
 -- ---------------------------------------------------------------------------
 
-local vault_pattern = vim.fn.expand("~/notes/") .. "**/*.md"
-
 vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
   group   = vim.api.nvim_create_augroup("timetracking_keys", { clear = true }),
-  pattern = vault_pattern,
+  pattern = vim.fn.expand("~/notes/") .. "**/*.md",
   callback = function(ev)
-    local buf  = ev.buf
-    local bopts = { buffer = buf }
+    local buf = ev.buf
+    vim.keymap.set("n", "<leader>ns", handle_ns,
+      { buffer = buf, desc = "Timer: start / stop / transition" })
+    vim.keymap.set("n", "<leader>nS", show_summary,
+      { buffer = buf, desc = "Timer: weekly summary" })
 
-    vim.keymap.set("n", "<leader>ncs", toggle_timer,
-      vim.tbl_extend("force", bopts, { desc = "Timer: start / stop+complete" }))
-    vim.keymap.set("n", "<leader>ncS", function() stop_timer(false) end,
-      vim.tbl_extend("force", bopts, { desc = "Timer: stop only" }))
-    vim.keymap.set("n", "<leader>ncr", show_report,
-      vim.tbl_extend("force", bopts, { desc = "Timer: weekly report" }))
-
-    -- which-key: buffer-local keymaps are not auto-discovered, register explicitly
+    -- which-key: buffer-local keymaps must be registered explicitly
     local ok, wk = pcall(require, "which-key")
     if not ok then return end
     wk.add({
-      { "<leader>ncs", buffer = buf, desc = "Timer: start / stop+complete" },
-      { "<leader>ncS", buffer = buf, desc = "Timer: stop only" },
-      { "<leader>ncr", buffer = buf, desc = "Timer: weekly report" },
+      { "<leader>ns", buffer = buf, desc = "Timer: start / stop / transition" },
+      { "<leader>nS", buffer = buf, desc = "Timer: weekly summary" },
     })
   end,
 })
