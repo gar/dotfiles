@@ -38,6 +38,7 @@ brew 'tree-sitter'
 brew 'tree-sitter-cli'
 brew 'tree'
 brew 'wxwidgets'
+brew 'watson'
 brew 'zoxide'
 brew 'zsh'
 
