@@ -2,10 +2,9 @@
 -- Keymaps are buffer-local, active only in ~/notes/**/*.md.
 --
 -- <leader>ns  smart timer toggle:
---               not running + on open todo  → start
---               running + on same todo      → stop + complete [x]
---               running + on different todo → stop + start new
---               running + not on a todo     → stop only
+--               not running + on open todo → start
+--               running + on open todo     → stop + start new
+--               running + not on a todo    → stop only
 -- <leader>nS  weekly summary in a floating window
 --
 -- Watson project is derived from context:
@@ -142,13 +141,6 @@ end
 -- ---------------------------------------------------------------------------
 -- Smart toggle  (<leader>ns)
 -- ---------------------------------------------------------------------------
---
--- State machine:
---   not running + on open todo  → start
---   not running + not on todo   → warn
---   running + on same todo      → stop + mark [x]
---   running + on different todo → stop + start new
---   running + not on a todo     → stop only
 
 local function handle_ns()
   if not watson_available() then
@@ -170,23 +162,10 @@ local function handle_ns()
 
   -- Timer is running — always stop it first.
   vim.fn.system({ "watson", "stop" })
-
-  local bufnr  = vim.api.nvim_get_current_buf()
-  local line_0 = vim.api.nvim_win_get_cursor(0)[1] - 1
-  local on_same = active
-    and bufnr == active.bufnr
-    and line_0 == active.line
-
   clear_extmark()
 
-  if on_same then
-    -- Completed the task we were timing → mark checkbox done
-    local line = vim.api.nvim_get_current_line()
-    local new  = line:gsub("^(%s*[%-%*]%s*)%[ %]", "%1[x]", 1)
-    if new ~= line then vim.api.nvim_set_current_line(new) end
-    vim.notify("⏹ Done", vim.log.levels.INFO)
-  elseif on_todo then
-    -- Moved to a different todo → transition straight into it
+  if on_todo then
+    -- On an open todo → transition straight into it
     start_on_current_line()
   else
     -- Not on a todo → plain stop
