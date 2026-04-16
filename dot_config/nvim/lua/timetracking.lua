@@ -85,6 +85,17 @@ local function get_project()
   return vim.fn.fnamemodify(bufname, ":t:r")
 end
 
+-- Extract #hashtags from text, returning (cleaned_text, tags_list).
+-- Consecutive spaces left behind are collapsed; result is trimmed.
+local function extract_markdown_tags(text)
+  local tags = {}
+  local cleaned = text:gsub("#([%w_%-]+)", function(tag)
+    table.insert(tags, tag)
+    return ""
+  end)
+  return vim.trim(cleaned:gsub("%s+", " ")), tags
+end
+
 -- ---------------------------------------------------------------------------
 -- Watson wrappers
 -- ---------------------------------------------------------------------------
@@ -122,11 +133,16 @@ local function set_extmark(bufnr, line_0)
 end
 
 local function start_on_current_line()
-  local project = get_project()
-  local todo    = get_todo_text()
-  -- Pass tag as a single arg prefixed with "+".  No shell is involved so
-  -- special characters in `todo` (including "+") need no escaping.
-  vim.fn.system({ "watson", "start", project, "+" .. todo })
+  local project    = get_project()
+  local todo       = get_todo_text()
+  local text, tags = extract_markdown_tags(todo)
+  -- Build command: watson start <project> +<text> [+<tag> ...].
+  -- No shell is involved so special characters need no escaping.
+  local cmd = { "watson", "start", project, "+" .. text }
+  for _, tag in ipairs(tags) do
+    table.insert(cmd, "+" .. tag)
+  end
+  vim.fn.system(cmd)
   if vim.v.shell_error ~= 0 then
     vim.notify("watson start failed", vim.log.levels.ERROR)
     return false
@@ -134,7 +150,7 @@ local function start_on_current_line()
   local bufnr  = vim.api.nvim_get_current_buf()
   local line_0 = vim.api.nvim_win_get_cursor(0)[1] - 1
   active = { bufnr = bufnr, line = line_0, extmark_id = set_extmark(bufnr, line_0) }
-  vim.notify(("⏱ [%s] %s"):format(project, todo), vim.log.levels.INFO)
+  vim.notify(("⏱ [%s] %s"):format(project, text), vim.log.levels.INFO)
   return true
 end
 
