@@ -143,6 +143,7 @@ K     — hover docs for the thing under cursor. Press again to enter the popup.
 ```
 <leader>rn   — rename symbol everywhere in the project
 <leader>ca   — code actions (auto-fix, import, extract, etc.)
+<leader>lf   — format the buffer (or visual selection) via conform.nvim
 :Format      — format the current buffer via LSP
 ```
 
