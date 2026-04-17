@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
     name: Lint
@@ -12,9 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install shellcheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
-
+      # shellcheck is preinstalled on ubuntu-latest runners
       - name: ShellCheck
         run: |
           shellcheck -e SC1091,SC2034,SC2044,SC2046,SC2064,SC2086,SC2162 bin/executable_*.sh dot_macos
@@ -26,10 +28,19 @@ jobs:
             bash -n "$f"
           done
 
+      - name: Cache chezmoi
+        id: cache-chezmoi
+        uses: actions/cache@v4
+        with:
+          path: ~/bin/chezmoi
+          key: chezmoi-${{ runner.os }}-v1
+
       - name: Install chezmoi
-        run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
-          echo "$HOME/bin" >> "$GITHUB_PATH"
+        if: steps.cache-chezmoi.outputs.cache-hit != 'true'
+        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
+
+      - name: Add chezmoi to PATH
+        run: echo "$HOME/bin" >> "$GITHUB_PATH"
 
       - name: Zsh syntax check
         run: |
@@ -59,11 +70,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # `stable` is a moving tag — rotate the cache key weekly so CI picks up
+      # new stable releases without going indefinitely stale.
+      - name: Compute cache rotation key
+        id: cache-key
+        run: echo "week=$(date +%Y-%U)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache neovim binary
+        id: cache-nvim
+        uses: actions/cache@v4
+        with:
+          path: nvim-linux-x86_64
+          key: nvim-${{ runner.os }}-stable-${{ steps.cache-key.outputs.week }}
+
       - name: Install neovim
+        if: steps.cache-nvim.outputs.cache-hit != 'true'
         run: |
           curl -LO https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz
           tar xzf nvim-linux-x86_64.tar.gz
-          echo "$PWD/nvim-linux-x86_64/bin" >> "$GITHUB_PATH"
+          rm nvim-linux-x86_64.tar.gz
+
+      - name: Add neovim to PATH
+        run: echo "$PWD/nvim-linux-x86_64/bin" >> "$GITHUB_PATH"
+
+      # Cache lazy.nvim's plugin dir, keyed by the plugin specs.  Any edit to
+      # a feature file or init.lua invalidates the cache and re-installs.
+      - name: Cache lazy.nvim plugins
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/nvim
+          key: lazy-${{ runner.os }}-${{ hashFiles('dot_config/nvim/lua/features/*.lua', 'dot_config/nvim/init.lua') }}
+          restore-keys: |
+            lazy-${{ runner.os }}-
 
       - name: Neovim headless startup
         run: |
@@ -123,16 +161,25 @@ jobs:
           done
           exit $FAILED
 
-  git-config:
-    name: Git config
+  chezmoi:
+    name: Chezmoi & git config
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache chezmoi
+        id: cache-chezmoi
+        uses: actions/cache@v4
+        with:
+          path: ~/bin/chezmoi
+          key: chezmoi-${{ runner.os }}-v1
+
       - name: Install chezmoi
-        run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
-          echo "$HOME/bin" >> "$GITHUB_PATH"
+        if: steps.cache-chezmoi.outputs.cache-hit != 'true'
+        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
+
+      - name: Add chezmoi to PATH
+        run: echo "$HOME/bin" >> "$GITHUB_PATH"
 
       - name: Validate git config
         run: |
@@ -145,18 +192,7 @@ jobs:
           fi
           echo "Git config is valid"
 
-  chezmoi:
-    name: Chezmoi templates
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install chezmoi
-        run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/bin"
-          echo "$HOME/bin" >> "$GITHUB_PATH"
-
-      - name: Validate templates
+      - name: Validate all templates
         run: |
           FAILED=0
           for f in $(find . -name '*.tmpl' -not -path './.git/*'); do

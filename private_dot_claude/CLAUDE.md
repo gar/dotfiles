@@ -31,6 +31,7 @@
 - Default branch is `main`
 - Use `git push --force-with-lease` instead of `--force`
 - Prefer fast-forward merges; rebase feature branches before merging
+- After pushing a feature branch, open a pull request by default — do not wait to be asked. If a PR already exists for the branch, skip this step
 
 # Error handling
 

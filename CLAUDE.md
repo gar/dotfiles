@@ -70,7 +70,7 @@ Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `nvi
 
 ### CI
 
-GitHub Actions runs the same checks on every PR and push to `main` — five parallel jobs, with the `neovim` job running startup and filetype smoke tests as sequential steps. See `.github/workflows/ci.yml`.
+GitHub Actions runs the same checks on every PR and push to `main` — four parallel jobs (`lint`, `lua`, `neovim`, `chezmoi`). The `neovim` job runs startup and filetype smoke tests as sequential steps; the `chezmoi` job also validates `dot_gitconfig.tmpl` parses as valid git config. The neovim binary and lazy.nvim plugin dir are cached between runs. See `.github/workflows/ci.yml`.
 
 ## Key Files to Know
 
