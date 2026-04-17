@@ -134,6 +134,12 @@ local function set_extmark(bufnr, line_0)
 end
 
 local function start_on_current_line()
+  -- Drop any stale extmark before creating a new one. Without this, if
+  -- `active` got out of sync (e.g. watson stopped externally in a terminal
+  -- without nvim noticing via BufEnter), the previous stopwatch icon would
+  -- be orphaned when we overwrite `active` below.
+  clear_extmark()
+
   local project    = get_project()
   local todo       = get_todo_text()
   local text, tags = extract_markdown_tags(todo)
