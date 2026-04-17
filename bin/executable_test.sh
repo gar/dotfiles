@@ -159,12 +159,8 @@ if run_check "nvim-filetypes" "$FILTER"; then
     do
       ext="${pair%%:*}"
       content="${pair#*:}"
-      # TODO: `mktemp --suffix=` is a GNU coreutils extension — BSD mktemp (shipped
-      # with macOS by default) does not recognise `--suffix` and errors out, so this
-      # check fails locally on Mac even though CI (ubuntu) is fine. Portable
-      # alternative: `TMP=$(mktemp)"."$ext" && mv "$(mktemp)" "$TMP"` or create the
-      # temp path manually with `TMP="${TMPDIR:-/tmp}/nvim-ft-$$-$ext.$ext"`.
-      TMP=$(mktemp --suffix=".$ext")
+      # Build the temp path manually — BSD mktemp on macOS does not support `--suffix`.
+      TMP="${TMPDIR:-/tmp}/nvim-ft-$$-$ext.$ext"
       printf '%s\n' "$content" > "$TMP"
       NVIM_ERR=$(XDG_CONFIG_HOME="$REPO_DIR/dot_config" \
         nvim --headless "$TMP" \
