@@ -101,13 +101,15 @@ end
 -- Watson wrappers
 -- ---------------------------------------------------------------------------
 
-local function watson_available()
-  return vim.fn.executable("watson") == 1
-end
-
 local function watson_is_running()
   local out = vim.fn.trim(vim.fn.system({ "watson", "status" }))
   return not out:match("^No project started")
+end
+
+local function ensure_watson()
+  if vim.fn.executable("watson") == 1 then return true end
+  vim.notify("watson not found — install it first", vim.log.levels.ERROR)
+  return false
 end
 
 -- ---------------------------------------------------------------------------
@@ -133,6 +135,13 @@ local function set_extmark(bufnr, line_0)
   })
 end
 
+-- Re-create the active extmark in place. Needed after :e reloads the buffer,
+-- which drops all extmarks.
+local function refresh_extmark()
+  pcall(vim.api.nvim_buf_del_extmark, active.bufnr, ns, active.extmark_id)
+  active.extmark_id = set_extmark(active.bufnr, active.line)
+end
+
 local function start_on_current_line()
   -- Drop any stale extmark before creating a new one. Without this, if
   -- `active` got out of sync (e.g. watson stopped externally in a terminal
@@ -143,7 +152,6 @@ local function start_on_current_line()
   local project    = get_project()
   local todo       = get_todo_text()
   local text, tags = extract_markdown_tags(todo)
-  -- Build command: watson start <project> +<text> [+<tag> ...].
   -- No shell is involved so special characters need no escaping.
   local cmd = { "watson", "start", project, "+" .. text }
   for _, tag in ipairs(tags) do
@@ -166,15 +174,11 @@ end
 -- ---------------------------------------------------------------------------
 
 local function handle_ns()
-  if not watson_available() then
-    vim.notify("watson not found — install it first", vim.log.levels.ERROR)
-    return
-  end
+  if not ensure_watson() then return end
 
-  local running = watson_is_running()
   local on_todo = is_open_todo()
 
-  if not running then
+  if not watson_is_running() then
     if not on_todo then
       vim.notify("No open todo on current line", vim.log.levels.WARN)
       return
@@ -183,7 +187,6 @@ local function handle_ns()
     return
   end
 
-  -- Timer is running — always stop it first.
   local bufnr  = vim.api.nvim_get_current_buf()
   local line_0 = vim.api.nvim_win_get_cursor(0)[1] - 1
   local on_active_line = active
@@ -194,10 +197,8 @@ local function handle_ns()
   clear_extmark()
 
   if on_todo and not on_active_line then
-    -- On a different open todo → transition straight into it
     start_on_current_line()
   else
-    -- On the active todo, or not on a todo → plain stop
     vim.notify("⏹ Stopped", vim.log.levels.INFO)
   end
 end
@@ -207,10 +208,7 @@ end
 -- ---------------------------------------------------------------------------
 
 local function show_summary()
-  if not watson_available() then
-    vim.notify("watson not found — install it first", vim.log.levels.ERROR)
-    return
-  end
+  if not ensure_watson() then return end
 
   local lines = vim.fn.systemlist({ "watson", "report", "--week" })
   if #lines == 0 then lines = { "No time entries this week." } end
@@ -248,11 +246,9 @@ vim.api.nvim_create_autocmd("BufEnter", {
   group = vim.api.nvim_create_augroup("timetracking_extmark", { clear = true }),
   callback = function()
     if not active then return end
+    if vim.api.nvim_get_current_buf() ~= active.bufnr then return end
     if not watson_is_running() then clear_extmark(); return end
-    local bufnr = vim.api.nvim_get_current_buf()
-    if bufnr ~= active.bufnr then return end
-    pcall(vim.api.nvim_buf_del_extmark, bufnr, ns, active.extmark_id)
-    active.extmark_id = set_extmark(bufnr, active.line)
+    refresh_extmark()
   end,
 })
 
