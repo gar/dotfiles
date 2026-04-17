@@ -1,8 +1,6 @@
 #!/bin/bash
-# TODO: `-v` echoes every command to stderr, producing noisy output for a user-facing
-# setup script. Drop `-v` (keep `-euo pipefail`) unless verbose tracing is intentional;
-# if it is, switch to `-x` behind a DEBUG env var.
-set -veuo pipefail
+set -euo pipefail
+[[ "${DEBUG:-}" ]] && set -x
 
 OS="$(uname -s)"
 
