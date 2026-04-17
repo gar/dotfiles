@@ -284,6 +284,7 @@ Leader key is `Space`.
 | `<leader>q` | normal | Diagnostics to location list |
 | `[d` / `]d` | normal | Previous / next diagnostic |
 | `gl` | normal | Line diagnostics |
+| `<leader>lf` | normal, visual | Format buffer / selection via conform.nvim |
 | `:Format` | command | Format buffer via LSP |
 
 ### Git

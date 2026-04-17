@@ -20,6 +20,7 @@ return {
       { "<leader>f",  group = "Find (Telescope)" },
       { "<leader>g",  group = "Git" },
       { "<leader>gw", group = "Worktrees" },
+      { "<leader>l",  group = "LSP / Format" },
       { "<leader>n",  group = "Notes (Obsidian)" },
       { "<leader>nR", group = "Recent notes" },
       { "<leader>t",  group = "Terminal" },
