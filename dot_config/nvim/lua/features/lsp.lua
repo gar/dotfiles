@@ -33,15 +33,10 @@ return {
         vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
       end
 
-      -- TODO: `update_in_insert = true` recomputes diagnostics on every keystroke
-      -- in insert mode, which causes noticeable lag on large files (>1k lines) and
-      -- on slow LSPs (pyright cold-start). The common recommendation is to leave
-      -- this `false` — diagnostics still update on InsertLeave which is usually
-      -- responsive enough. Flip to `false` and see if anyone misses it.
       vim.diagnostic.config({
         virtual_text = false,
         signs = { active = signs },
-        update_in_insert = true,
+        update_in_insert = false,
         underline = true,
         severity_sort = true,
         float = {
