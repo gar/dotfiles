@@ -130,8 +130,8 @@ end
 
 local function set_extmark(bufnr, line_0)
   return vim.api.nvim_buf_set_extmark(bufnr, ns, line_0, 0, {
-    virt_text     = { { "⏱", "DiagnosticWarn" } },
-    virt_text_pos = "eol",
+    sign_text     = "⏱",
+    sign_hl_group = "DiagnosticWarn",
   })
 end
 
