@@ -258,11 +258,7 @@ chezmoi init gar --apply
 
 # macOS-specific system preferences
 if [[ "$OS" == "Darwin" ]]; then
-  # TODO: `.macos` is a relative path — this fails when the script is invoked from
-  # any directory other than the repo root. Use the absolute-path pattern already
-  # used at line 30 for the Brewfile:
-  #   /bin/bash "$(cd "$(dirname "$0")/.." && pwd)/.macos"
-  /bin/bash .macos
+  /bin/bash "$HOME/.macos"
 fi
 
 # Install language runtimes
