@@ -1,4 +1,7 @@
 #!/bin/bash
+# TODO: `-v` echoes every command to stderr, producing noisy output for a user-facing
+# setup script. Drop `-v` (keep `-euo pipefail`) unless verbose tracing is intentional;
+# if it is, switch to `-x` behind a DEBUG env var.
 set -veuo pipefail
 
 OS="$(uname -s)"
@@ -138,6 +141,10 @@ install_packages_arch() {
 # ---------------------------------------------------------------------------
 install_python_tools() {
   if command -v pipx &>/dev/null; then
+    # TODO: `2>/dev/null || true` silently swallows all failures — including real
+    # errors like pipx misconfig or a broken Python install. Distinguish "already
+    # installed" (ok) from other failures: check `pipx list` first, or grep stderr
+    # for the already-installed message and only then suppress.
     pipx install termgraph 2>/dev/null || true
     pipx install td-watson 2>/dev/null || true
   else
@@ -177,6 +184,10 @@ install_broot_launcher() {
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
+    # TODO: `curl | sh` silently swallows network/HTTP failures. Use `curl -fsSL`
+    # so HTTP errors exit non-zero, and verify `$HOME/.local/bin/mise` exists after
+    # the install before proceeding. Currently a failed install falls through to
+    # `mise install` at the bottom of the script with a confusing error.
     curl https://mise.jdx.dev/install.sh | sh
     export PATH="$HOME/.local/bin:$PATH"
   fi
@@ -209,6 +220,10 @@ else
 fi
 read -rp "Set up account in 1Password app (and enable biometrics) [enter to continue]"
 
+# TODO: `op` may not be installed at this point on Linux (it's documented as a
+# prerequisite but not enforced). Gate this behind `command -v op &>/dev/null` and
+# emit a clear error telling the user to install the 1Password CLI before re-running,
+# rather than failing with a raw shell error.
 eval "$(op signin --account my.1password.com)"
 
 # Install packages
@@ -245,12 +260,21 @@ chezmoi init gar --apply
 
 # macOS-specific system preferences
 if [[ "$OS" == "Darwin" ]]; then
+  # TODO: `.macos` is a relative path — this fails when the script is invoked from
+  # any directory other than the repo root. Use the absolute-path pattern already
+  # used at line 30 for the Brewfile:
+  #   /bin/bash "$(cd "$(dirname "$0")/.." && pwd)/.macos"
   /bin/bash .macos
 fi
 
 # Install language runtimes
 mise install
 
+# TODO: `mise install` only downloads runtimes into mise's data dir — it does NOT
+# activate them in this shell, so `npm` is not on PATH here and the next line fails
+# on a truly fresh machine. Either prepend `mise exec --` (`mise exec -- npm install
+# -g @anthropic-ai/claude-code`) or source `eval "$(mise activate bash)"` before
+# running npm.
 # Install Claude Code (requires node from mise)
 npm install -g @anthropic-ai/claude-code
 

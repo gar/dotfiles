@@ -27,6 +27,14 @@ local function browse_journal(subfolder, title)
   })
 end
 
+-- TODO: The heading-search + blank-line + last-todo-position + insert-and-pad
+-- logic is duplicated almost verbatim between `add_todo_to_daily` (below, lines
+-- ~62-98) and `insert_todos_into_file` (further down, lines ~118-152). Extract a
+-- shared helper such as:
+--   local function insert_after_todo_block(lines, new_lines) -> lines
+-- that finds the first `^# ` heading, ensures a blank line after it, walks the
+-- consecutive `^[-*] ` block, inserts `new_lines` at the right position, and
+-- pads a trailing blank line. Both call sites then become one-liners.
 local function add_todo_to_daily()
   vim.ui.input({ prompt = "Todo: " }, function(input)
     if not input or input == "" then return end
@@ -211,6 +219,13 @@ end
 -- Parse a date string that may be natural language (e.g. "tomorrow", "next tuesday",
 -- "april 14", "3 weeks"). Returns a YYYY-MM-DD string on success, or nil on failure.
 -- Uses GNU date -d (Linux) with a gdate fallback (macOS + Homebrew).
+-- TODO: On macOS without Homebrew `coreutils`, BSD `date` does not accept `-d`
+-- (it uses `-j -f`) and `gdate` is absent, so every natural-language input fails
+-- silently. Either (a) add `coreutils` to the Brewfile and document the dependency,
+-- (b) branch on `jit.os` / `vim.loop.os_uname().sysname` and build a BSD-compatible
+-- `date -j -f` invocation for a small set of formats, or (c) use a pure-Lua date
+-- parser for the common cases ("tomorrow", "+N days", "YYYY-MM-DD"). Show a clear
+-- error message explaining which package to install if all parsers fail.
 local function parse_natural_date(input)
   input = vim.trim(input)
   if input:match("^%d%d%d%d%-%d%d%-%d%d$") then
