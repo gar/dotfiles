@@ -33,6 +33,11 @@ return {
         vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
       end
 
+      -- TODO: `update_in_insert = true` recomputes diagnostics on every keystroke
+      -- in insert mode, which causes noticeable lag on large files (>1k lines) and
+      -- on slow LSPs (pyright cold-start). The common recommendation is to leave
+      -- this `false` — diagnostics still update on InsertLeave which is usually
+      -- responsive enough. Flip to `false` and see if anyone misses it.
       vim.diagnostic.config({
         virtual_text = false,
         signs = { active = signs },
@@ -153,6 +158,12 @@ return {
       -- Custom server not managed by mason.
       -- Binary must be manually downloaded from its GitHub releases page and placed at ~/bin/expert.
       -- If the binary is absent, vim.lsp.enable() is a no-op so startup is unaffected.
+      -- TODO: There is no automation for installing the `expert` binary — the comment
+      -- says "manually downloaded" which violates the "never require manual
+      -- post-install steps" rule in CLAUDE.md. Either (a) fetch the latest release
+      -- from elixir-lang/expert in `bin/executable_bootstrap.sh` when an Elixir
+      -- toolchain is present, or (b) add a `mise` task / shell function the user can
+      -- invoke on demand. Link it from README's Elixir section either way.
       vim.lsp.config("expert", {
         cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
         filetypes = { "elixir", "eelixir", "heex" },

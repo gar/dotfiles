@@ -120,6 +120,11 @@ if run_check "nvim-startup" "$FILTER"; then
       nvim --headless \
         "+Lazy! install" \
         "+lua vim.cmd('qall!')" 2>&1) || true
+    # TODO: Filtering `warning|deprecated` is too broad — it hides real deprecation
+    # warnings from Neovim core and our plugins, which is precisely the signal this
+    # check exists to catch. Narrow the filter to specific known-benign strings
+    # (e.g. `grep -v "Warning: Using OutputChannel"`) so genuine deprecations surface
+    # in CI before they become breaking errors on the next nvim release.
     # Filter out known-benign noise
     NVIM_ERR=$(echo "$NVIM_ERR" | grep -vi "warning\|deprecated\|--hierarchical" || true)
     if [[ -z "$NVIM_ERR" ]]; then
@@ -154,6 +159,11 @@ if run_check "nvim-filetypes" "$FILTER"; then
     do
       ext="${pair%%:*}"
       content="${pair#*:}"
+      # TODO: `mktemp --suffix=` is a GNU coreutils extension — BSD mktemp (shipped
+      # with macOS by default) does not recognise `--suffix` and errors out, so this
+      # check fails locally on Mac even though CI (ubuntu) is fine. Portable
+      # alternative: `TMP=$(mktemp)"."$ext" && mv "$(mktemp)" "$TMP"` or create the
+      # temp path manually with `TMP="${TMPDIR:-/tmp}/nvim-ft-$$-$ext.$ext"`.
       TMP=$(mktemp --suffix=".$ext")
       printf '%s\n' "$content" > "$TMP"
       NVIM_ERR=$(XDG_CONFIG_HOME="$REPO_DIR/dot_config" \

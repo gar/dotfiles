@@ -1,3 +1,8 @@
+-- TODO: There is no keymap for invoking conform.format() on demand — only the
+-- BufWritePre autocmd runs the formatter. Add a `<leader>lf` (or similar under
+-- the LSP group) key that calls `require("conform").format({ async = true,
+-- lsp_format = "fallback" })`, and register it with which-key. Useful when the
+-- user wants to format without saving, or format a visual selection.
 return {
   {
     "stevearc/conform.nvim",

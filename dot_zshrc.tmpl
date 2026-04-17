@@ -31,6 +31,10 @@ fi
 alias vim="nvim"
 
 # modern CLI replacements
+# TODO: Aliasing `grep` to `rg` silently breaks scripts and muscle-memory invocations
+# that rely on grep-specific flags (`-E`, `-o`, `-P`, POSIX regex semantics). Consider
+# using a separate alias like `rgrep='rg'` or removing this alias and relying on the
+# bare `rg` command — interactive shells already get it on PATH.
 alias grep='rg'
 if command -v fdfind &>/dev/null; then
   alias find='fdfind'
@@ -93,6 +97,11 @@ export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
 # ------------------------------
 # Plugins are sourced before compinit so their fpath entries are available.
 {{- if eq .chezmoi.os "darwin" }}
+# TODO: These `source` lines are unguarded — on a fresh macOS before `brew bundle`
+# completes (or if a plugin is uninstalled), `$(brew --prefix)` may return empty or
+# the file may not exist, producing noisy "no such file" errors on every shell
+# start. Wrap each with `[[ -f "$plugin_path" ]] && source ...` mirroring the
+# pattern in the Linux branch below (lines 101-109).
 source $(brew --prefix)/share/zsh-you-should-use/you-should-use.plugin.zsh
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
@@ -136,6 +145,11 @@ PROMPT='%(?:%F{green}➜:%F{red}➜)%f %F{cyan}%c%f${vcs_info_msg_0_} '
 # ------------------------------
 # Tool integrations
 # ------------------------------
+# TODO: `mise`, `direnv`, `zoxide`, and `chezmoi` are evaluated unconditionally — on
+# a fresh machine where the shell is launched before `bootstrap.sh` completes (or
+# on a machine where one of these is intentionally absent), each line produces a
+# `command not found` error. Follow the same `command -v ... &>/dev/null && eval`
+# pattern already used for `fzf` (next line) and `op` (line further down).
 eval "$(mise activate zsh)"
 eval "$(direnv hook zsh)"
 eval "$(zoxide init zsh)"
