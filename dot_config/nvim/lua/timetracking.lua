@@ -2,9 +2,10 @@
 -- Keymaps are buffer-local, active only in ~/notes/**/*.md.
 --
 -- <leader>ns  smart timer toggle:
---               not running + on open todo → start
---               running + on open todo     → stop + start new
---               running + not on a todo    → stop only
+--               not running + on open todo      → start
+--               running + on active todo line   → stop
+--               running + on different todo     → stop + start new
+--               running + not on a todo         → stop only
 -- <leader>nS  weekly summary in a floating window
 --
 -- Watson project is derived from context:
@@ -177,14 +178,20 @@ local function handle_ns()
   end
 
   -- Timer is running — always stop it first.
+  local bufnr  = vim.api.nvim_get_current_buf()
+  local line_0 = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local on_active_line = active
+    and active.bufnr == bufnr
+    and active.line == line_0
+
   vim.fn.system({ "watson", "stop" })
   clear_extmark()
 
-  if on_todo then
-    -- On an open todo → transition straight into it
+  if on_todo and not on_active_line then
+    -- On a different open todo → transition straight into it
     start_on_current_line()
   else
-    -- Not on a todo → plain stop
+    -- On the active todo, or not on a todo → plain stop
     vim.notify("⏹ Stopped", vim.log.levels.INFO)
   end
 end
@@ -235,7 +242,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
   group = vim.api.nvim_create_augroup("timetracking_extmark", { clear = true }),
   callback = function()
     if not active then return end
-    if not watson_is_running() then active = nil; return end
+    if not watson_is_running() then clear_extmark(); return end
     local bufnr = vim.api.nvim_get_current_buf()
     if bufnr ~= active.bufnr then return end
     pcall(vim.api.nvim_buf_del_extmark, bufnr, ns, active.extmark_id)
