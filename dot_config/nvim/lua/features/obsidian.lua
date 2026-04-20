@@ -325,6 +325,34 @@ local function move_open_todos_from_heading()
   prompt_and_move_todos(bufnr, todo_lines, todo_lnums, "No open todos found in heading group")
 end
 
+local function grep_notes_by_date()
+  local notes_dir = vim.fn.expand("~/notes")
+  vim.ui.input({ prompt = "Search notes: " }, function(query)
+    if not query or query == "" then return end
+    local files = vim.fn.systemlist({
+      "rg", "--files-with-matches", "--ignore-case", "-g", "*.md",
+      query, notes_dir,
+    })
+    if #files == 0 then
+      vim.notify("No notes matching: " .. query, vim.log.levels.INFO)
+      return
+    end
+    files = vim.tbl_filter(function(f) return not f:find("/templates/") end, files)
+    table.sort(files, function(a, b)
+      return vim.fn.getftime(a) > vim.fn.getftime(b)
+    end)
+    require("telescope.pickers").new({}, {
+      prompt_title = 'Notes: "' .. query .. '"',
+      finder = require("telescope.finders").new_table({
+        results = files,
+        entry_maker = require("telescope.make_entry").gen_from_file({ cwd = notes_dir }),
+      }),
+      sorter = require("telescope.config").values.file_sorter({}),
+      previewer = require("telescope.config").values.file_previewer({}),
+    }):find()
+  end)
+end
+
 local function grep_todos()
   require("telescope.builtin").grep_string({
     search = "- \\[ \\]",
@@ -395,7 +423,7 @@ return {
     -- Notes
     { "<leader>nn", "<cmd>Obsidian new<cr>",          desc = "New note" },
     { "<leader>nf", "<cmd>Obsidian quick_switch<cr>", desc = "Find note" },
-    { "<leader>ng", "<cmd>Obsidian search<cr>",       desc = "Grep notes" },
+    { "<leader>ng", grep_notes_by_date,                desc = "Grep notes (newest first)" },
     { "<leader>nt", "<cmd>Obsidian tags<cr>",         desc = "Find by tag" },
     -- In-note actions
     { "<leader>nb", "<cmd>Obsidian backlinks<cr>",      desc = "Backlinks" },
