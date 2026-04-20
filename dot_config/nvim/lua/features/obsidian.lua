@@ -387,7 +387,7 @@ return {
     { "<leader>nd", "<cmd>Obsidian today<cr>",                                 desc = "Daily note (today)" },
     { "<leader>no", "<cmd>Obsidian tomorrow<cr>",                              desc = "Daily note (tomorrow)" },
     { "<leader>ny", "<cmd>Obsidian yesterday<cr>",                             desc = "Daily note (yesterday)" },
-    { "<leader>nD", "<cmd>Obsidian dailies<cr>",                               desc = "Browse daily notes" },
+    { "<leader>nD", "<cmd>Obsidian dailies -7 7<cr>",                          desc = "Browse daily notes" },
     { "<leader>nw", "<cmd>Obsidian weekly<cr>",                                desc = "Weekly note" },
     { "<leader>nW", function() browse_journal("weekly",  "Weekly Notes") end,  desc = "Browse weekly notes" },
     { "<leader>nm", open_monthly_note,                                         desc = "Monthly note" },

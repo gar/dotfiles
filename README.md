@@ -336,7 +336,7 @@ Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim w
 | `<leader>nd` | Open today's daily note |
 | `<leader>no` | Open tomorrow's daily note |
 | `<leader>ny` | Open yesterday's daily note |
-| `<leader>nD` | Browse all daily notes |
+| `<leader>nD` | Browse daily notes (±7 days from today; missing dates are creatable) |
 | `<leader>nw` | Open this week's note |
 | `<leader>nW` | Browse all weekly notes |
 | `<leader>nm` | Open this month's note |
