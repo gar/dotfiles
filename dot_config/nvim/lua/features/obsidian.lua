@@ -423,7 +423,8 @@ return {
     -- Notes
     { "<leader>nn", "<cmd>Obsidian new<cr>",          desc = "New note" },
     { "<leader>nf", "<cmd>Obsidian quick_switch<cr>", desc = "Find note" },
-    { "<leader>ng", grep_notes_by_date,                desc = "Grep notes (newest first)" },
+    { "<leader>ng", "<cmd>Obsidian search<cr>",        desc = "Grep notes" },
+    { "<leader>nG", grep_notes_by_date,                desc = "Grep notes (newest first)" },
     { "<leader>nt", "<cmd>Obsidian tags<cr>",         desc = "Find by tag" },
     -- In-note actions
     { "<leader>nb", "<cmd>Obsidian backlinks<cr>",      desc = "Backlinks" },
