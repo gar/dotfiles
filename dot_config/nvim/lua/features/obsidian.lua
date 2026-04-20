@@ -440,6 +440,19 @@ return {
       folder      = "templates",
       date_format = "%Y-%m-%d",
       time_format = "%H:%M",
+      substitutions = {
+        -- {{day}} → weekday name of the note's target date (e.g. "Monday").
+        -- Parses the filename so yesterday/tomorrow/custom-date notes render
+        -- the right weekday instead of today's.
+        day = function(ctx)
+          local name = vim.fn.fnamemodify(tostring(ctx and ctx.path or ""), ":t:r")
+          local y, m, d = name:match("^(%d%d%d%d)-(%d%d)-(%d%d)$")
+          if y then
+            return os.date("%A", os.time({ year = y, month = m, day = d, hour = 12 }))
+          end
+          return os.date("%A")
+        end,
+      },
     },
 
     legacy_commands = false,
