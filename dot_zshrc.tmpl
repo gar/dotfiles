@@ -97,14 +97,11 @@ export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
 # ------------------------------
 # Plugins are sourced before compinit so their fpath entries are available.
 {{- if eq .chezmoi.os "darwin" }}
-# TODO: These `source` lines are unguarded — on a fresh macOS before `brew bundle`
-# completes (or if a plugin is uninstalled), `$(brew --prefix)` may return empty or
-# the file may not exist, producing noisy "no such file" errors on every shell
-# start. Wrap each with `[[ -f "$plugin_path" ]] && source ...` mirroring the
-# pattern in the Linux branch below (lines 101-109).
-source $(brew --prefix)/share/zsh-you-should-use/you-should-use.plugin.zsh
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $(brew --prefix)/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+_brew_prefix="$(brew --prefix 2>/dev/null)"
+[[ -f "$_brew_prefix/share/zsh-you-should-use/you-should-use.plugin.zsh" ]] && source "$_brew_prefix/share/zsh-you-should-use/you-should-use.plugin.zsh"
+[[ -f "$_brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$_brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+[[ -f "$_brew_prefix/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] && source "$_brew_prefix/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+unset _brew_prefix
 {{- else }}
 # Source plugins from standard Linux paths (apt: /usr/share, pacman: /usr/share/zsh/plugins)
 for plugin_dir in /usr/share/zsh-you-should-use /usr/share/zsh/plugins/zsh-you-should-use; do
@@ -145,16 +142,11 @@ PROMPT='%(?:%F{green}➜:%F{red}➜)%f %F{cyan}%c%f${vcs_info_msg_0_} '
 # ------------------------------
 # Tool integrations
 # ------------------------------
-# TODO: `mise`, `direnv`, `zoxide`, and `chezmoi` are evaluated unconditionally — on
-# a fresh machine where the shell is launched before `bootstrap.sh` completes (or
-# on a machine where one of these is intentionally absent), each line produces a
-# `command not found` error. Follow the same `command -v ... &>/dev/null && eval`
-# pattern already used for `fzf` (next line) and `op` (line further down).
-eval "$(mise activate zsh)"
-eval "$(direnv hook zsh)"
-eval "$(zoxide init zsh)"
+command -v mise &>/dev/null && eval "$(mise activate zsh)"
+command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 command -v fzf &>/dev/null && eval "$(fzf --zsh)"
-eval "$(chezmoi completion zsh)"
+command -v chezmoi &>/dev/null && eval "$(chezmoi completion zsh)"
 command -v op &>/dev/null && eval "$(op completion zsh)" && compdef _op op
 # broot shell integration — provides the 'br' function (run 'broot --install' once to enable)
 [[ -f "$HOME/.config/broot/launcher/bash/1" ]] && source "$HOME/.config/broot/launcher/bash/1"

@@ -182,11 +182,11 @@ install_broot_launcher() {
 # ---------------------------------------------------------------------------
 install_mise() {
   if ! command -v mise &>/dev/null; then
-    # TODO: `curl | sh` silently swallows network/HTTP failures. Use `curl -fsSL`
-    # so HTTP errors exit non-zero, and verify `$HOME/.local/bin/mise` exists after
-    # the install before proceeding. Currently a failed install falls through to
-    # `mise install` at the bottom of the script with a confusing error.
-    curl https://mise.jdx.dev/install.sh | sh
+    curl -fsSL https://mise.jdx.dev/install.sh | sh
+    if [[ ! -x "$HOME/.local/bin/mise" ]]; then
+      echo "Error: mise install failed — check the output above and re-run." >&2
+      exit 1
+    fi
     export PATH="$HOME/.local/bin:$PATH"
   fi
 }
