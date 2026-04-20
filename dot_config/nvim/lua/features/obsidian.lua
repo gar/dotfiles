@@ -325,6 +325,70 @@ local function move_open_todos_from_heading()
   prompt_and_move_todos(bufnr, todo_lines, todo_lnums, "No open todos found in heading group")
 end
 
+local function grep_notes_by_date()
+  local notes_dir = vim.fn.expand("~/notes")
+  vim.ui.input({ prompt = "Search notes: " }, function(query)
+    if not query or query == "" then return end
+
+    local raw = vim.fn.systemlist({
+      "rg", "--line-number", "--no-heading", "--color=never",
+      "--ignore-case", "-g", "*.md", query, notes_dir,
+    })
+    if #raw == 0 then
+      vim.notify("No notes matching: " .. query, vim.log.levels.INFO)
+      return
+    end
+
+    -- Group line hits by file, preserving first-seen order
+    local entries_by_file = {}
+    local file_order = {}
+    local seen = {}
+    for _, line in ipairs(raw) do
+      local file, lnum, text = line:match("^(.-)%:(%d+)%:(.*)$")
+      if file and not file:find("/templates/") then
+        if not seen[file] then
+          seen[file] = true
+          table.insert(file_order, file)
+          entries_by_file[file] = {}
+        end
+        table.insert(entries_by_file[file], { file = file, lnum = tonumber(lnum), text = text })
+      end
+    end
+
+    -- Sort files newest-first, then flatten back to line entries
+    table.sort(file_order, function(a, b)
+      return vim.fn.getftime(a) > vim.fn.getftime(b)
+    end)
+    local results = {}
+    for _, file in ipairs(file_order) do
+      for _, e in ipairs(entries_by_file[file]) do
+        table.insert(results, e)
+      end
+    end
+
+    local conf = require("telescope.config").values
+    require("telescope.pickers").new({}, {
+      prompt_title = 'Notes: "' .. query .. '"',
+      finder = require("telescope.finders").new_table({
+        results = results,
+        entry_maker = function(e)
+          local rel = vim.fn.fnamemodify(e.file, ":.")
+          return {
+            value    = e,
+            ordinal  = rel .. " " .. e.text,
+            display  = rel .. ":" .. e.lnum .. ": " .. e.text,
+            filename = e.file,
+            lnum     = e.lnum,
+            col      = 1,
+          }
+        end,
+      }),
+      sorter    = conf.generic_sorter({}),
+      previewer = conf.grep_previewer({}),
+    }):find()
+  end)
+end
+
 local function grep_todos()
   require("telescope.builtin").grep_string({
     search = "- \\[ \\]",
@@ -395,7 +459,8 @@ return {
     -- Notes
     { "<leader>nn", "<cmd>Obsidian new<cr>",          desc = "New note" },
     { "<leader>nf", "<cmd>Obsidian quick_switch<cr>", desc = "Find note" },
-    { "<leader>ng", "<cmd>Obsidian search<cr>",       desc = "Grep notes" },
+    { "<leader>ng", "<cmd>Obsidian search<cr>",        desc = "Grep notes" },
+    { "<leader>nG", grep_notes_by_date,                desc = "Grep notes (newest first)" },
     { "<leader>nt", "<cmd>Obsidian tags<cr>",         desc = "Find by tag" },
     -- In-note actions
     { "<leader>nb", "<cmd>Obsidian backlinks<cr>",      desc = "Backlinks" },
