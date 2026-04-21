@@ -31,11 +31,7 @@ fi
 alias vim="nvim"
 
 # modern CLI replacements
-# TODO: Aliasing `grep` to `rg` silently breaks scripts and muscle-memory invocations
-# that rely on grep-specific flags (`-E`, `-o`, `-P`, POSIX regex semantics). Consider
-# using a separate alias like `rgrep='rg'` or removing this alias and relying on the
-# bare `rg` command — interactive shells already get it on PATH.
-alias grep='rg'
+alias rgrep='rg'
 if command -v fdfind &>/dev/null; then
   alias find='fdfind'
 elif command -v fd &>/dev/null; then
