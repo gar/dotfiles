@@ -129,9 +129,13 @@ local function clear_extmark()
 end
 
 local function set_extmark(bufnr, line_0)
+  -- right_gravity = false keeps the mark on the same line when the line is
+  -- replaced (e.g. obsidian.nvim's toggle_checkbox), instead of drifting to
+  -- the start of the next line.
   return vim.api.nvim_buf_set_extmark(bufnr, ns, line_0, 0, {
     sign_text     = "⏱",
     sign_hl_group = "DiagnosticWarn",
+    right_gravity = false,
   })
 end
 
@@ -249,6 +253,29 @@ vim.api.nvim_create_autocmd("BufEnter", {
     if vim.api.nvim_get_current_buf() ~= active.bufnr then return end
     if not watson_is_running() then clear_extmark(); return end
     refresh_extmark()
+  end,
+})
+
+-- ---------------------------------------------------------------------------
+-- Auto-stop when the tracked todo is completed
+-- ---------------------------------------------------------------------------
+
+vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+  group = vim.api.nvim_create_augroup("timetracking_autostop", { clear = true }),
+  callback = function()
+    if not active then return end
+    if vim.api.nvim_get_current_buf() ~= active.bufnr then return end
+
+    local pos = vim.api.nvim_buf_get_extmark_by_id(active.bufnr, ns, active.extmark_id, {})
+    if not pos or #pos == 0 then return end
+    local line_0 = pos[1]
+
+    local line = vim.api.nvim_buf_get_lines(active.bufnr, line_0, line_0 + 1, false)[1]
+    if line and line:match("^%s*[%-%*]%s*%[ %]%s*(.+)$") then return end
+
+    vim.fn.system({ "watson", "stop" })
+    clear_extmark()
+    vim.notify("⏹ Todo completed — stopped timer", vim.log.levels.INFO)
   end,
 })
 
