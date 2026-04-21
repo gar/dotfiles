@@ -260,13 +260,8 @@ fi
 # Install language runtimes
 mise install
 
-# TODO: `mise install` only downloads runtimes into mise's data dir — it does NOT
-# activate them in this shell, so `npm` is not on PATH here and the next line fails
-# on a truly fresh machine. Either prepend `mise exec --` (`mise exec -- npm install
-# -g @anthropic-ai/claude-code`) or source `eval "$(mise activate bash)"` before
-# running npm.
 # Install Claude Code (requires node from mise)
-npm install -g @anthropic-ai/claude-code
+mise exec -- npm install -g @anthropic-ai/claude-code
 
 # Set zsh as default shell if it isn't already
 if [[ "$SHELL" != */zsh ]]; then

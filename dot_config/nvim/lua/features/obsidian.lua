@@ -27,14 +27,48 @@ local function browse_journal(subfolder, title)
   })
 end
 
--- TODO: The heading-search + blank-line + last-todo-position + insert-and-pad
--- logic is duplicated almost verbatim between `add_todo_to_daily` (below, lines
--- ~62-98) and `insert_todos_into_file` (further down, lines ~118-152). Extract a
--- shared helper such as:
---   local function insert_after_todo_block(lines, new_lines) -> lines
--- that finds the first `^# ` heading, ensures a blank line after it, walks the
--- consecutive `^[-*] ` block, inserts `new_lines` at the right position, and
--- pads a trailing blank line. Both call sites then become one-liners.
+-- Insert new_lines into lines immediately after the last todo item under the first
+-- # heading. Ensures blank lines before the block starts and after it ends.
+local function insert_after_todo_block(lines, new_lines)
+  local heading_pos = nil
+  for i, line in ipairs(lines) do
+    if line:match("^# ") then
+      heading_pos = i
+      break
+    end
+  end
+
+  if not heading_pos then
+    for _, l in ipairs(new_lines) do
+      table.insert(lines, l)
+    end
+    return lines
+  end
+
+  if heading_pos + 1 > #lines or lines[heading_pos + 1] ~= "" then
+    table.insert(lines, heading_pos + 1, "")
+  end
+
+  local last_todo = nil
+  local pos = heading_pos + 2
+  while pos <= #lines and lines[pos]:match("^[%*%-] ") do
+    last_todo = pos
+    pos = pos + 1
+  end
+
+  local insert_at = last_todo and (last_todo + 1) or (heading_pos + 2)
+  for i = #new_lines, 1, -1 do
+    table.insert(lines, insert_at, new_lines[i])
+  end
+
+  local after = insert_at + #new_lines
+  if after <= #lines and lines[after] ~= "" then
+    table.insert(lines, after, "")
+  end
+
+  return lines
+end
+
 local function add_todo_to_daily()
   vim.ui.input({ prompt = "Todo: " }, function(input)
     if not input or input == "" then return end
@@ -66,45 +100,7 @@ local function add_todo_to_daily()
     end
 
     local lines = vim.fn.readfile(path)
-
-    -- Find the first level-1 heading
-    local heading_pos = nil
-    for i, line in ipairs(lines) do
-      if line:match("^# ") then
-        heading_pos = i
-        break
-      end
-    end
-
-    if not heading_pos then
-      table.insert(lines, todo_line)
-      vim.fn.writefile(lines, path)
-      return
-    end
-
-    -- Ensure a blank line immediately after the heading
-    if heading_pos + 1 > #lines or lines[heading_pos + 1] ~= "" then
-      table.insert(lines, heading_pos + 1, "")
-    end
-
-    -- Find the last consecutive list item starting at heading_pos + 2
-    local last_todo = nil
-    local pos = heading_pos + 2
-    while pos <= #lines and lines[pos]:match("^[%*%-] ") do
-      last_todo = pos
-      pos = pos + 1
-    end
-
-    -- Append after last existing todo, or insert at heading_pos + 2 if none
-    local insert_at = last_todo and (last_todo + 1) or (heading_pos + 2)
-    table.insert(lines, insert_at, todo_line)
-
-    -- Ensure a blank line after the todo block before any following content
-    local after = insert_at + 1
-    if after <= #lines and lines[after] ~= "" then
-      table.insert(lines, after, "")
-    end
-
+    lines = insert_after_todo_block(lines, { todo_line })
     vim.fn.writefile(lines, path)
 
     -- Refresh the buffer if it happens to be open
@@ -117,48 +113,9 @@ local function add_todo_to_daily()
   end)
 end
 
--- Insert todos into a target daily-note file at the correct position:
--- after the last existing list item following the first # heading, or
--- right after the heading if there are none.
 local function insert_todos_into_file(target_path, todo_lines)
   local lines = vim.fn.readfile(target_path)
-
-  local heading_pos = nil
-  for i, line in ipairs(lines) do
-    if line:match("^# ") then
-      heading_pos = i
-      break
-    end
-  end
-
-  if not heading_pos then
-    for _, todo in ipairs(todo_lines) do
-      table.insert(lines, todo)
-    end
-  else
-    if heading_pos + 1 > #lines or lines[heading_pos + 1] ~= "" then
-      table.insert(lines, heading_pos + 1, "")
-    end
-
-    local last_todo = nil
-    local pos = heading_pos + 2
-    while pos <= #lines and lines[pos]:match("^[%*%-] ") do
-      last_todo = pos
-      pos = pos + 1
-    end
-
-    local insert_at = last_todo and (last_todo + 1) or (heading_pos + 2)
-
-    for i = #todo_lines, 1, -1 do
-      table.insert(lines, insert_at, todo_lines[i])
-    end
-
-    local after = insert_at + #todo_lines
-    if after <= #lines and lines[after] ~= "" then
-      table.insert(lines, after, "")
-    end
-  end
-
+  lines = insert_after_todo_block(lines, todo_lines)
   vim.fn.writefile(lines, target_path)
 end
 
@@ -218,14 +175,7 @@ end
 
 -- Parse a date string that may be natural language (e.g. "tomorrow", "next tuesday",
 -- "april 14", "3 weeks"). Returns a YYYY-MM-DD string on success, or nil on failure.
--- Uses GNU date -d (Linux) with a gdate fallback (macOS + Homebrew).
--- TODO: On macOS without Homebrew `coreutils`, BSD `date` does not accept `-d`
--- (it uses `-j -f`) and `gdate` is absent, so every natural-language input fails
--- silently. Either (a) add `coreutils` to the Brewfile and document the dependency,
--- (b) branch on `jit.os` / `vim.loop.os_uname().sysname` and build a BSD-compatible
--- `date -j -f` invocation for a small set of formats, or (c) use a pure-Lua date
--- parser for the common cases ("tomorrow", "+N days", "YYYY-MM-DD"). Show a clear
--- error message explaining which package to install if all parsers fail.
+-- Uses GNU date -d (Linux) with a gdate fallback (macOS via coreutils in Brewfile).
 local function parse_natural_date(input)
   input = vim.trim(input)
   if input:match("^%d%d%d%d%-%d%d%-%d%d$") then
@@ -258,7 +208,10 @@ local function prompt_and_move_todos(bufnr, todo_lines, todo_lnums, empty_msg)
 
     local target_date = parse_natural_date(input)
     if not target_date then
-      vim.notify("Could not parse date: " .. input, vim.log.levels.ERROR)
+      local hint = vim.uv.os_uname().sysname == "Darwin"
+        and " (macOS: install coreutils via `brew install coreutils`)"
+        or ""
+      vim.notify("Could not parse date: " .. input .. hint, vim.log.levels.ERROR)
       return
     end
 
