@@ -170,7 +170,7 @@ sudo apt-get install shellcheck lua-check neovim
 sudo pacman -S shellcheck luacheck neovim chezmoi gitleaks
 ```
 
-The `secret-scan` check is skipped locally if `gitleaks` isn't installed, so it's safe to run the full suite without it — CI will still enforce the scan on every PR.
+Each check hard-fails if its tool is missing (e.g. running `secret-scan` without `gitleaks` installed is a failure, not a skip). If you haven't installed every dependency, run the specific checks you care about instead of the full suite.
 
 ### CI
 

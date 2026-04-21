@@ -56,6 +56,8 @@ Run a single check:
 
 Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `nvim-filetypes`, `git-config`, `chezmoi-template`, `secret-scan`.
 
+Each check hard-fails if its required tool isn't on `PATH`. Run the full suite only on a machine with the full dep set installed (see README); otherwise invoke checks individually.
+
 ### What the tests verify
 
 | Check | What it does |
@@ -67,7 +69,7 @@ Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `nvi
 | `nvim-filetypes` | Opens a temp file per filetype (lua, md, py, sh, ts, js, ex, rs, c, rb) — exercises lazy-loaded plugin configs |
 | `git-config` | Renders and parses `dot_gitconfig.tmpl` |
 | `chezmoi-template` | Renders all `.tmpl` files (1Password-dependent templates are skipped) |
-| `secret-scan` | Runs `gitleaks` over the working tree to catch committed API keys, tokens, passwords (skipped locally if `gitleaks` is not installed) |
+| `secret-scan` | Runs `gitleaks` over the working tree to catch committed API keys, tokens, passwords |
 
 ### CI
 
