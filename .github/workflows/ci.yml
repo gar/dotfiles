@@ -114,7 +114,7 @@ jobs:
             "+lua vim.cmd('qall!')" 2>&1) || true
 
           # Filter known-benign noise
-          NVIM_ERR=$(echo "$NVIM_ERR" | grep -iE "^e[0-9]+:|error" || true)
+          NVIM_ERR=$(echo "$NVIM_ERR" | grep -iE "^e[0-9]+:|error|deprecat" || true)
 
           if [ -n "$NVIM_ERR" ]; then
             echo "::error::Neovim startup produced errors:"
@@ -149,7 +149,7 @@ jobs:
             printf '%s\n' "$content" > "$TMP"
             ERR=$(nvim --headless "$TMP" \
               "+lua vim.cmd('qall!')" 2>&1) || true
-            ERR=$(echo "$ERR" | grep -iE "^e[0-9]+:|error" || true)
+            ERR=$(echo "$ERR" | grep -iE "^e[0-9]+:|error|deprecat" || true)
             rm -f "$TMP"
             if [ -n "$ERR" ]; then
               echo "::error::Neovim errors opening .$ext file:"

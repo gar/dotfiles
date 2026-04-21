@@ -120,6 +120,8 @@ their change
 
 When you open a file in a supported language (Lua, Elixir, Python, TypeScript), the language server starts automatically. Here's what to use:
 
+Lua, Python, and TypeScript servers are installed via Mason the first time you open a matching file. The Elixir server (`expert`) lives at `~/bin/expert` — the bootstrap script fetches the latest release from [elixir-lang/expert](https://github.com/elixir-lang/expert). To upgrade later, delete `~/bin/expert` and rerun `./bin/executable_bootstrap.sh` (or re-run just the `install_expert_lsp` function).
+
 ### Navigate code
 
 ```

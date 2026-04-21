@@ -120,13 +120,12 @@ if run_check "nvim-startup" "$FILTER"; then
       nvim --headless \
         "+Lazy! install" \
         "+lua vim.cmd('qall!')" 2>&1) || true
-    # TODO: Filtering `warning|deprecated` is too broad — it hides real deprecation
-    # warnings from Neovim core and our plugins, which is precisely the signal this
-    # check exists to catch. Narrow the filter to specific known-benign strings
-    # (e.g. `grep -v "Warning: Using OutputChannel"`) so genuine deprecations surface
-    # in CI before they become breaking errors on the next nvim release.
-    # Filter out known-benign noise
-    NVIM_ERR=$(echo "$NVIM_ERR" | grep -vi "warning\|deprecated\|--hierarchical" || true)
+    # Keep only lines that look like real failures: Vim error codes (E5113:,
+    # E121:, etc.), generic "error" text, or deprecation notices. Anything else
+    # (Lazy.nvim progress, informational notices) is ignored. Deprecation
+    # warnings are intentionally kept so they surface before they turn into
+    # breaking errors on the next nvim release.
+    NVIM_ERR=$(echo "$NVIM_ERR" | grep -iE "^E[0-9]+:|error|deprecat" || true)
     if [[ -z "$NVIM_ERR" ]]; then
       pass "nvim headless startup"
     else
