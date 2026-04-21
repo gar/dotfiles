@@ -161,6 +161,45 @@ jobs:
           done
           exit $FAILED
 
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks scans git history — needs full clone, not a shallow one.
+          fetch-depth: 0
+
+      - name: Cache gitleaks
+        id: cache-gitleaks
+        uses: actions/cache@v4
+        with:
+          path: ~/bin/gitleaks
+          key: gitleaks-${{ runner.os }}-v8.21.2
+
+      - name: Install gitleaks
+        if: steps.cache-gitleaks.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/bin"
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz" \
+            | tar -xz -C "$HOME/bin" gitleaks
+          chmod +x "$HOME/bin/gitleaks"
+
+      - name: Add gitleaks to PATH
+        run: echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Run gitleaks
+        run: |
+          # Scan full git history + working tree. --redact prevents secret
+          # values from appearing in CI logs.  Non-zero exit on any finding.
+          gitleaks detect \
+            --source . \
+            --redact \
+            --verbose \
+            --no-banner \
+            --exit-code 1
+
   chezmoi:
     name: Chezmoi & git config
     runs-on: ubuntu-latest

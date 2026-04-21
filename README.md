@@ -151,7 +151,7 @@ A test suite validates shell scripts, neovim config, and chezmoi templates. The 
 # all checks
 ./bin/executable_test.sh
 
-# single check (shellcheck | shell-syntax | lua-lint | nvim-startup | git-config | chezmoi-template)
+# single check (shellcheck | shell-syntax | lua-lint | nvim-startup | git-config | chezmoi-template | secret-scan)
 ./bin/executable_test.sh lua-lint
 ```
 
@@ -159,19 +159,22 @@ A test suite validates shell scripts, neovim config, and chezmoi templates. The 
 
 ```bash
 # macOS
-brew install shellcheck luacheck neovim chezmoi
+brew install shellcheck luacheck neovim chezmoi gitleaks
 
 # Ubuntu/Debian
 sudo apt-get install shellcheck lua-check neovim
-# chezmoi: sh -c "$(curl -fsLS get.chezmoi.io)"
+# chezmoi:  sh -c "$(curl -fsLS get.chezmoi.io)"
+# gitleaks: download from https://github.com/gitleaks/gitleaks/releases
 
 # Arch
-sudo pacman -S shellcheck luacheck neovim chezmoi
+sudo pacman -S shellcheck luacheck neovim chezmoi gitleaks
 ```
+
+Each check hard-fails if its tool is missing (e.g. running `secret-scan` without `gitleaks` installed is a failure, not a skip). If you haven't installed every dependency, run the specific checks you care about instead of the full suite.
 
 ### CI
 
-GitHub Actions runs automatically on every pull request and push to `main`. The pipeline has five parallel jobs:
+GitHub Actions runs automatically on every pull request and push to `main`. The pipeline has six parallel jobs:
 
 | Job | What it checks |
 |---|---|
@@ -180,6 +183,7 @@ GitHub Actions runs automatically on every pull request and push to `main`. The 
 | **Neovim startup** | Headless `nvim` launch — catches broken plugin specs, bad keymaps, etc. |
 | **Git config** | Renders and parses `dot_gitconfig.tmpl` to catch malformed config |
 | **Chezmoi templates** | Renders every `.tmpl` file to verify template syntax |
+| **Secret scan** | `gitleaks` over the full git history — fails the build if an API key, token, password, or similar secret is detected. Output is `--redact`ed so secrets never appear in logs. |
 
 No manual GitHub setup is required — the workflow runs automatically once `.github/workflows/ci.yml` is pushed.
 

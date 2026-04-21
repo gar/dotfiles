@@ -69,16 +69,18 @@ if run_check "shell-syntax" "$FILTER"; then
     fi
   done
 
-  # zsh — render template first if chezmoi is available, then syntax-check
-  if command -v zsh &>/dev/null; then
+  # zsh — render the template with chezmoi, then syntax-check the result.
+  # Raw .tmpl contains Go template syntax ({{- if ...}}) that isn't valid zsh,
+  # so chezmoi is required to render it before zsh -n can parse it.
+  if ! command -v zsh &>/dev/null; then
+    fail "zsh not installed"
+  elif ! command -v chezmoi &>/dev/null; then
+    fail "chezmoi not installed (needed to render dot_zshrc.tmpl)"
+  else
     ZSHRC_FILE="$REPO_DIR/dot_zshrc.tmpl"
     if [[ -f "$ZSHRC_FILE" ]]; then
       ZSHRC_TMP=$(mktemp)
-      if command -v chezmoi &>/dev/null; then
-        chezmoi execute-template --init < "$ZSHRC_FILE" > "$ZSHRC_TMP" 2>/dev/null
-      else
-        cp "$ZSHRC_FILE" "$ZSHRC_TMP"
-      fi
+      chezmoi execute-template --init < "$ZSHRC_FILE" > "$ZSHRC_TMP" 2>/dev/null
       if zsh -n "$ZSHRC_TMP" 2>&1; then
         pass "zsh -n dot_zshrc.tmpl"
       else
@@ -86,8 +88,6 @@ if run_check "shell-syntax" "$FILTER"; then
       fi
       rm -f "$ZSHRC_TMP"
     fi
-  else
-    pass "zsh -n dot_zshrc.tmpl (skipped — zsh not available)"
   fi
 fi
 
@@ -113,7 +113,9 @@ fi
 # 4. Neovim startup — headless launch to catch config errors
 # ---------------------------------------------------------------------------
 if run_check "nvim-startup" "$FILTER"; then
-  if command -v nvim &>/dev/null; then
+  if ! command -v nvim &>/dev/null; then
+    fail "nvim not installed"
+  else
     # Launch nvim with our config dir, install plugins, then quit.
     # Capture stderr — any errors or warnings indicate a broken config.
     NVIM_ERR=$(XDG_CONFIG_HOME="$REPO_DIR/dot_config" \
@@ -132,8 +134,6 @@ if run_check "nvim-startup" "$FILTER"; then
       printf "%s\n" "$NVIM_ERR"
       fail "nvim headless startup (errors on stderr)"
     fi
-  else
-    pass "nvim headless startup (skipped — nvim not available)"
   fi
 fi
 
@@ -143,7 +143,9 @@ fi
 #     actually execute their config functions.  Plugin cache is warm from 4.
 # ---------------------------------------------------------------------------
 if run_check "nvim-filetypes" "$FILTER"; then
-  if command -v nvim &>/dev/null; then
+  if ! command -v nvim &>/dev/null; then
+    fail "nvim not installed"
+  else
     for pair in \
       "lua:-- test" \
       "md:# test" \
@@ -173,8 +175,6 @@ if run_check "nvim-filetypes" "$FILTER"; then
         fail "nvim filetype .$ext"
       fi
     done
-  else
-    pass "nvim filetypes (skipped — nvim not available)"
   fi
 fi
 
@@ -183,23 +183,20 @@ fi
 # ---------------------------------------------------------------------------
 if run_check "git-config" "$FILTER"; then
   GITCONFIG="$REPO_DIR/dot_gitconfig.tmpl"
-  if [[ -f "$GITCONFIG" ]]; then
-    # Render template if chezmoi is available, otherwise test the raw file
+  if [[ ! -f "$GITCONFIG" ]]; then
+    fail "dot_gitconfig.tmpl not found"
+  elif ! command -v chezmoi &>/dev/null; then
+    fail "chezmoi not installed (needed to render dot_gitconfig.tmpl)"
+  else
     TMPFILE=$(mktemp)
     trap 'rm -f "$TMPFILE"' EXIT
-    if command -v chezmoi &>/dev/null; then
-      chezmoi execute-template --init < "$GITCONFIG" > "$TMPFILE" 2>/dev/null
-    else
-      cp "$GITCONFIG" "$TMPFILE"
-    fi
+    chezmoi execute-template --init < "$GITCONFIG" > "$TMPFILE" 2>/dev/null
     if git config --file "$TMPFILE" --list >/dev/null 2>&1; then
       pass "git config dot_gitconfig.tmpl"
     else
       git config --file "$TMPFILE" --list 2>&1 || true
       fail "git config dot_gitconfig.tmpl"
     fi
-  else
-    pass "git config (skipped — dot_gitconfig.tmpl not found)"
   fi
 fi
 
@@ -207,7 +204,9 @@ fi
 # 6. Chezmoi template — validate templates render without errors
 # ---------------------------------------------------------------------------
 if run_check "chezmoi-template" "$FILTER"; then
-  if command -v chezmoi &>/dev/null; then
+  if ! command -v chezmoi &>/dev/null; then
+    fail "chezmoi not installed"
+  else
     TMPL_FAIL=0
     while IFS= read -r -d '' f; do
       basename="$(basename "$f")"
@@ -228,8 +227,30 @@ if run_check "chezmoi-template" "$FILTER"; then
       fi
     done < <(find "$REPO_DIR" -name '*.tmpl' -not -path '*/.git/*' -print0)
     [[ "$TMPL_FAIL" -eq 0 ]] || true
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 7. Secret scan — catch accidentally committed API keys, tokens, passwords
+# ---------------------------------------------------------------------------
+if run_check "secret-scan" "$FILTER"; then
+  if ! command -v gitleaks &>/dev/null; then
+    fail "gitleaks not installed"
+  elif gitleaks detect \
+      --source "$REPO_DIR" \
+      --redact \
+      --no-banner \
+      --exit-code 1 >/dev/null 2>&1; then
+    pass "gitleaks (no secrets detected)"
   else
-    pass "chezmoi templates (skipped — chezmoi not available)"
+    # re-run with --verbose to surface findings
+    gitleaks detect \
+      --source "$REPO_DIR" \
+      --redact \
+      --verbose \
+      --no-banner \
+      --exit-code 1 || true
+    fail "gitleaks detected potential secrets"
   fi
 fi
 
