@@ -139,12 +139,8 @@ install_packages_arch() {
 # ---------------------------------------------------------------------------
 install_python_tools() {
   if command -v pipx &>/dev/null; then
-    # TODO: `2>/dev/null || true` silently swallows all failures — including real
-    # errors like pipx misconfig or a broken Python install. Distinguish "already
-    # installed" (ok) from other failures: check `pipx list` first, or grep stderr
-    # for the already-installed message and only then suppress.
-    pipx install termgraph 2>/dev/null || true
-    pipx install td-watson 2>/dev/null || true
+    pipx list --short | grep -q "^termgraph " || pipx install termgraph
+    pipx list --short | grep -q "^td-watson "  || pipx install td-watson
   else
     echo "Note: pipx not found — install manually: pipx install termgraph td-watson"
   fi
@@ -218,10 +214,10 @@ else
 fi
 read -rp "Set up account in 1Password app (and enable biometrics) [enter to continue]"
 
-# TODO: `op` may not be installed at this point on Linux (it's documented as a
-# prerequisite but not enforced). Gate this behind `command -v op &>/dev/null` and
-# emit a clear error telling the user to install the 1Password CLI before re-running,
-# rather than failing with a raw shell error.
+if ! command -v op &>/dev/null; then
+  echo "Error: 1Password CLI (op) is not installed. Install it from https://developer.1password.com/docs/cli/ and re-run this script."
+  exit 1
+fi
 eval "$(op signin --account my.1password.com)"
 
 # Install packages
