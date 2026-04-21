@@ -234,4 +234,30 @@ if run_check "chezmoi-template" "$FILTER"; then
 fi
 
 # ---------------------------------------------------------------------------
+# 7. Secret scan — catch accidentally committed API keys, tokens, passwords
+# ---------------------------------------------------------------------------
+if run_check "secret-scan" "$FILTER"; then
+  if command -v gitleaks &>/dev/null; then
+    if gitleaks detect \
+        --source "$REPO_DIR" \
+        --redact \
+        --no-banner \
+        --exit-code 1 >/dev/null 2>&1; then
+      pass "gitleaks (no secrets detected)"
+    else
+      # re-run with --verbose to surface findings
+      gitleaks detect \
+        --source "$REPO_DIR" \
+        --redact \
+        --verbose \
+        --no-banner \
+        --exit-code 1 || true
+      fail "gitleaks detected potential secrets"
+    fi
+  else
+    pass "gitleaks (skipped — not installed)"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 summary

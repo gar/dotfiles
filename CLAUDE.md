@@ -54,7 +54,7 @@ Run a single check:
 ./bin/executable_test.sh <check_name>
 ```
 
-Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `nvim-filetypes`, `git-config`, `chezmoi-template`.
+Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `nvim-filetypes`, `git-config`, `chezmoi-template`, `secret-scan`.
 
 ### What the tests verify
 
@@ -67,10 +67,11 @@ Available checks: `shellcheck`, `shell-syntax`, `lua-lint`, `nvim-startup`, `nvi
 | `nvim-filetypes` | Opens a temp file per filetype (lua, md, py, sh, ts, js, ex, rs, c, rb) — exercises lazy-loaded plugin configs |
 | `git-config` | Renders and parses `dot_gitconfig.tmpl` |
 | `chezmoi-template` | Renders all `.tmpl` files (1Password-dependent templates are skipped) |
+| `secret-scan` | Runs `gitleaks` over the working tree to catch committed API keys, tokens, passwords (skipped locally if `gitleaks` is not installed) |
 
 ### CI
 
-GitHub Actions runs the same checks on every PR and push to `main` — four parallel jobs (`lint`, `lua`, `neovim`, `chezmoi`). The `neovim` job runs startup and filetype smoke tests as sequential steps; the `chezmoi` job also validates `dot_gitconfig.tmpl` parses as valid git config. The neovim binary and lazy.nvim plugin dir are cached between runs. See `.github/workflows/ci.yml`.
+GitHub Actions runs the same checks on every PR and push to `main` — five parallel jobs (`lint`, `lua`, `neovim`, `chezmoi`, `secret-scan`). The `neovim` job runs startup and filetype smoke tests as sequential steps; the `chezmoi` job also validates `dot_gitconfig.tmpl` parses as valid git config; the `secret-scan` job runs gitleaks against the full git history (`fetch-depth: 0`) with `--redact` so any findings are never printed verbatim in logs. The neovim binary, lazy.nvim plugin dir, and gitleaks binary are cached between runs. See `.github/workflows/ci.yml`.
 
 ## Key Files to Know
 
