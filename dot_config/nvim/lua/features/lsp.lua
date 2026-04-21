@@ -150,15 +150,9 @@ return {
         },
       })
 
-      -- Custom server not managed by mason.
-      -- Binary must be manually downloaded from its GitHub releases page and placed at ~/bin/expert.
+      -- Custom server not managed by mason. The `expert` binary is installed
+      -- to ~/bin/expert by `install_expert_lsp` in bin/executable_bootstrap.sh.
       -- If the binary is absent, vim.lsp.enable() is a no-op so startup is unaffected.
-      -- TODO: There is no automation for installing the `expert` binary — the comment
-      -- says "manually downloaded" which violates the "never require manual
-      -- post-install steps" rule in CLAUDE.md. Either (a) fetch the latest release
-      -- from elixir-lang/expert in `bin/executable_bootstrap.sh` when an Elixir
-      -- toolchain is present, or (b) add a `mise` task / shell function the user can
-      -- invoke on demand. Link it from README's Elixir section either way.
       vim.lsp.config("expert", {
         cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
         filetypes = { "elixir", "eelixir", "heex" },
