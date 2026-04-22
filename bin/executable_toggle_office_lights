@@ -3,23 +3,17 @@
 # Toggle the Philips Hue office light group.
 # When turning on, activates the "Read" scene between 08:00-18:00, "Rest" otherwise.
 #
-# Credentials are read from $HUE_CONFIG (default: ~/.config/hue/hue.env).
-# Required env vars: HUE_BRIDGE_IP, HUE_USERNAME, HUE_OFFICE_GROUP_ID.
+# Required env vars (set in ~/.env.local, which ~/.zshenv auto-exports):
+#   HUE_BRIDGE_IP, HUE_USERNAME, HUE_OFFICE_GROUP_ID
 #
 # Exit codes: 0 on success, non-zero on any error. The final stdout line is a
 # human-readable status suitable for a Raycast HUD or vim.notify.
 
 set -euo pipefail
 
-config_file="${HUE_CONFIG:-$HOME/.config/raycast-scripts/hue.env}"
-if [[ -f "$config_file" ]]; then
-  # shellcheck source=/dev/null
-  source "$config_file"
-fi
-
-: "${HUE_BRIDGE_IP:?not set — add it to $config_file or export it}"
-: "${HUE_USERNAME:?not set — add it to $config_file or export it}"
-: "${HUE_OFFICE_GROUP_ID:?not set — add it to $config_file or export it}"
+: "${HUE_BRIDGE_IP:?not set — add to ~/.env.local or export it}"
+: "${HUE_USERNAME:?not set — add to ~/.env.local or export it}"
+: "${HUE_OFFICE_GROUP_ID:?not set — add to ~/.env.local or export it}"
 
 base="http://${HUE_BRIDGE_IP}/api/${HUE_USERNAME}"
 

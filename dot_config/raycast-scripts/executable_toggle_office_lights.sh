@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 # @raycast.schemaVersion 1
 # @raycast.title Toggle Office Lights
@@ -9,5 +9,9 @@
 
 # Thin wrapper around ~/bin/toggle_office_lights so the same logic is reachable
 # from Raycast, the shell, and Neovim.
+#
+# Shebang is zsh so Raycast invocations source ~/.zshenv, which in turn sources
+# ~/.env.local. That's how Hue credentials reach this process when Raycast
+# launches it outside of any user shell session.
 
 exec "$HOME/bin/toggle_office_lights" "$@"

@@ -1,0 +1,19 @@
+# Copy this file to ~/.env.local and fill in values for the machine.
+# ~/.env.local is NOT tracked by chezmoi — secrets stay on the machine.
+# ~/.zshenv auto-exports every KEY=value line here to the shell env.
+#
+# Do NOT use `export KEY=...` or shell expansions; keep it to plain key/value
+# pairs so it's obvious what's being exposed.
+
+# --- Philips Hue (used by ~/bin/toggle_office_lights) ---------------------
+# Local IP address of your Hue bridge, e.g. 192.168.1.2
+HUE_BRIDGE_IP=
+
+# Authorised username issued by the bridge. See
+# https://developers.meethue.com/develop/get-started-2/
+HUE_USERNAME=
+
+# Group/room ID for the office (list groups with:
+#   curl http://$HUE_BRIDGE_IP/api/$HUE_USERNAME/groups | jq 'to_entries[] | {id: .key, name: .value.name}'
+# )
+HUE_OFFICE_GROUP_ID=

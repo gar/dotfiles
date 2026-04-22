@@ -78,7 +78,22 @@ mise use node@20
 
 ## Machine-local Config
 
-Some settings belong to a specific machine (work tools, private plugins, local LSP servers) and should not be committed to a public repo. Two escape hatches are provided for this:
+Some settings belong to a specific machine (work tools, private plugins, local LSP servers) and should not be committed to a public repo. Three escape hatches are provided for this:
+
+### Environment variables / secrets
+
+Create `~/.env.local`. `~/.zshenv` sources it on every zsh invocation with `allexport` enabled, so plain `KEY=value` lines become exported env vars for shells, scripts, and Raycast script commands (whose shebang is zsh so they source zshenv too).
+
+```sh
+# ~/.env.local  (not in git)
+HUE_BRIDGE_IP=192.168.1.2
+HUE_USERNAME=abc123...
+OPENAI_API_KEY=sk-...
+```
+
+Template: `cp ~/.env.local.example ~/.env.local && $EDITOR ~/.env.local`.
+
+This is a single shared bucket — any consumer (Raycast, shell aliases, Neovim subprocesses) sees every var. Prefer 1Password + `op run` for higher-sensitivity secrets.
 
 ### Neovim
 
@@ -455,14 +470,7 @@ It's reachable from three places, each a thin entry into the same script:
 | Neovim | `<leader>L` (status appears via `vim.notify`) |
 | Raycast (macOS) | Script command in `~/.config/raycast-scripts/` |
 
-Credentials are sourced from `~/.config/hue/hue.env` (not tracked by git; override with `HUE_CONFIG`). Copy the example and fill it in:
-
-```bash
-cp ~/.config/hue/hue.env.example ~/.config/hue/hue.env
-$EDITOR ~/.config/hue/hue.env
-```
-
-Required variables:
+Credentials come from `~/.env.local` (see [Machine-local Config → Environment variables](#environment-variables--secrets)). Required variables:
 
 | Variable | How to find it |
 |---|---|
