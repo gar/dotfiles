@@ -134,12 +134,23 @@ brew bundle
 | `hexyl` | Hex viewer — colorized, human-readable `xxd` replacement (`xxd` is aliased to `hexyl`) |
 | `hyperfine` | Command benchmarking with statistics (mean/stddev, warmup runs, parameter sweeps) |
 | `procs` | Modern `ps` replacement — color output, keyword search, process tree view |
+| `watson` | Time tracker — `watson start <project> +tag`, `watson stop`, `watson report` |
 
 **Example:** Compare test suite performance with hyperfine:
 
 ```bash
 hyperfine 'mix test --stale' 'mix test'
 ```
+
+### Watson status in the Raycast menu bar (macOS)
+
+`dot_config/raycast-scripts/watson-status.sh` is a Raycast [Script Command](https://github.com/raycast/script-commands) that shows the currently-tracked Watson project (and tags) in the macOS menu bar, and stays empty when nothing is being tracked.
+
+One-time setup:
+
+1. `chezmoi apply` so the script lands at `~/.config/raycast-scripts/watson-status.sh` with the executable bit set.
+2. Open Raycast → Settings → Extensions → Script Commands → **Add Directory** and pick `~/.config/raycast-scripts`.
+3. Run the **Watson Status** command once from Raycast to register it in the menu bar. It refreshes every 30s; format is `⏱ project [tag1, tag2]`.
 
 ## Testing
 
