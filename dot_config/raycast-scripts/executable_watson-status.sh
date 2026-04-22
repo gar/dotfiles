@@ -3,13 +3,13 @@
 # Required parameters:
 # @raycast.schemaVersion 1
 # @raycast.title Watson Status
-# @raycast.mode menu-bar
+# @raycast.mode inline
 # @raycast.packageName Watson
 #
 # Optional parameters:
 # @raycast.icon ⏱
 # @raycast.refreshTime 10s
-# @raycast.description Show the currently-tracked Watson project in the menu bar. Empty when not tracking.
+# @raycast.description Show the currently-tracked Watson project inline in Raycast. Empty when not tracking.
 
 set -euo pipefail
 

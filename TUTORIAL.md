@@ -511,7 +511,7 @@ gh pr checkout 42     # check out PR #42 locally
 gh pr view --web      # open current PR in browser
 ```
 
-### watson — time tracking with a Raycast menu bar readout
+### watson — time tracking with a Raycast inline readout
 
 Basic usage:
 
@@ -523,12 +523,12 @@ watson report --day                 # today's breakdown by project
 watson log -f                       # full log, most recent first
 ```
 
-On macOS, `dot_config/raycast-scripts/watson-status.sh` is a [Raycast Script Command](https://github.com/raycast/script-commands) that surfaces the current project in the menu bar and hides itself when nothing is running.
+On macOS, `dot_config/raycast-scripts/watson-status.sh` is a [Raycast Script Command](https://github.com/raycast/script-commands) using `inline` mode — the current project is rendered directly in the Raycast root-search command item, and the item stays empty when nothing is running.
 
 Enable it once per machine:
 
 1. `chezmoi apply` to place the script at `~/.config/raycast-scripts/watson-status.sh`.
 2. Raycast → Settings → Extensions → Script Commands → **Add Directory** → `~/.config/raycast-scripts`.
-3. Run **Watson Status** from Raycast once so it pins to the menu bar.
+3. Run **Watson Status** from Raycast once, then `cmd k` → **Add to Favorites** so it's pinned to the top of root search.
 
-Output format: `⏱ project [tag1, tag2]` while tracking, empty otherwise. Refreshes every 30s — `watson start/stop` will be reflected within half a minute.
+Output format: `⏱ project [tag1, tag2]` while tracking, empty otherwise. Refreshes every 10s — `watson start/stop` will be reflected within ten seconds.
