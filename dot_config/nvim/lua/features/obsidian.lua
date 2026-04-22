@@ -278,6 +278,61 @@ local function move_open_todos_from_heading()
   prompt_and_move_todos(bufnr, todo_lines, todo_lnums, "No open todos found in heading group")
 end
 
+-- Promote the todo on the current line into a third-level heading appended
+-- at the end of the `## Notes` section. Leaves the source todo in place so
+-- the user decides when to check it off.
+local function promote_todo_to_notes_heading()
+  local bufnr    = vim.api.nvim_get_current_buf()
+  local cur_lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local cur_line = vim.api.nvim_buf_get_lines(bufnr, cur_lnum - 1, cur_lnum, false)[1] or ""
+
+  local todo_text = cur_line:match("^%s*[%*%-]%s+%[.%]%s+(.+)$")
+  if not todo_text then
+    vim.notify("Current line is not a todo item", vim.log.levels.WARN)
+    return
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+  local notes_pos = nil
+  for i, line in ipairs(lines) do
+    if line:match("^##%s+Notes%s*$") then
+      notes_pos = i
+      break
+    end
+  end
+  if not notes_pos then
+    vim.notify("No `## Notes` heading found", vim.log.levels.WARN)
+    return
+  end
+
+  -- End of Notes section: next H2 heading (## ) or EOF. `##%s` won't match
+  -- `### ` because `%s` needs whitespace, not another `#`.
+  local end_pos = #lines + 1
+  for i = notes_pos + 1, #lines do
+    if lines[i]:match("^##%s") then
+      end_pos = i
+      break
+    end
+  end
+
+  local new_lines = { "### " .. todo_text }
+  if end_pos > 1 and lines[end_pos - 1] ~= "" then
+    table.insert(new_lines, 1, "")
+  end
+  if end_pos <= #lines then
+    table.insert(new_lines, "")
+  end
+
+  vim.api.nvim_buf_set_lines(bufnr, end_pos - 1, end_pos - 1, false, new_lines)
+
+  -- Jump to the newly inserted heading so the user can start writing notes
+  local heading_lnum = end_pos + (new_lines[1] == "" and 1 or 0)
+  vim.api.nvim_win_set_cursor(0, { heading_lnum, 0 })
+
+  vim.notify('Added heading: "' .. todo_text .. '"', vim.log.levels.INFO)
+end
+
 local function grep_todos()
   require("telescope.builtin").grep_string({
     search = "- \\[ \\]",
@@ -368,6 +423,7 @@ return {
     { "<leader>nRm", function() browse_recent_notes("30days","30 days")  end, desc = "Recent notes (30d)" },
     -- Todos
     { "<leader>ni", add_todo_to_daily,                                         desc = "Capture todo to daily note" },
+    { "<leader>nh", promote_todo_to_notes_heading,                             desc = "Todo → heading in Notes" },
     { "<leader>n?", grep_todos,                                                desc = "Open TODOs" },
     { "<leader>nO", ":MoveOpenTodosToDate<CR>",        mode = "v",             desc = "Move todos to date…" },
     { "<leader>nO", move_open_todos_from_heading,       mode = "n",             desc = "Move open todos to date…" },
