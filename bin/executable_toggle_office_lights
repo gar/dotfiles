@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# Toggle the Philips Hue office light group.
+# When turning on, activates the "Read" scene between 08:00-18:00, "Rest" otherwise.
+#
+# Credentials are read from $HUE_CONFIG (default: ~/.config/raycast-scripts/hue.env).
+# Required env vars: HUE_BRIDGE_IP, HUE_USERNAME, HUE_OFFICE_GROUP_ID.
+#
+# Exit codes: 0 on success, non-zero on any error. The final stdout line is a
+# human-readable status suitable for a Raycast HUD or vim.notify.
+
+set -euo pipefail
+
+config_file="${HUE_CONFIG:-$HOME/.config/raycast-scripts/hue.env}"
+if [[ -f "$config_file" ]]; then
+  # shellcheck source=/dev/null
+  source "$config_file"
+fi
+
+: "${HUE_BRIDGE_IP:?not set — add it to $config_file or export it}"
+: "${HUE_USERNAME:?not set — add it to $config_file or export it}"
+: "${HUE_OFFICE_GROUP_ID:?not set — add it to $config_file or export it}"
+
+base="http://${HUE_BRIDGE_IP}/api/${HUE_USERNAME}"
+
+group_json=$(curl -fsS "${base}/groups/${HUE_OFFICE_GROUP_ID}")
+any_on=$(jq -r 'try .state.any_on catch "ERROR"' <<<"$group_json")
+if [[ "$any_on" != "true" && "$any_on" != "false" ]]; then
+  echo "Could not read group ${HUE_OFFICE_GROUP_ID}: $group_json" >&2
+  exit 1
+fi
+
+if [[ "$any_on" == "true" ]]; then
+  curl -fsS -X PUT -H 'Content-Type: application/json' \
+    -d '{"on":false}' \
+    "${base}/groups/${HUE_OFFICE_GROUP_ID}/action" >/dev/null
+  echo "Office lights off"
+  exit 0
+fi
+
+# 10# forces base-10 so 08/09 don't get parsed as invalid octal.
+hour=$(date +%H)
+if (( 10#$hour >= 8 && 10#$hour < 18 )); then
+  scene_name="Read"
+else
+  scene_name="Rest"
+fi
+
+scenes=$(curl -fsS "${base}/scenes")
+
+# Prefer a scene attached to the office group; fall back to any scene with that name.
+scene_id=$(jq -r --arg name "$scene_name" --arg group "$HUE_OFFICE_GROUP_ID" \
+  'to_entries[] | select(.value.name == $name and .value.group == $group) | .key' \
+  <<<"$scenes" | head -n1)
+
+if [[ -z "$scene_id" ]]; then
+  scene_id=$(jq -r --arg name "$scene_name" \
+    'to_entries[] | select(.value.name == $name) | .key' \
+    <<<"$scenes" | head -n1)
+fi
+
+if [[ -z "$scene_id" ]]; then
+  echo "Scene \"${scene_name}\" not found on Hue bridge" >&2
+  exit 1
+fi
+
+curl -fsS -X PUT -H 'Content-Type: application/json' \
+  -d "$(jq -cn --arg scene "$scene_id" '{scene: $scene}')" \
+  "${base}/groups/${HUE_OFFICE_GROUP_ID}/action" >/dev/null
+
+echo "Office lights on — ${scene_name}"

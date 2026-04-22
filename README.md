@@ -256,6 +256,7 @@ Leader key is `Space`.
 | `<A-Right>` | normal | Decrease window width |
 | `p` | visual | Paste without overwriting clipboard |
 | `<C-\>` | normal | Toggle floating terminal |
+| `<leader>L` | normal | Toggle office lights (Philips Hue) |
 
 ### Fuzzy Find (Telescope)
 
@@ -441,6 +442,39 @@ This fires for all aliases in `dot_zshrc.tmpl` (git, worktree, etc.).
 When you press `h`/`j`/`k`/`l` (or the arrow keys) more than 4 times in quick succession, a hint appears suggesting a more efficient motion — a count prefix, `w`/`b`/`e`/`f`/`t`, a jump (`ctrl-d`/`ctrl-u`), or a search.
 
 Configured in `hint` mode: the keypress still registers, you just get nudged. To switch to blocking mode (the key is swallowed until you use a better motion), set `restriction_mode = "block"` in `dot_config/nvim/lua/features/hardtime.lua`.
+
+## Philips Hue — Toggle Office Lights
+
+The generic script `~/bin/toggle_office_lights` (chezmoi source: `bin/executable_toggle_office_lights`) toggles the office light group on/off. When turning on, it activates the `Read` scene between 08:00 and 18:00, and the `Rest` scene outside those hours.
+
+It's reachable from three places, each a thin entry into the same script:
+
+| Surface | How |
+|---|---|
+| Shell | `toggle_office_lights` |
+| Neovim | `<leader>L` (status appears via `vim.notify`) |
+| Raycast (macOS) | Script command in `~/.config/raycast-scripts/` |
+
+Credentials are sourced from `~/.config/raycast-scripts/hue.env` (not tracked by git). Copy the example and fill it in:
+
+```bash
+cp ~/.config/raycast-scripts/hue.env.example ~/.config/raycast-scripts/hue.env
+$EDITOR ~/.config/raycast-scripts/hue.env
+```
+
+Required variables:
+
+| Variable | How to find it |
+|---|---|
+| `HUE_BRIDGE_IP` | Local IP of your Hue bridge (e.g. 192.168.1.2). See https://developers.meethue.com/develop/get-started-2/ |
+| `HUE_USERNAME` | Authorised username issued by the bridge (same guide) |
+| `HUE_OFFICE_GROUP_ID` | List groups: `curl http://$HUE_BRIDGE_IP/api/$HUE_USERNAME/groups \| jq 'to_entries[] \| {id: .key, name: .value.name}'` |
+
+The script only uses `curl` and `jq` (both installed by the bootstrap) — no Node/`zx` required.
+
+### Raycast setup (macOS)
+
+Raycast script commands live in `~/.config/raycast-scripts/` (excluded on Linux via `.chezmoiignore`). Point Raycast at that folder once: **Raycast → Extensions → Script Commands → Add More Directories → `~/.config/raycast-scripts`**. The "Toggle Office Lights" command will appear in Raycast immediately.
 
 ## OS Support
 

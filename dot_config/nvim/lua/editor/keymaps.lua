@@ -20,3 +20,14 @@ map("t", "<C-w>h", "<C-\\><C-N><C-w>h", { desc = "Terminal: move to left split" 
 map("t", "<C-w>j", "<C-\\><C-N><C-w>j", { desc = "Terminal: move to below split" })
 map("t", "<C-w>k", "<C-\\><C-N><C-w>k", { desc = "Terminal: move to above split" })
 map("t", "<C-w>l", "<C-\\><C-N><C-w>l", { desc = "Terminal: move to right split" })
+
+-- Toggle Philips Hue office lights via ~/bin/toggle_office_lights
+map("n", "<leader>L", function()
+  vim.system({ "toggle_office_lights" }, { text = true }, function(obj)
+    local out = vim.trim(obj.stdout or "")
+    local err = vim.trim(obj.stderr or "")
+    local msg = out ~= "" and out or (err ~= "" and err or "toggle-office-lights: no output")
+    local level = obj.code == 0 and vim.log.levels.INFO or vim.log.levels.ERROR
+    vim.schedule(function() vim.notify(msg, level) end)
+  end)
+end, { desc = "Toggle office lights" })
