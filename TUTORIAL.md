@@ -269,6 +269,36 @@ Daily notes often accumulate many headings throughout the day. Use folding to hi
 
 **Reset the view:** `zR` opens everything again.
 
+### Working a todo into a notes section
+
+Daily notes often start with a checklist of larger tasks at the top, and a `## Notes` section below for the running commentary:
+
+```
+# 2026-04-22 Wednesday
+
+* [ ] Reply on Slack to Foo
+* [ ] Implement new readiness API
+* [ ] Send email
+
+## Notes
+
+### Some earlier note
+…
+```
+
+When you sit down to work on one of those todos, put the cursor on its line and press `<leader>nh`. It copies the todo text into a new `###` heading appended to the end of `## Notes`, then drops the cursor there so you can start jotting sub-todos or decisions:
+
+```
+## Notes
+
+### Some earlier note
+…
+
+### Implement new readiness API   ← cursor lands here
+```
+
+The original checkbox stays untouched — tick it off later with `<leader>nx` when the task is done.
+
 ### Finding things
 
 | Keymap | Action |
@@ -277,6 +307,7 @@ Daily notes often accumulate many headings throughout the day. Use folding to hi
 | `<leader>n?` | Find all open `- [ ]` todos vault-wide |
 | `<leader>nf` | Jump to any note by name |
 | `<leader>nb` | See what links to the current note |
+| `<leader>nh` | Promote the current todo into a `###` heading in the `## Notes` section |
 | `<leader>nRd` | Notes changed in the last 24 hours |
 | `<leader>nRw` | Notes changed in the last 7 days |
 | `<leader>nRm` | Notes changed in the last 30 days |

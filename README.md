@@ -375,6 +375,7 @@ Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim w
 | `<leader>nr` | Rename note |
 | `<leader>np` | Paste image |
 | `<leader>ni` | Capture todo to today's daily note |
+| `<leader>nh` | Promote the current todo into a `###` heading at the end of the `## Notes` section |
 | `<leader>n?` | Find all open todos across vault |
 | `<leader>ne` | Extract selection to new note (visual) |
 | `<leader>nL` | Link selection (visual) |
