@@ -8,7 +8,7 @@
 #
 # Optional parameters:
 # @raycast.icon ⏱
-# @raycast.refreshTime 30s
+# @raycast.refreshTime 10s
 # @raycast.description Show the currently-tracked Watson project in the menu bar. Empty when not tracking.
 
 set -euo pipefail
@@ -27,19 +27,15 @@ done
 # No watson binary — stay silent rather than surfacing an error.
 [[ -z "$WATSON" ]] && exit 0
 
-# `watson status` prints "No project started." when idle and a line beginning
-# with "Project " when tracking. Bail silently when not tracking so the menu
-# bar item is empty.
+# A single `watson status` call is ~3x cheaper than invoking it for the
+# project name and tags separately. Output shapes we care about:
+#   Project <name> [<tag1>, <tag2>] started <rel> ago (<timestamp>)
+#   Project <name> started <rel> ago (<timestamp>)
+#   No project started.
 status_line=$("$WATSON" status 2>/dev/null || true)
-[[ "$status_line" == Project\ * ]] || exit 0
 
-project=$("$WATSON" status -p 2>/dev/null || true)
-[[ -z "$project" ]] && exit 0
-
-tags=$("$WATSON" status -t 2>/dev/null || true)
-
-if [[ -n "$tags" ]]; then
-  printf '⏱ %s [%s]\n' "$project" "$tags"
-else
-  printf '⏱ %s\n' "$project"
+if [[ "$status_line" =~ ^Project\ (.+)\ \[(.+)\]\ started\  ]]; then
+  printf '⏱ %s [%s]\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+elif [[ "$status_line" =~ ^Project\ (.+)\ started\  ]]; then
+  printf '⏱ %s\n' "${BASH_REMATCH[1]}"
 fi
