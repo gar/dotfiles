@@ -39,7 +39,7 @@ FILTER="${1:-}"
 # ---------------------------------------------------------------------------
 if run_check "shellcheck" "$FILTER"; then
   if command -v shellcheck &>/dev/null; then
-    for f in "$REPO_DIR"/bin/executable_*.sh "$REPO_DIR"/dot_config/raycast-scripts/executable_*.sh "$REPO_DIR"/dot_macos; do
+    for f in "$REPO_DIR"/bin/executable_*.sh "$REPO_DIR"/dot_macos; do
       [[ -f "$f" ]] || continue
       basename="$(basename "$f")"
       # dot_macos uses osascript/defaults — lots of deliberate SC warnings; exclude common noise
@@ -59,7 +59,7 @@ fi
 # ---------------------------------------------------------------------------
 if run_check "shell-syntax" "$FILTER"; then
   # bash scripts
-  for f in "$REPO_DIR"/bin/executable_*.sh "$REPO_DIR"/dot_config/raycast-scripts/executable_*.sh; do
+  for f in "$REPO_DIR"/bin/executable_*.sh; do
     [[ -f "$f" ]] || continue
     basename="$(basename "$f")"
     if bash -n "$f" 2>&1; then
