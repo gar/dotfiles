@@ -78,7 +78,22 @@ mise use node@20
 
 ## Machine-local Config
 
-Some settings belong to a specific machine (work tools, private plugins, local LSP servers) and should not be committed to a public repo. Two escape hatches are provided for this:
+Some settings belong to a specific machine (work tools, private plugins, local LSP servers) and should not be committed to a public repo. Three escape hatches are provided for this:
+
+### Environment variables / secrets
+
+Create `~/.env.local`. `~/.zshenv` sources it on every zsh invocation with `allexport` enabled, so plain `KEY=value` lines become exported env vars for shells, scripts, and Raycast script commands (whose shebang is zsh so they source zshenv too).
+
+```sh
+# ~/.env.local  (not in git)
+HUE_BRIDGE_IP=192.168.1.2
+HUE_USERNAME=abc123...
+OPENAI_API_KEY=sk-...
+```
+
+Template: `cp ~/.env.local.example ~/.env.local && $EDITOR ~/.env.local`.
+
+This is a single shared bucket — any consumer (Raycast, shell aliases, Neovim subprocesses) sees every var. Prefer 1Password + `op run` for higher-sensitivity secrets.
 
 ### Neovim
 
@@ -256,6 +271,7 @@ Leader key is `Space`.
 | `<A-Right>` | normal | Decrease window width |
 | `p` | visual | Paste without overwriting clipboard |
 | `<C-\>` | normal | Toggle floating terminal |
+| `<leader>L` | normal | Toggle office lights (Philips Hue) |
 
 ### Fuzzy Find (Telescope)
 
@@ -441,6 +457,32 @@ This fires for all aliases in `dot_zshrc.tmpl` (git, worktree, etc.).
 When you press `h`/`j`/`k`/`l` (or the arrow keys) more than 4 times in quick succession, a hint appears suggesting a more efficient motion — a count prefix, `w`/`b`/`e`/`f`/`t`, a jump (`ctrl-d`/`ctrl-u`), or a search.
 
 Configured in `hint` mode: the keypress still registers, you just get nudged. To switch to blocking mode (the key is swallowed until you use a better motion), set `restriction_mode = "block"` in `dot_config/nvim/lua/features/hardtime.lua`.
+
+## Philips Hue — Toggle Office Lights
+
+The generic script `~/bin/toggle_office_lights` (chezmoi source: `bin/executable_toggle_office_lights`) toggles the office light group on/off. When turning on, it activates the `Read` scene between 08:00 and 18:00, and the `Rest` scene outside those hours.
+
+It's reachable from three places, each a thin entry into the same script:
+
+| Surface | How |
+|---|---|
+| Shell | `toggle_office_lights` |
+| Neovim | `<leader>L` (status appears via `vim.notify`) |
+| Raycast (macOS) | Script command in `~/.config/raycast-scripts/` |
+
+Credentials come from `~/.env.local` (see [Machine-local Config → Environment variables](#environment-variables--secrets)). Required variables:
+
+| Variable | How to find it |
+|---|---|
+| `HUE_BRIDGE_IP` | Local IP of your Hue bridge (e.g. 192.168.1.2). See https://developers.meethue.com/develop/get-started-2/ |
+| `HUE_USERNAME` | Authorised username issued by the bridge (same guide) |
+| `HUE_OFFICE_GROUP_ID` | List groups: `curl http://$HUE_BRIDGE_IP/api/$HUE_USERNAME/groups \| jq 'to_entries[] \| {id: .key, name: .value.name}'` |
+
+The script only uses `curl` and `jq` (both installed by the bootstrap) — no Node/`zx` required.
+
+### Raycast setup (macOS)
+
+Raycast script commands live in `~/.config/raycast-scripts/` (excluded on Linux via `.chezmoiignore`). Point Raycast at that folder once: **Raycast → Extensions → Script Commands → Add More Directories → `~/.config/raycast-scripts`**. The "Toggle Office Lights" command will appear in Raycast immediately.
 
 ## OS Support
 

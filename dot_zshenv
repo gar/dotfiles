@@ -1,0 +1,12 @@
+# ~/.zshenv — sourced by every zsh invocation (interactive, non-interactive,
+# login shells, and scripts). Put machine-local secrets in ~/.env.local and
+# they become available to shells, scripts, Neovim subprocesses, and Raycast
+# script commands (when the script shebang is zsh).
+
+# allexport makes every `KEY=value` line in the sourced file an exported env
+# var without needing `export` on each line.
+if [[ -r "$HOME/.env.local" ]]; then
+  set -a
+  source "$HOME/.env.local"
+  set +a
+fi
