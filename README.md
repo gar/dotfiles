@@ -142,16 +142,6 @@ brew bundle
 hyperfine 'mix test --stale' 'mix test'
 ```
 
-### Watson status as a Raycast inline command (macOS)
-
-`dot_config/raycast-scripts/watson-status.sh` is a Raycast [Script Command](https://github.com/raycast/script-commands) using `inline` mode — it shows the currently-tracked Watson project (and tags) directly in the Raycast root-search command item, and stays empty when nothing is being tracked.
-
-One-time setup:
-
-1. `chezmoi apply` so the script lands at `~/.config/raycast-scripts/watson-status.sh` with the executable bit set.
-2. Open Raycast → Settings → Extensions → Script Commands → **Add Directory** and pick `~/.config/raycast-scripts`.
-3. Run the **Watson Status** command once from Raycast, then `cmd k` → **Add to Favorites** so it's always visible in root search. It refreshes every 10s; format is `⏱ project [tag1, tag2]`.
-
 ## Testing
 
 A test suite validates shell scripts, neovim config, and chezmoi templates. The same checks run locally and in CI.
