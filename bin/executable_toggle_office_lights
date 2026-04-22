@@ -3,7 +3,7 @@
 # Toggle the Philips Hue office light group.
 # When turning on, activates the "Read" scene between 08:00-18:00, "Rest" otherwise.
 #
-# Credentials are read from $HUE_CONFIG (default: ~/.config/raycast-scripts/hue.env).
+# Credentials are read from $HUE_CONFIG (default: ~/.config/hue/hue.env).
 # Required env vars: HUE_BRIDGE_IP, HUE_USERNAME, HUE_OFFICE_GROUP_ID.
 #
 # Exit codes: 0 on success, non-zero on any error. The final stdout line is a

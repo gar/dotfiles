@@ -455,11 +455,11 @@ It's reachable from three places, each a thin entry into the same script:
 | Neovim | `<leader>L` (status appears via `vim.notify`) |
 | Raycast (macOS) | Script command in `~/.config/raycast-scripts/` |
 
-Credentials are sourced from `~/.config/raycast-scripts/hue.env` (not tracked by git). Copy the example and fill it in:
+Credentials are sourced from `~/.config/hue/hue.env` (not tracked by git; override with `HUE_CONFIG`). Copy the example and fill it in:
 
 ```bash
-cp ~/.config/raycast-scripts/hue.env.example ~/.config/raycast-scripts/hue.env
-$EDITOR ~/.config/raycast-scripts/hue.env
+cp ~/.config/hue/hue.env.example ~/.config/hue/hue.env
+$EDITOR ~/.config/hue/hue.env
 ```
 
 Required variables:
