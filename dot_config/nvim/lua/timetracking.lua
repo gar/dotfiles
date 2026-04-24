@@ -12,6 +12,9 @@
 --   - Nearest markdown heading above cursor (any level)
 --   - Filename stem for journal notes (YYYY-MM-DD / YYYY-Wnn / YYYY-MM)
 --   - First H1 heading or filename stem for all other notes
+--
+-- Watson tags are the union of: the todo text itself, #hashtags on the todo
+-- line, and #hashtags on the resolved heading.  Duplicates are dropped.
 
 -- ---------------------------------------------------------------------------
 -- Markdown stripping
@@ -63,29 +66,6 @@ local function get_nearest_heading()
   return nil
 end
 
--- Derive a Watson project string from the current buffer + cursor position.
-local function get_project()
-  local bufname = vim.api.nvim_buf_get_name(0)
-
-  local heading = get_nearest_heading()
-  if heading and heading ~= "" then return heading end
-
-  local is_journal = bufname:match("/journal/daily/")
-    or bufname:match("/journal/weekly/")
-    or bufname:match("/journal/monthly/")
-
-  if is_journal then
-    return vim.fn.fnamemodify(bufname, ":t:r")
-  end
-
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  for _, line in ipairs(lines) do
-    local h1 = line:match("^#%s+(.+)$")
-    if h1 then return strip_markdown(h1) end
-  end
-  return vim.fn.fnamemodify(bufname, ":t:r")
-end
-
 -- Extract #hashtags from text, returning (cleaned_text, tags_list).
 -- Consecutive spaces left behind are collapsed; result is trimmed.
 local function extract_markdown_tags(text)
@@ -95,6 +75,37 @@ local function extract_markdown_tags(text)
     return ""
   end)
   return vim.trim(cleaned:gsub("%s+", " ")), tags
+end
+
+-- Derive a Watson project + its inline tags from the current buffer + cursor.
+-- Hashtags on the heading are stripped from the project name and returned
+-- separately so callers can attach them to the Watson entry.
+local function get_project()
+  local bufname = vim.api.nvim_buf_get_name(0)
+
+  local heading = get_nearest_heading()
+  if heading and heading ~= "" then
+    local text, tags = extract_markdown_tags(heading)
+    if text ~= "" then return text, tags end
+  end
+
+  local is_journal = bufname:match("/journal/daily/")
+    or bufname:match("/journal/weekly/")
+    or bufname:match("/journal/monthly/")
+
+  if is_journal then
+    return vim.fn.fnamemodify(bufname, ":t:r"), {}
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  for _, line in ipairs(lines) do
+    local h1 = line:match("^#%s+(.+)$")
+    if h1 then
+      local text, tags = extract_markdown_tags(strip_markdown(h1))
+      if text ~= "" then return text, tags end
+    end
+  end
+  return vim.fn.fnamemodify(bufname, ":t:r"), {}
 end
 
 -- ---------------------------------------------------------------------------
@@ -153,14 +164,24 @@ local function start_on_current_line()
   -- be orphaned when we overwrite `active` below.
   clear_extmark()
 
-  local project    = get_project()
-  local todo       = get_todo_text()
-  local text, tags = extract_markdown_tags(todo)
-  -- No shell is involved so special characters need no escaping.
-  local cmd = { "watson", "start", project, "+" .. text }
-  for _, tag in ipairs(tags) do
+  local project, project_tags = get_project()
+  local todo                  = get_todo_text()
+  local text, todo_tags       = extract_markdown_tags(todo)
+
+  -- No shell is involved so special characters need no escaping.  Tags from
+  -- the todo line and the heading are merged with the todo text itself; dupes
+  -- are dropped so a tag appearing on both heading and todo isn't doubled.
+  local cmd = { "watson", "start", project }
+  local seen = {}
+  local function add_tag(tag)
+    if tag == "" or seen[tag] then return end
+    seen[tag] = true
     table.insert(cmd, "+" .. tag)
   end
+  add_tag(text)
+  for _, tag in ipairs(todo_tags)    do add_tag(tag) end
+  for _, tag in ipairs(project_tags) do add_tag(tag) end
+
   vim.fn.system(cmd)
   if vim.v.shell_error ~= 0 then
     vim.notify("watson start failed", vim.log.levels.ERROR)
