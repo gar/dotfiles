@@ -28,6 +28,9 @@ opt.guifont = "JetBrainsMono Nerd Font:h13"
 opt.cmdheight = 2
 opt.cursorline = true
 opt.laststatus = 2
+-- Default statusline layout with the active Watson task centered.
+-- `%{...}` renders the result literally (no re-parse of `%` in project names).
+opt.statusline = "%<%f %h%m%r%=%{v:lua.require'timetracking'.statusline()}%=%-14.(%l,%c%V%) %P"
 opt.number = true
 opt.pumheight = 10
 opt.ruler = true

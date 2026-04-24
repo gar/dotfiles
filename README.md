@@ -149,7 +149,7 @@ brew bundle
 | `hexyl` | Hex viewer — colorized, human-readable `xxd` replacement (`xxd` is aliased to `hexyl`) |
 | `hyperfine` | Command benchmarking with statistics (mean/stddev, warmup runs, parameter sweeps) |
 | `procs` | Modern `ps` replacement — color output, keyword search, process tree view |
-| `watson` | Time tracker — `watson start <project> +tag`, `watson stop`, `watson report` |
+| `watson` | Time tracker — `watson start <project> +tag`, `watson stop`, `watson report`. Active task is shown centred in the Neovim statusline. |
 
 **Example:** Compare test suite performance with hyperfine:
 
