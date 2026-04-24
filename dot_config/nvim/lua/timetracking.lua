@@ -15,6 +15,11 @@
 --
 -- Watson tags are the union of: the todo text itself, #hashtags on the todo
 -- line, and #hashtags on the resolved heading.  Duplicates are dropped.
+--
+-- The module also exposes `statusline()` for embedding the active Watson task
+-- in `vim.o.statusline`.  See `editor/options.lua`.
+
+local M = {}
 
 -- ---------------------------------------------------------------------------
 -- Markdown stripping
@@ -124,6 +129,61 @@ local function ensure_watson()
 end
 
 -- ---------------------------------------------------------------------------
+-- Statusline
+-- ---------------------------------------------------------------------------
+
+-- Cached string rendered by `M.statusline()`.  Updated asynchronously by a
+-- repeating libuv timer and by `update_status()` calls after start/stop, so
+-- the statusline never shells out on redraw.
+local cached_status = ""
+
+-- Parse `watson status` output.  Returns project, tags (either may be nil).
+-- Example lines:
+--   Project foo [tag1, tag2] started an hour ago (2024.01.01 10:00:00+0000)
+--   Project foo started an hour ago (2024.01.01 10:00:00+0000)
+--   No project started.
+local function parse_status(out)
+  if out == "" or out:match("^No project started") then return nil end
+  local project, tags = out:match("^Project%s+(.-)%s+%[(.-)%]%s+started")
+  if not project then
+    project = out:match("^Project%s+(.-)%s+started")
+  end
+  return project, tags
+end
+
+local function update_status()
+  if vim.fn.executable("watson") == 0 then return end
+  vim.system({ "watson", "status" }, { text = true }, function(obj)
+    vim.schedule(function()
+      local project, tags = parse_status(vim.trim(obj.stdout or ""))
+      if not project then
+        cached_status = ""
+      elseif tags and tags ~= "" then
+        cached_status = ("⏱ %s [%s]"):format(project, tags)
+      else
+        cached_status = "⏱ " .. project
+      end
+      vim.cmd("redrawstatus")
+    end)
+  end)
+end
+
+-- Truncate to ~40% of the current window width (minimum 20 columns), using
+-- display-width so multibyte characters and the ⏱ glyph count correctly.
+function M.statusline()
+  if cached_status == "" then return "" end
+  local max = math.max(20, math.floor(vim.o.columns * 0.4))
+  if vim.fn.strdisplaywidth(cached_status) <= max then
+    return cached_status
+  end
+  return vim.fn.strcharpart(cached_status, 0, max - 1) .. "…"
+end
+
+-- Kept alive in a module-local so the GC doesn't reclaim it.
+local _status_timer = vim.uv.new_timer() -- luacheck: ignore
+_status_timer:start(0, 5000, vim.schedule_wrap(update_status))
+
+-- ---------------------------------------------------------------------------
 -- Extmark state
 -- ---------------------------------------------------------------------------
 
@@ -191,6 +251,7 @@ local function start_on_current_line()
   local line_0 = vim.api.nvim_win_get_cursor(0)[1] - 1
   active = { bufnr = bufnr, line = line_0, extmark_id = set_extmark(bufnr, line_0) }
   vim.notify(("⏱ [%s] %s"):format(project, text), vim.log.levels.INFO)
+  update_status()
   return true
 end
 
@@ -225,6 +286,7 @@ local function handle_ns()
     start_on_current_line()
   else
     vim.notify("⏹ Stopped", vim.log.levels.INFO)
+    update_status()
   end
 end
 
@@ -296,6 +358,7 @@ vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
 
     vim.fn.system({ "watson", "stop" })
     clear_extmark()
+    update_status()
     vim.notify("⏹ Todo completed — stopped timer", vim.log.levels.INFO)
   end,
 })
@@ -323,3 +386,5 @@ vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
     })
   end,
 })
+
+return M
