@@ -345,6 +345,8 @@ Shell aliases:
 | `<leader>dy` | normal | Accept Claude-proposed diff |
 | `<leader>dn` | normal | Reject Claude-proposed diff |
 
+Shell alias: `cl` → `claude` (defined when the `claude` CLI is on `PATH`).
+
 **Workflow:** Select code in visual mode → `<leader>as` to send to Claude → type your instruction in the panel → accept or reject proposed changes with `<leader>dy` / `<leader>dn`.
 
 **Worktrees + Claude Code:** Run `claude --worktree <name>` in a terminal to start an isolated Claude session on its own branch. Use `<leader>gwl` to switch between worktree directories in Neovim. Multiple worktrees let you run parallel Claude sessions without conflicts.

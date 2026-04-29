@@ -210,6 +210,12 @@ You can also split navigate from terminal mode with `<C-w>h/j/k/l` to jump to ot
 
 ## 7. Working with Claude Code
 
+### Launch from the shell
+
+```
+cl           — alias for `claude` (start Claude Code in the current terminal)
+```
+
 ### Open Claude and ask something
 
 ```
