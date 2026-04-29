@@ -351,6 +351,21 @@ Shell alias: `cl` → `claude` (defined when the `claude` CLI is on `PATH`).
 
 **Worktrees + Claude Code:** Run `claude --worktree <name>` in a terminal to start an isolated Claude session on its own branch. Use `<leader>gwl` to switch between worktree directories in Neovim. Multiple worktrees let you run parallel Claude sessions without conflicts.
 
+### Claude Code Skills
+
+Claude Code auto-discovers skills from `~/.claude/skills/<name>/SKILL.md`. The dotfiles ship a curated starter set; ask Claude in plain language ("grill me on this plan", "let's TDD this", "extract a glossary") and it picks the matching skill.
+
+| Skill | What it does |
+|---|---|
+| `grill-me` | Relentlessly interviews you about a plan or design until every branch of the decision tree is resolved |
+| `grill-with-docs` | Stress-tests a plan against the codebase's domain models and updates `CONTEXT.md` / ADRs as decisions land |
+| `tdd` | Test-driven red-green-refactor loop with bundled guidance on mocking, refactoring, and module depth |
+| `improve-codebase-architecture` | Identifies architectural friction and proposes deepening opportunities (covers module depth, interface design, design vocabulary) |
+| `ubiquitous-language` | Extracts a DDD-style glossary from the conversation, flags ambiguous terms, and proposes canonical names |
+| `notes` | Searches, creates, and links markdown notes in `~/notes` using wikilinks and index notes |
+
+Most skills are vendored from [`mattpocock/skills`](https://github.com/mattpocock/skills); `notes` is locally adapted. Provenance and re-sync instructions: `~/.claude/skills/README.md`.
+
 ### Notes (Obsidian)
 
 Vault lives at `~/notes`. Create the directory before first use. obsidian.nvim works alongside the Obsidian app — point the app at the same folder for mobile sync.
