@@ -12,6 +12,8 @@ Most skills are vendored verbatim from [`mattpocock/skills`](https://github.com/
 | `grill-with-docs` | `skills/engineering/grill-with-docs/` |
 | `tdd` | `skills/engineering/tdd/` |
 | `improve-codebase-architecture` | `skills/engineering/improve-codebase-architecture/` |
+| `zoom-out` | `skills/engineering/zoom-out/` |
+| `diagnose` | `skills/engineering/diagnose/` |
 | `ubiquitous-language` | `skills/deprecated/ubiquitous-language/` |
 | `notes` | adapted from `skills/personal/obsidian-vault/` — renamed, vault path hardcoded to `~/notes`, framing made markdown-generic |
 
