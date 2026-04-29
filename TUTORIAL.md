@@ -251,6 +251,21 @@ When Claude proposes edits, they appear as a diff. While reviewing:
 3. Review the diff with `<leader>dy` / `<leader>dn`
 4. `<leader>ac` to close when done
 
+### Skills — making Claude do the right thing automatically
+
+Skills live in `~/.claude/skills/` and Claude picks them up by description. You don't invoke them by name; you describe what you want and Claude reaches for the matching skill.
+
+| Try saying… | Skill it triggers | What you get |
+|---|---|---|
+| "Grill me on this plan" / "interview me" | `grill-me` | One sharp question at a time until every decision branch is closed off |
+| "Pressure-test this against `CONTEXT.md`" / "what would the docs say?" | `grill-with-docs` | Plan checked against domain docs and ADRs; doc updates proposed |
+| "Let's TDD this" / "red-green-refactor" | `tdd` | Failing test first, minimum implementation, then refactor — with mocking/refactoring sub-guides |
+| "What architectural improvements does this codebase have?" | `improve-codebase-architecture` | Shallow modules flagged, deepening opportunities proposed |
+| "Extract a glossary" / "build the ubiquitous language" | `ubiquitous-language` | DDD-style glossary in markdown with synonyms flagged |
+| "Find my notes about X" / "make a new note titled Y" | `notes` | Search/create in `~/notes` with wikilinks |
+
+To see what's installed: `ls ~/.claude/skills/`. To add a skill, drop a directory containing a `SKILL.md` (with `name` and `description` frontmatter) into `private_dot_claude/skills/` in the dotfiles repo and run `chezmoi apply`.
+
 ---
 
 ## 8. Notes and Daily Journal
