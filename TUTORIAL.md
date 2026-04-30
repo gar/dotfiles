@@ -577,4 +577,12 @@ watson report --day                 # today's breakdown by project
 watson log -f                       # full log, most recent first
 ```
 
+Editing a frame is easier with the `we` shell function — it pipes `watson log` through `fzf` and opens `watson edit` on the chosen frame. Defaults to today (`--day`); pass any other `watson log` flag to widen the picker:
+
+```bash
+we                                  # pick from today's frames
+we --week                           # pick from this week
+we --all -p dotfiles                # all-time, filtered to one project
+```
+
 Neovim shows the active task (`⏱ project [tags]`) in the centre of the statusline while watson is running. It refreshes immediately on start/stop and polls every 5 s to pick up changes made in another terminal, and truncates to fit narrow windows.
