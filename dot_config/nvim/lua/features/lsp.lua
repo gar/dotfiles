@@ -160,6 +160,32 @@ return {
       })
       vim.lsp.enable("expert")
 
+      -- Dexter Elixir LSP (https://github.com/remoteoss/dexter), installed via mise.
+      vim.lsp.config("dexter", {
+        cmd = { "dexter", "lsp" },
+        filetypes = { "elixir", "eelixir", "heex" },
+        root_markers = { ".dexter/dexter.db", ".dexter.db", "mix.exs", ".git" },
+        init_options = { followDelegates = true },
+      })
+      vim.lsp.enable("dexter")
+
+      -- Format-on-save via dexter. Scoped to dexter so it doesn't fight with
+      -- expert or other LSPs that may also advertise formatting capability.
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = vim.api.nvim_create_augroup("dexter_format_on_save", {}),
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if not client or client.name ~= "dexter" then return end
+          if not client:supports_method("textDocument/formatting") then return end
+          vim.api.nvim_create_autocmd("BufWritePre", {
+            buffer = args.buf,
+            callback = function()
+              vim.lsp.buf.format({ bufnr = args.buf, id = client.id, timeout_ms = 5000 })
+            end,
+          })
+        end,
+      })
+
       -- Mason-managed servers (custom servers like "expert" are excluded)
       -- automatic_enable calls vim.lsp.enable() for installed servers.
       -- Exclude formatters/linters that mason installs but are not LSP servers.
