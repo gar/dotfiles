@@ -35,7 +35,7 @@ fi
 # Detect modifiers from the model id
 if [ -n "$model_id" ]; then
   case "$model_id" in
-    *1m*|*-1m*|*1M*|-1M*)  model_mod="1M" ;;
+    *1m*|*1M*)  model_mod="1M" ;;
   esac
   if echo "$model_id" | grep -qiE 'think'; then
     model_mod="${model_mod:+$model_mod · }thinking"
