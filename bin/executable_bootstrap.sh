@@ -188,54 +188,6 @@ install_mise() {
 }
 
 # ---------------------------------------------------------------------------
-# Install the Expert Elixir language server binary to ~/bin/expert.
-# Idempotent: no-op if the binary already exists. Fetches the latest release
-# from https://github.com/elixir-lang/expert and picks the asset matching the
-# current OS/arch. If no matching asset is found (e.g. on a new platform), it
-# logs a note and leaves the binary absent — lsp.lua silently skips the server
-# when the executable is missing.
-# ---------------------------------------------------------------------------
-install_expert_lsp() {
-  local bin="$HOME/bin/expert"
-  [[ -x "$bin" ]] && return 0
-
-  local os arch_regex
-  case "$(uname -s)" in
-    Darwin) os="darwin" ;;
-    Linux)  os="linux"  ;;
-    *) echo "Note: expert LSP install skipped — unsupported OS: $(uname -s)"; return 0 ;;
-  esac
-  case "$(uname -m)" in
-    x86_64|amd64)  arch_regex="x86_64|amd64" ;;
-    arm64|aarch64) arch_regex="arm64|aarch64" ;;
-    *) echo "Note: expert LSP install skipped — unsupported arch: $(uname -m)"; return 0 ;;
-  esac
-
-  mkdir -p "$HOME/bin"
-
-  local url
-  url=$(curl -fsSL https://api.github.com/repos/elixir-lang/expert/releases/latest 2>/dev/null \
-    | grep -oE '"browser_download_url":[[:space:]]*"[^"]+"' \
-    | cut -d'"' -f4 \
-    | grep -iE "${os}" \
-    | grep -iE "${arch_regex}" \
-    | head -n1 || true)
-
-  if [[ -z "$url" ]]; then
-    echo "Note: no expert release asset found for ${os}/$(uname -m) — install manually from https://github.com/elixir-lang/expert/releases"
-    return 0
-  fi
-
-  echo "Installing expert LSP from ${url}"
-  if curl -fsSL "$url" -o "$bin"; then
-    chmod +x "$bin"
-  else
-    echo "Note: failed to download expert LSP — install manually from https://github.com/elixir-lang/expert/releases"
-    rm -f "$bin"
-  fi
-}
-
-# ---------------------------------------------------------------------------
 # 6. Install chezmoi
 # ---------------------------------------------------------------------------
 install_chezmoi() {
@@ -310,10 +262,6 @@ mise install
 
 # Install Claude Code (requires node from mise)
 mise exec -- npm install -g @anthropic-ai/claude-code
-
-# Install the Expert Elixir LSP (~/bin/expert). Lazy.nvim's lsp.lua references
-# this path; if the binary is absent, the LSP is silently inactive.
-install_expert_lsp
 
 # Set zsh as default shell if it isn't already
 if [[ "$SHELL" != */zsh ]]; then

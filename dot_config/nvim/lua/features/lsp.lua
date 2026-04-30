@@ -150,16 +150,6 @@ return {
         },
       })
 
-      -- Custom server not managed by mason. The `expert` binary is installed
-      -- to ~/bin/expert by `install_expert_lsp` in bin/executable_bootstrap.sh.
-      -- If the binary is absent, vim.lsp.enable() is a no-op so startup is unaffected.
-      vim.lsp.config("expert", {
-        cmd = { vim.fn.expand("~/bin/expert"), "--stdio" },
-        filetypes = { "elixir", "eelixir", "heex" },
-        root_markers = { "mix.exs", ".git" },
-      })
-      vim.lsp.enable("expert")
-
       -- Dexter Elixir LSP (https://github.com/remoteoss/dexter), installed via mise.
       vim.lsp.config("dexter", {
         cmd = { "dexter", "lsp" },
@@ -170,7 +160,7 @@ return {
       vim.lsp.enable("dexter")
 
       -- Format-on-save via dexter. Scoped to dexter so it doesn't fight with
-      -- expert or other LSPs that may also advertise formatting capability.
+      -- other LSPs that may also advertise formatting capability.
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("dexter_format_on_save", {}),
         callback = function(args)
@@ -186,7 +176,7 @@ return {
         end,
       })
 
-      -- Mason-managed servers (custom servers like "expert" are excluded)
+      -- Mason-managed servers.
       -- automatic_enable calls vim.lsp.enable() for installed servers.
       -- Exclude formatters/linters that mason installs but are not LSP servers.
       require("mason-lspconfig").setup({
