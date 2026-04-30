@@ -27,7 +27,7 @@ bash bin/executable_bootstrap.sh
    - **Arch/Manjaro:** pacman packages (+ AUR for `zsh-you-should-use`)
 3. Install chezmoi and apply dotfiles (pulling secrets from 1Password)
 4. **macOS only:** Apply system preferences (`.macos`)
-5. Install language runtimes via [mise](https://mise.jdx.dev/) (Node, Erlang, Elixir, Python)
+5. Install language runtimes and tools via [mise](https://mise.jdx.dev/) (Node, Erlang, Elixir, Python, [dexter](https://github.com/remoteoss/dexter))
 6. Fetch the latest [Expert Elixir LSP](https://github.com/elixir-lang/expert) release into `~/bin/expert`
 7. Set zsh as the default shell (if not already)
 8. **macOS only:** Restart to apply system preferences
