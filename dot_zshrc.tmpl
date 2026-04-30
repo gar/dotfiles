@@ -79,6 +79,20 @@ alias gwa="g worktree add"
 alias gwd="g worktree remove"
 alias gwp="g worktree prune"
 
+# watson — fuzzy-pick a log entry and open `watson edit` on it.
+# Defaults to `--day`; pass any other `watson log` flags to override (e.g. `we --week`).
+we() {
+  local args
+  if (( $# == 0 )); then
+    args=(--day)
+  else
+    args=("$@")
+  fi
+  local id
+  id=$(watson log "${args[@]}" | grep -E '^[[:space:]]+[0-9a-f]+[[:space:]]' | fzf | awk '{print $1}')
+  [[ -n "$id" ]] && watson edit "$id"
+}
+
 # ------------------------------
 # Environment
 # ------------------------------

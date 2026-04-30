@@ -232,6 +232,12 @@ These modern tools are installed and aliased over their traditional counterparts
 
 > **Note:** `sd` uses a different syntax from `sed` — it does not override `sed`. Use `sd 'old' 'new' file` or pipe: `echo 'hello' | sd 'hello' 'world'`.
 
+### Watson
+
+| Alias | Command |
+|-------|---------|
+| `we` | Fuzzy-pick a `watson log` entry with `fzf` and open `watson edit` on it. Defaults to `--day`; pass any `watson log` flag to override (e.g. `we --week`, `we --all -p dotfiles`). |
+
 ### Git
 
 | Alias | Command |
