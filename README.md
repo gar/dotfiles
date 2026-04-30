@@ -350,6 +350,21 @@ Shell alias: `cl` → `claude` (defined when the `claude` CLI is on `PATH`).
 
 **Worktrees + Claude Code:** Run `claude --worktree <name>` in a terminal to start an isolated Claude session on its own branch. Use `<leader>gwl` to switch between worktree directories in Neovim. Multiple worktrees let you run parallel Claude sessions without conflicts.
 
+### Claude Code status line
+
+`bin/executable_claude_statusline.sh` (lands at `~/bin/claude_statusline.sh`) renders a one-line Claude Code status bar: model tag, context-usage bar, cumulative tokens, cost, elapsed time, cwd, and git branch. It expects Claude Code's status-line JSON on stdin, so it isn't useful as a generic shell prompt.
+
+`~/.claude/settings.json` is intentionally **not** managed by chezmoi — it holds per-machine state (permissions, MCP servers, hooks). To enable the status line on a given machine, add this to `~/.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "~/bin/claude_statusline.sh"
+  }
+}
+```
+
 ### Claude Code Skills
 
 Claude Code auto-discovers skills from `~/.claude/skills/<name>/SKILL.md`. The dotfiles ship a curated starter set; ask Claude in plain language ("grill me on this plan", "let's TDD this", "extract a glossary") and it picks the matching skill.
