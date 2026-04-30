@@ -120,9 +120,8 @@ their change
 
 When you open a file in a supported language (Lua, Elixir, Python, TypeScript), the language server starts automatically. Here's what to use:
 
-Lua, Python, and TypeScript servers are installed via Mason the first time you open a matching file. Two Elixir servers are configured:
+Lua, Python, and TypeScript servers are installed via Mason the first time you open a matching file. The Elixir server is configured separately:
 
-- **[expert](https://github.com/elixir-lang/expert)** lives at `~/bin/expert` — the bootstrap script fetches the latest release. To upgrade, delete `~/bin/expert` and rerun `./bin/executable_bootstrap.sh` (or re-run just the `install_expert_lsp` function).
 - **[dexter](https://github.com/remoteoss/dexter)** is installed via mise (`dot_mise.toml` registers the plugin and pins `dexter = "latest"`). Run `mise install` to (re)install. Format-on-save is enabled for dexter buffers — saving an Elixir file runs `dexter`'s formatter via `BufWritePre`. The autocmd is scoped to dexter so other LSPs that also advertise formatting won't fight over the buffer.
 
 ### Navigate code
@@ -458,7 +457,7 @@ vim.lsp.config('my-work-lsp', {
 vim.lsp.enable 'my-work-lsp'
 ```
 
-This works alongside `expert`, `dexter`, or any other LSP already configured in the dotfiles.
+This works alongside `dexter` or any other LSP already configured in the dotfiles.
 
 ### Extra mise tools
 
