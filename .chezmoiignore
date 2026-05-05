@@ -1,3 +1,9 @@
+# Repo-only files — not dotfiles to sync
+README.md
+TUTORIAL.md
+CLAUDE.md
+Brewfile
+
 {{- if ne .chezmoi.os "darwin" }}
 .macos
 .config/raycast-scripts
