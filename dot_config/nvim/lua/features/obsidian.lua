@@ -450,12 +450,20 @@ return {
       date_format = "%Y-%m-%d",
       time_format = "%H:%M",
       substitutions = {
-        -- {{day}} → weekday name of the note's target date (e.g. "Monday").
-        -- Parses the filename so yesterday/tomorrow/custom-date notes render
-        -- the right weekday instead of today's.
+        -- {{date}} and {{day}} → date / weekday of the note's target date.
+        -- obsidian.nvim's built-ins call os.time() unconditionally, so daily
+        -- notes for non-today dates render today's values. The target date
+        -- is plumbed through only as ctx.partial_note.id (set from the
+        -- target datetime via daily_notes.date_format = "%Y-%m-%d").
+        date = function(ctx, suffix)
+          local id = ctx and ctx.partial_note and ctx.partial_note.id or ""
+          local y, m, d = tostring(id):match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
+          local ts = y and os.time({ year = y, month = m, day = d, hour = 12 }) or os.time()
+          return os.date(suffix and suffix ~= "" and suffix or "%Y-%m-%d", ts)
+        end,
         day = function(ctx)
-          local name = vim.fn.fnamemodify(tostring(ctx and ctx.path or ""), ":t:r")
-          local y, m, d = name:match("^(%d%d%d%d)-(%d%d)-(%d%d)$")
+          local id = ctx and ctx.partial_note and ctx.partial_note.id or ""
+          local y, m, d = tostring(id):match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
           if y then
             return os.date("%A", os.time({ year = y, month = m, day = d, hour = 12 }))
           end
