@@ -506,8 +506,6 @@ A few tools from the Brewfile worth knowing:
 | `xxd` | Hex viewer (hexyl) | `xxd file` — colorized hex dump with ASCII sidebar |
 | `termgraph` | Terminal bar charts | `echo "Jan,100\nFeb,120" \| termgraph` |
 | `watson` | Time tracker | `watson start project +tag`, `watson stop`, `watson report` |
-| `gcalcli` | Google Calendar | `gcalcli agenda`, `gcalcli add`, `gcalcli calw` |
-| `himalaya` | Email (IMAP/SMTP) | `himalaya envelope list`, `himalaya message read <id>` |
 
 ### eza — better ls
 
@@ -588,57 +586,3 @@ we --all -p dotfiles                # all-time, filtered to one project
 ```
 
 Neovim shows the active task (`⏱ project [tags]`) in the centre of the statusline while watson is running. It refreshes immediately on start/stop and polls every 5 s to pick up changes made in another terminal, and truncates to fit narrow windows.
-
-### gcalcli — Google Calendar in the terminal
-
-First-time setup runs an OAuth flow in the browser:
-
-```bash
-gcalcli init                        # authorise; writes credentials to ~/.gcalcli_oauth
-```
-
-Day-to-day:
-
-```bash
-gcalcli agenda                      # upcoming events
-gcalcli calw                        # week view (calm) — also calm/calt for month/today
-gcalcli add                         # interactive event creation
-gcalcli quick "Lunch with Alex tomorrow at 12pm"
-gcalcli search "standup"
-```
-
-Pick a specific calendar with `--calendar "Work"`. List configured calendars with `gcalcli list`.
-
-### himalaya — email in the terminal
-
-Configure accounts in `~/.config/himalaya/config.toml` (IMAP + SMTP, or Gmail OAuth). Minimal Gmail example using an app password from 1Password:
-
-```toml
-[accounts.gmail]
-email = "you@gmail.com"
-backend.type = "imap"
-backend.host = "imap.gmail.com"
-backend.port = 993
-backend.encryption = "tls"
-backend.login = "you@gmail.com"
-backend.auth.type = "password"
-backend.auth.cmd = "op read 'op://Personal/Gmail app password/password'"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "smtp.gmail.com"
-message.send.backend.port = 465
-message.send.backend.encryption = "tls"
-message.send.backend.login = "you@gmail.com"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.cmd = "op read 'op://Personal/Gmail app password/password'"
-```
-
-Day-to-day:
-
-```bash
-himalaya envelope list              # inbox
-himalaya message read <id>          # open a message
-himalaya message write              # compose in $EDITOR
-himalaya message reply <id>
-himalaya folder list
-```

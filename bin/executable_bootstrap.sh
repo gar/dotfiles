@@ -46,7 +46,6 @@ install_packages_debian() {
     fd-find \
     hexyl \
     fzf \
-    gcalcli \
     gh \
     pipx \
     git \
@@ -88,34 +87,6 @@ install_packages_debian() {
   if ! command -v luacheck &>/dev/null; then
     sudo luarocks install luacheck
   fi
-
-  # himalaya is not in apt repos — install pre-built binary from GitHub releases
-  if ! command -v himalaya &>/dev/null; then
-    install_himalaya_release
-  fi
-}
-
-# ---------------------------------------------------------------------------
-# Install himalaya from GitHub release (used on distros without a package)
-# ---------------------------------------------------------------------------
-install_himalaya_release() {
-  local arch tarball url tmp_dir
-  case "$(uname -m)" in
-    x86_64)  arch="x86_64-linux" ;;
-    aarch64) arch="aarch64-linux" ;;
-    *)       echo "Note: himalaya pre-built binary not available for $(uname -m); install via cargo: cargo install himalaya"; return ;;
-  esac
-  tarball="himalaya.${arch}.tgz"
-  url="https://github.com/pimalaya/himalaya/releases/latest/download/${tarball}"
-  tmp_dir="$(mktemp -d)"
-  if curl -fsSL "$url" -o "$tmp_dir/$tarball"; then
-    tar -xzf "$tmp_dir/$tarball" -C "$tmp_dir"
-    sudo install -m 0755 "$tmp_dir"/*/himalaya /usr/local/bin/himalaya 2>/dev/null \
-      || sudo install -m 0755 "$tmp_dir/himalaya" /usr/local/bin/himalaya
-  else
-    echo "Note: failed to fetch himalaya from $url; install manually from https://github.com/pimalaya/himalaya/releases"
-  fi
-  rm -rf "$tmp_dir"
 }
 
 install_packages_arch() {
@@ -133,9 +104,7 @@ install_packages_arch() {
     fd \
     hexyl \
     fzf \
-    gcalcli \
     github-cli \
-    himalaya \
     python-pipx \
     git \
     gnupg \

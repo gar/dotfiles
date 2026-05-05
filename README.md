@@ -149,8 +149,6 @@ brew bundle
 | `hyperfine` | Command benchmarking with statistics (mean/stddev, warmup runs, parameter sweeps) |
 | `procs` | Modern `ps` replacement — color output, keyword search, process tree view |
 | `watson` | Time tracker — `watson start <project> +tag`, `watson stop`, `watson report`. Active task is shown centred in the Neovim statusline. |
-| `gcalcli` | Google Calendar from the terminal — `gcalcli agenda`, `gcalcli add`, `gcalcli calw` (week view). First run: `gcalcli init` to authorise. |
-| `himalaya` | Email (IMAP/SMTP) from the terminal — `himalaya envelope list`, `himalaya message read <id>`, `himalaya message send`. Configure via `~/.config/himalaya/config.toml`. |
 
 **Example:** Compare test suite performance with hyperfine:
 
