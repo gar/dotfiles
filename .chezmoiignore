@@ -2,7 +2,6 @@
 README.md
 TUTORIAL.md
 CLAUDE.md
-Brewfile
 
 {{- if ne .chezmoi.os "darwin" }}
 .macos
