@@ -19,6 +19,8 @@ Minimum code that solves the problem. Nothing speculative.
 - No error handling for impossible scenarios.
 - If you write 200 lines and it could be 50, rewrite it.
 
+Ask: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
 ## Surgical changes
 
 Touch only what you must.
@@ -39,7 +41,7 @@ Define success criteria. Loop until verified.
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
 
-For multi-step tasks, state a brief plan with a verification check per step.
+For multi-step tasks, state a brief plan with a verification check per step. Strong success criteria let you loop independently; weak criteria ("make it work") require constant clarification.
 
 # Workflow
 
