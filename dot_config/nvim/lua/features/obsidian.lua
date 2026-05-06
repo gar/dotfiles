@@ -6,6 +6,19 @@
 --   templates/        daily.md, weekly.md, monthly.md
 --   (everything else) free-form notes
 
+local function open_weekly_note()
+  local dir = vim.fn.expand("~/notes/journal/weekly/")
+  vim.fn.mkdir(dir, "p")
+  local path = dir .. os.date("%Y-W%V") .. ".md"
+  local is_new = vim.fn.filereadable(path) == 0
+  vim.cmd("e " .. vim.fn.fnameescape(path))
+  if is_new then
+    vim.defer_fn(function()
+      vim.cmd("Obsidian template weekly.md")
+    end, 100)
+  end
+end
+
 local function open_monthly_note()
   local dir = vim.fn.expand("~/notes/journal/monthly/")
   vim.fn.mkdir(dir, "p")
@@ -396,7 +409,7 @@ return {
     { "<leader>no", "<cmd>Obsidian tomorrow<cr>",                              desc = "Daily note (tomorrow)" },
     { "<leader>ny", "<cmd>Obsidian yesterday<cr>",                             desc = "Daily note (yesterday)" },
     { "<leader>nD", "<cmd>Obsidian dailies -7 7<cr>",                          desc = "Browse daily notes" },
-    { "<leader>nw", "<cmd>Obsidian weekly<cr>",                                desc = "Weekly note" },
+    { "<leader>nw", open_weekly_note,                                          desc = "Weekly note" },
     { "<leader>nW", function() browse_journal("weekly",  "Weekly Notes") end,  desc = "Browse weekly notes" },
     { "<leader>nm", open_monthly_note,                                         desc = "Monthly note" },
     { "<leader>nM", function() browse_journal("monthly", "Monthly Notes") end, desc = "Browse monthly notes" },
