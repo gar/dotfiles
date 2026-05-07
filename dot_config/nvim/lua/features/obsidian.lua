@@ -291,9 +291,10 @@ local function move_open_todos_from_heading()
   prompt_and_move_todos(bufnr, todo_lines, todo_lnums, "No open todos found in heading group")
 end
 
--- Promote the todo on the current line into a third-level heading appended
--- at the end of the `## Notes` section. Leaves the source todo in place so
--- the user decides when to check it off.
+-- Promote the todo on the current line into a third-level heading inside the
+-- `## Notes` section, then drop into insert mode at the end of that H3 section
+-- so the user can start writing. Reuses an existing matching heading if one
+-- already exists. Leaves the source todo in place.
 local function promote_todo_to_notes_heading()
   local bufnr    = vim.api.nvim_get_current_buf()
   local cur_lnum = vim.api.nvim_win_get_cursor(0)[1]
@@ -305,45 +306,83 @@ local function promote_todo_to_notes_heading()
     return
   end
 
-  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-
-  local notes_pos = nil
-  for i, line in ipairs(lines) do
-    if line:match("^##%s+Notes%s*$") then
-      notes_pos = i
-      break
+  -- (Re)compute the bounds of the `## Notes` section. `##%s` matches H2 only;
+  -- `### ` won't match because `%s` needs whitespace, not another `#`.
+  local function notes_bounds()
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    local notes_pos
+    for i, line in ipairs(lines) do
+      if line:match("^##%s+Notes%s*$") then
+        notes_pos = i
+        break
+      end
     end
+    if not notes_pos then return lines, nil, nil end
+    local notes_end = #lines + 1
+    for i = notes_pos + 1, #lines do
+      if lines[i]:match("^##%s") then
+        notes_end = i
+        break
+      end
+    end
+    return lines, notes_pos, notes_end
   end
+
+  local lines, notes_pos, notes_end = notes_bounds()
   if not notes_pos then
     vim.notify("No `## Notes` heading found", vim.log.levels.WARN)
     return
   end
 
-  -- End of Notes section: next H2 heading (## ) or EOF. `##%s` won't match
-  -- `### ` because `%s` needs whitespace, not another `#`.
-  local end_pos = #lines + 1
-  for i = notes_pos + 1, #lines do
-    if lines[i]:match("^##%s") then
-      end_pos = i
+  local heading_pat = "^###%s+" .. vim.pesc(todo_text) .. "%s*$"
+  local heading_pos
+  for i = notes_pos + 1, notes_end - 1 do
+    if lines[i]:match(heading_pat) then
+      heading_pos = i
       break
     end
   end
 
-  local new_lines = { "### " .. todo_text }
-  if end_pos > 1 and lines[end_pos - 1] ~= "" then
-    table.insert(new_lines, 1, "")
+  local created = false
+  if not heading_pos then
+    local new_lines = { "### " .. todo_text, "" }
+    if notes_end > 1 and lines[notes_end - 1] ~= "" then
+      table.insert(new_lines, 1, "")
+    end
+    vim.api.nvim_buf_set_lines(bufnr, notes_end - 1, notes_end - 1, false, new_lines)
+    lines, notes_pos, notes_end = notes_bounds()
+    for i = notes_pos + 1, notes_end - 1 do
+      if lines[i]:match(heading_pat) then
+        heading_pos = i
+        break
+      end
+    end
+    created = true
   end
-  if end_pos <= #lines then
-    table.insert(new_lines, "")
+
+  -- End of this H3 section: next H3/H2 inside Notes, or end of Notes.
+  local section_end = notes_end
+  for i = heading_pos + 1, notes_end - 1 do
+    if lines[i]:match("^###?%s") then
+      section_end = i
+      break
+    end
   end
 
-  vim.api.nvim_buf_set_lines(bufnr, end_pos - 1, end_pos - 1, false, new_lines)
+  -- Land on the trailing blank of the section. If the section has no trailing
+  -- blank (or no body at all), insert one so we don't disturb existing content.
+  local target = section_end - 1
+  if target <= heading_pos or lines[target] ~= "" then
+    vim.api.nvim_buf_set_lines(bufnr, section_end - 1, section_end - 1, false, { "" })
+    target = section_end
+  end
 
-  -- Jump to the newly inserted heading so the user can start writing notes
-  local heading_lnum = end_pos + (new_lines[1] == "" and 1 or 0)
-  vim.api.nvim_win_set_cursor(0, { heading_lnum, 0 })
+  vim.api.nvim_win_set_cursor(0, { target, 0 })
+  vim.cmd("startinsert")
 
-  vim.notify('Added heading: "' .. todo_text .. '"', vim.log.levels.INFO)
+  if created then
+    vim.notify('Added heading: "' .. todo_text .. '"', vim.log.levels.INFO)
+  end
 end
 
 local function grep_todos()
