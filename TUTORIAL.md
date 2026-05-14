@@ -253,6 +253,23 @@ When Claude proposes edits, they appear as a diff. While reviewing:
 3. Review the diff with `<leader>dy` / `<leader>dn`
 4. `<leader>ac` to close when done
 
+### Sharpen the saw — fire a task at cloud Claude
+
+When you hit friction in your own setup ("ugh, the todo tool sorts case-sensitively"), you usually don't want to break flow and fix it yourself. `sharpen` files the task at cloud Claude instead, so the fix lands as a PR while you keep working.
+
+From the shell:
+
+```
+sharpen "fix the todo tool to ignore case when sorting"
+sharpen                              # interactive prompt
+echo "tighten the zsh prompt" | sharpen
+SHARPEN_REPO=me/other-repo sharpen "..."   # send it elsewhere
+```
+
+From inside Neovim, `<leader>aS` opens an input prompt and dispatches the same command. The issue URL is printed (and opened in a browser if a graphical opener is available); you'll get a PR once Claude is done.
+
+Under the hood it's just `gh issue create -R gar/dotfiles -t "sharpen: <prompt>" -b "@claude\n\n<prompt>"`. The Claude Code GitHub app responds to the mention.
+
 ### Skills — making Claude do the right thing automatically
 
 Skills live in `~/.claude/skills/` and Claude picks them up by description. You don't invoke them by name; you describe what you want and Claude reaches for the matching skill.

@@ -347,10 +347,13 @@ Shell aliases:
 | `<leader>ar` | normal | Resume last Claude session |
 | `<leader>aa` | normal | Add current file to Claude context |
 | `<leader>as` | visual | Send selection to Claude |
+| `<leader>aS` | normal | Sharpen the saw — file a dotfiles task for cloud Claude |
 | `<leader>dy` | normal | Accept Claude-proposed diff |
 | `<leader>dn` | normal | Reject Claude-proposed diff |
 
 Shell alias: `cl` → `claude` (defined when the `claude` CLI is on `PATH`).
+
+Shell command: `sharpen "<prompt>"` files a GitHub issue against `gar/dotfiles` mentioning `@claude`. The Claude Code GitHub app picks it up, works in a sandbox, and opens a PR — useful when you hit friction in your own setup and want it fixed without dropping what you're doing. `<leader>aS` in Neovim wraps the same script behind `vim.ui.input`. Override the target repo with `SHARPEN_REPO=owner/name`.
 
 **Workflow:** Select code in visual mode → `<leader>as` to send to Claude → type your instruction in the panel → accept or reject proposed changes with `<leader>dy` / `<leader>dn`.
 
