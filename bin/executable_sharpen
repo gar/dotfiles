@@ -52,6 +52,8 @@ body="$(cat <<EOF
 
 $prompt
 
+When the work is done and the PR is open, enable auto-merge (squash) on it so it merges itself once CI passes. If CI fails, leave auto-merge off and surface the failure — do not disable required checks or merge manually to bypass them.
+
 ---
 _Filed by \`sharpen\` from \`${host}\`._
 EOF
