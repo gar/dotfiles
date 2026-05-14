@@ -9,6 +9,7 @@
 --   <leader>ar  — Resume last Claude Code session (normal mode)
 --   <leader>as  — Send visual selection to Claude (visual mode)
 --   <leader>aa  — Add current file to Claude context (normal mode)
+--   <leader>aS  — Sharpen the saw: file a dotfiles task for cloud Claude
 --
 -- Diff review (when Claude proposes changes):
 --   <leader>dy  — Accept diff (ClaudeCodeDiffAccept)
@@ -81,6 +82,30 @@ return {
     },
     -- Visual-mode: send the selected lines to Claude
     { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send selection to Claude" },
+    -- Sharpen the saw: prompt for a dotfiles improvement and dispatch it to
+    -- cloud Claude (via the `sharpen` script, which files a GitHub issue).
+    {
+      "<leader>aS",
+      function()
+        vim.ui.input({ prompt = "Sharpen the saw: " }, function(input)
+          if not input or input == "" then return end
+          vim.notify("Sharpening...", vim.log.levels.INFO)
+          vim.system({ "sharpen", input }, { text = true }, function(obj)
+            vim.schedule(function()
+              if obj.code == 0 then
+                local url = (obj.stdout or ""):gsub("%s+$", "")
+                vim.notify("Sharpen filed: " .. url, vim.log.levels.INFO)
+              else
+                local err = (obj.stderr or ""):gsub("%s+$", "")
+                vim.notify("Sharpen failed: " .. (err ~= "" and err or ("exit " .. obj.code)),
+                  vim.log.levels.ERROR)
+              end
+            end)
+          end)
+        end)
+      end,
+      desc = "Sharpen the saw (file dotfiles task)",
+    },
     -- Diff accept / deny
     { "<leader>dy", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept Claude diff" },
     { "<leader>dn", "<cmd>ClaudeCodeDiffDeny<cr>",   desc = "Reject Claude diff" },

@@ -1,0 +1,70 @@
+#!/bin/bash
+set -euo pipefail
+
+# sharpen — fire off a "sharpen the saw" task to Claude Code in the cloud.
+#
+# Files a GitHub issue against the dotfiles repo with the given prompt and an
+# @claude mention. The Claude Code GitHub app picks it up, works in a sandbox,
+# and opens a PR. Use it when you notice friction in your own setup and want
+# Claude to fix it without breaking your current flow.
+#
+# Usage:
+#   sharpen "fix the todo tool to ignore case when sorting"
+#   sharpen                       # interactive prompt
+#   echo "..." | sharpen          # read from stdin
+#
+# Env:
+#   SHARPEN_REPO   override target repo (default: gar/dotfiles)
+
+REPO="${SHARPEN_REPO:-gar/dotfiles}"
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "sharpen: gh CLI not found (brew install gh / pacman -S github-cli / apt install gh)" >&2
+  exit 1
+fi
+
+prompt=""
+if [[ $# -gt 0 ]]; then
+  prompt="$*"
+elif [[ ! -t 0 ]]; then
+  prompt="$(cat)"
+else
+  printf "Sharpen the saw — what should Claude improve?\n> "
+  IFS= read -r prompt
+fi
+
+# Trim leading/trailing whitespace.
+prompt="${prompt#"${prompt%%[![:space:]]*}"}"
+prompt="${prompt%"${prompt##*[![:space:]]}"}"
+
+if [[ -z "$prompt" ]]; then
+  echo "sharpen: no prompt provided" >&2
+  exit 1
+fi
+
+# Title: first line, capped at 72 chars; suffix "..." if anything trimmed.
+title="$(printf '%s' "$prompt" | head -n1 | cut -c1-72)"
+[[ "$title" != "$prompt" ]] && title="${title}..."
+
+host="$(hostname -s 2>/dev/null || hostname)"
+body="$(cat <<EOF
+@claude
+
+$prompt
+
+When the work is done, open the PR with \`Closes #<this-issue-number>\` in the body so it closes this issue on merge, then enable auto-merge (squash) on the PR so it merges itself once CI passes. If CI fails, leave auto-merge off and surface the failure — do not disable required checks or merge manually to bypass them.
+
+---
+_Filed by \`sharpen\` from \`${host}\`._
+EOF
+)"
+
+url="$(gh issue create -R "$REPO" -t "sharpen: $title" -b "$body")"
+printf '%s\n' "$url"
+
+# Best-effort: open the issue so you can watch it land.
+if command -v open >/dev/null 2>&1; then
+  open "$url" >/dev/null 2>&1 || true
+elif command -v xdg-open >/dev/null 2>&1; then
+  xdg-open "$url" >/dev/null 2>&1 || true
+fi

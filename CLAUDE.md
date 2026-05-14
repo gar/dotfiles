@@ -12,6 +12,7 @@ Cross-platform dotfiles managed with [chezmoi](https://www.chezmoi.io/). Support
 dotfiles/
 ├── bin/
 │   ├── executable_bootstrap.sh    # Cross-platform machine setup script
+│   ├── executable_sharpen         # Files a @claude GitHub issue from any prompt
 │   └── executable_test.sh         # Local test runner (mirrors CI)
 ├── dot_config/
 │   └── nvim/                      # Neovim config (Lua, lazy.nvim)
