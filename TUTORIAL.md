@@ -268,7 +268,7 @@ SHARPEN_REPO=me/other-repo sharpen "..."   # send it elsewhere
 
 From inside Neovim, `<leader>aS` opens an input prompt and dispatches the same command. The issue URL is printed (and opened in a browser if a graphical opener is available); you'll get a PR once Claude is done.
 
-Under the hood it's just `gh issue create -R gar/dotfiles -t "sharpen: <prompt>" -b "@claude\n\n<prompt>"`. The Claude Code GitHub app responds to the mention. The body also asks Claude to enable squash auto-merge on the PR it opens, so the fix lands by itself once CI passes; if CI fails, auto-merge stays off and you handle it manually.
+Under the hood it's just `gh issue create -R gar/dotfiles -t "sharpen: <prompt>" -b "@claude\n\n<prompt>"`. The Claude Code GitHub app responds to the mention. The body also asks Claude to put `Closes #<n>` in the PR (so the issue closes on merge) and enable squash auto-merge, so the fix lands and tidies up by itself once CI passes; if CI fails, auto-merge stays off and you handle it manually.
 
 ### Skills — making Claude do the right thing automatically
 
