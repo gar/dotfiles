@@ -1,4 +1,3 @@
-tap 'homebrew/bundle'
 tap 'manaflow-ai/cmux'
 
 brew 'mise'
