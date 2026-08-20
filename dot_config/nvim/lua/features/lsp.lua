@@ -180,7 +180,7 @@ return {
       -- automatic_enable calls vim.lsp.enable() for installed servers.
       -- Exclude formatters/linters that mason installs but are not LSP servers.
       require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "pyright", "ts_ls" },
+        ensure_installed = { "lua_ls", "pyright", "ts_ls", "clangd" },
         automatic_enable = {
           exclude = { "stylua" },
         },

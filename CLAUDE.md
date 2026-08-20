@@ -85,7 +85,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 - **`dot_mise.toml`** — Pins language runtime versions. Changed here, applied via `mise install`.
 - **`Brewfile`** — macOS packages. Run `brew bundle` after changes.
 - **`bin/executable_bootstrap.sh`** — Full machine setup. Detects OS/distro, installs packages, applies chezmoi, installs runtimes, sets default shell.
-- **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, pyright, ts_ls. Floating terminal via toggleterm.nvim (`<C-\>` to toggle). Claude Code integration via claudecode.nvim (`<leader>ac` to toggle).
+- **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, pyright, ts_ls, clangd. Floating terminal via toggleterm.nvim (`<C-\>` to toggle). Claude Code integration via claudecode.nvim (`<leader>ac` to toggle).
 - **`private_dot_claude/skills/`** — Claude Code skills. Each subdirectory is a skill with a `SKILL.md` (YAML frontmatter: `name`, `description`) plus optional resource files. Mostly vendored verbatim from [`mattpocock/skills`](https://github.com/mattpocock/skills); the `notes/` skill is locally adapted from upstream's `obsidian-vault` to use `~/notes`. Provenance and re-vend instructions in `private_dot_claude/skills/README.md`. Adding a new skill: `mkdir private_dot_claude/skills/<name> && $EDITOR private_dot_claude/skills/<name>/SKILL.md`.
 
 ## Development Workflow
