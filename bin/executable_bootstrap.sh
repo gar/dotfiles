@@ -22,6 +22,28 @@ detect_distro() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: is this a work (MDM-managed) machine? Prints "true" or "false".
+# Order: $DOTFILES_WORK, then an existing chezmoi config, then ask.
+# Determined up front because `brew bundle` runs before `chezmoi init`.
+# ---------------------------------------------------------------------------
+detect_is_work() {
+  case "${DOTFILES_WORK:-}" in
+    1) echo "true";  return ;;
+    0) echo "false"; return ;;
+  esac
+  local existing
+  if command -v chezmoi &>/dev/null \
+      && existing="$(chezmoi execute-template '{{ .isWork }}' 2>/dev/null)" \
+      && [[ "$existing" == "true" || "$existing" == "false" ]]; then
+    echo "$existing"
+    return
+  fi
+  local answer
+  read -rp "Is this a work machine (MDM-managed)? [y/N] " answer
+  if [[ "$answer" =~ ^[Yy] ]]; then echo "true"; else echo "false"; fi
+}
+
+# ---------------------------------------------------------------------------
 # 1. Install system packages
 # ---------------------------------------------------------------------------
 install_packages_darwin() {
@@ -205,20 +227,14 @@ install_chezmoi() {
 # Main
 # ---------------------------------------------------------------------------
 
-# 1Password setup (interactive — user must set up account and enable biometrics)
-if [[ "$OS" == "Darwin" ]]; then
-  open /System/Volumes/Data/Applications/1Password.app
+IS_WORK="$(detect_is_work)"
+echo "Work machine: $IS_WORK"
+# Read by the Brewfile to skip personal-only casks on work machines
+if [[ "$IS_WORK" == "true" ]]; then
+  export DOTFILES_WORK=1
 else
-  # On Linux, 1Password may be installed separately; just prompt
-  echo "Ensure 1Password and the op CLI are installed and configured."
+  export DOTFILES_WORK=0
 fi
-read -rp "Set up account in 1Password app (and enable biometrics) [enter to continue]"
-
-if ! command -v op &>/dev/null; then
-  echo "Error: 1Password CLI (op) is not installed. Install it from https://developer.1password.com/docs/cli/ and re-run this script."
-  exit 1
-fi
-eval "$(op signin --account my.1password.com)"
 
 # Install packages
 if [[ "$OS" == "Darwin" ]]; then
@@ -249,11 +265,13 @@ if [[ "$OS" != "Darwin" ]]; then
 fi
 install_chezmoi
 
-# Apply dotfiles
-chezmoi init gar --apply
+# Apply dotfiles. Pre-answer the isWork prompt — the text must match
+# .chezmoi.toml.tmpl. chezmoi still prompts for the git email.
+chezmoi init gar --apply --promptBool "Is this a work machine (MDM-managed)=$IS_WORK"
 
-# macOS-specific system preferences
-if [[ "$OS" == "Darwin" ]]; then
+# macOS-specific system preferences — skipped on work machines, where MDM
+# owns system settings (.chezmoiignore also keeps ~/.macos off them)
+if [[ "$OS" == "Darwin" && "$IS_WORK" != "true" ]]; then
   /bin/bash "$HOME/.macos"
 fi
 
@@ -274,7 +292,8 @@ fi
 
 echo "Bootstrap complete. Restart your terminal (or log out and back in) to use zsh."
 
-# On macOS, restart to apply system preferences
-if [[ "$OS" == "Darwin" ]]; then
+# On macOS, restart to apply system preferences (not on work machines —
+# .macos didn't run, and an unannounced reboot can disrupt MDM/endpoint agents)
+if [[ "$OS" == "Darwin" && "$IS_WORK" != "true" ]]; then
   sudo shutdown -r now
 fi

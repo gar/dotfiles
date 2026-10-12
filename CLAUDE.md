@@ -4,7 +4,7 @@
 > Keep entries here terse and implementation-focused (file paths, conventions, gotchas).
 > Anything a human would want to read — keymaps, usage guides, feature descriptions — belongs in `README.md`.
 
-Cross-platform dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports macOS, Ubuntu/Debian, and Arch/Manjaro. Secrets are stored in 1Password and injected at apply time via chezmoi templates.
+Cross-platform dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports macOS, Ubuntu/Debian, and Arch/Manjaro. No secrets are templated in — machine secrets live in the unmanaged `~/.env.local` (see README). Per-machine answers (`isWork`, git `email`) are prompted for on `chezmoi init` by `.chezmoi.toml.tmpl`.
 
 ## Repository Structure
 
@@ -15,6 +15,7 @@ dotfiles/
 │   ├── executable_sharpen         # Files a @claude GitHub issue from any prompt
 │   └── executable_test.sh         # Local test runner (mirrors CI)
 ├── dot_config/
+│   ├── mise/config.toml           # mise global config — personal runtime defaults (lowest priority)
 │   └── nvim/                      # Neovim config (Lua, lazy.nvim)
 │       ├── init.lua               # Entry point — bootstraps lazy.nvim
 │       └── lua/
@@ -23,12 +24,10 @@ dotfiles/
 ├── private_dot_claude/            # Personal Claude preferences (private)
 │   ├── CLAUDE.md                  # Personal coding preferences (synced to ~/.claude/CLAUDE.md)
 │   └── skills/                    # Claude Code skills (synced to ~/.claude/skills/<name>/SKILL.md)
-├── private_dot_ssh/               # SSH keys (populated from 1Password)
 ├── .github/workflows/ci.yml      # GitHub Actions CI pipeline
 ├── .chezmoiignore                 # OS-conditional file exclusions
 ├── dot_zshrc.tmpl                 # Zsh config — templated per OS
 ├── dot_gitconfig.tmpl             # Git config — templated
-├── dot_mise.toml                  # Language runtime versions (Node, Erlang, Elixir, Python)
 ├── dot_macos                      # macOS system preferences (skipped on Linux)
 ├── Brewfile                       # Homebrew packages and casks (macOS)
 └── README.md                      # User-facing setup documentation
@@ -41,7 +40,9 @@ dotfiles/
 - `.tmpl` suffix → chezmoi template with variable substitution and OS conditionals
 - `executable_` prefix → file gets executable permission when applied
 - `.chezmoiignore` excludes files conditionally (e.g. `.macos` excluded on non-Darwin)
-- 1Password secrets are injected via `onepassword*` template functions at apply time
+- `.chezmoi.toml.tmpl` prompts once (`promptBoolOnce`/`promptStringOnce`) for `isWork` and `email`, stored under `[data]` in `~/.config/chezmoi/chezmoi.toml`. Never commit a work email — it is only entered at init time
+- `isWork` gates MDM-unsafe behaviour: `.chezmoiignore` drops `.macos`; bootstrap skips running `~/.macos` and the final reboot. Bootstrap pre-answers the prompt via `--promptBool "<prompt text>=…"` — keep the prompt text in sync between the two files
+- No template uses `onepassword*` functions and bootstrap does not require 1Password/`op`. If you add one, CI/test skip logic for 1Password errors is still in place
 
 ## Testing
 
@@ -71,7 +72,7 @@ Each check hard-fails if its required tool isn't on `PATH`. Run the full suite o
 | `nvim-startup` | Headless neovim launch with plugin install — catches broken config |
 | `nvim-filetypes` | Opens a temp file per filetype (lua, md, py, sh, ts, js, ex, rs, c, rb) — exercises lazy-loaded plugin configs |
 | `git-config` | Renders and parses `dot_gitconfig.tmpl` |
-| `chezmoi-template` | Renders all `.tmpl` files (1Password-dependent templates are skipped) |
+| `chezmoi-template` | Renders all `.tmpl` files and `.chezmoiignore` once per `isWork` value, using fixture `[data]` (`isWork`, `email = "test@example.com"`) passed via `--config` so nothing prompts |
 | `secret-scan` | Runs `gitleaks` over the working tree to catch committed API keys, tokens, passwords |
 
 ### CI
@@ -82,7 +83,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 
 - **`dot_zshrc.tmpl`** — Shell config. Uses chezmoi `if eq .chezmoi.os "darwin"` blocks for OS-specific plugin paths. Integrates mise, direnv, zoxide, chezmoi completions, and 1Password completions.
 - **`dot_gitconfig.tmpl`** — Git config. Notable aliases: `oops` (amend), `shove` (push --force-with-lease), `l` (log oneline). Uses diff3 conflict style.
-- **`dot_mise.toml`** — Pins language runtime versions. Changed here, applied via `mise install`.
+- **`dot_config/mise/config.toml`** — Personal default runtime versions, as mise's *global* config (`~/.config/mise/config.toml`, lowest priority). Changed here, applied via `mise install`. Also holds the `[plugins]` entry for dexter. `mise use -g` writes to this managed file — edit via `chezmoi edit` instead.
 - **`Brewfile`** — macOS packages. Run `brew bundle` after changes.
 - **`bin/executable_bootstrap.sh`** — Full machine setup. Detects OS/distro, installs packages, applies chezmoi, installs runtimes, sets default shell.
 - **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, pyright, ts_ls, clangd. Floating terminal via toggleterm.nvim (`<C-\>` to toggle). Claude Code integration via claudecode.nvim (`<leader>ac` to toggle).
@@ -138,7 +139,7 @@ Group labels for leader prefixes live in `wk.add()` inside `whichkey.lua`. Add a
 Two escape hatches for machine-specific settings that must not be committed:
 
 - **Neovim:** `~/.config/nvim/lua/local.lua` — loaded at the end of `init.lua` via `dofile()` if present. Not in the chezmoi source, so chezmoi never creates or overwrites it. Use for local LSP servers (`vim.lsp.config` / `vim.lsp.enable`), private plugins, etc.
-- **mise:** `~/.mise.local.toml` — mise merges this with `~/.mise.toml` at runtime. The dotfiles only manage `~/.mise.toml`; this path is never touched by chezmoi. Use `[plugins]` here to register tools from private git URLs.
+- **mise:** personal defaults live in the managed `~/.config/mise/config.toml` (global config, lowest priority). Per-machine overrides go in the unmanaged `~/.mise.toml` (or `~/.mise.local.toml`), which beats the global config for any cwd under `$HOME`; per-repo `mise.toml` files beat both. chezmoi never touches `~/.mise.toml` — don't re-add it to the source. Use `[plugins]` there to register tools from private git URLs. Machines that applied the old `dot_mise.toml` still have a stale full `~/.mise.toml` that shadows the global config; chezmoi won't remove it (no `.chezmoiremove`, since work machines use that path for overrides).
 
 ### Claude Code inside Neovim
 
@@ -150,8 +151,8 @@ Two escape hatches for machine-specific settings that must not be committed:
 
 ### When editing templates
 
-- Templates using `onepassword*` functions cannot be tested without 1Password auth
-- Use `chezmoi execute-template --init < file.tmpl` to test rendering locally
+- Templates may reference `.isWork` / `.email`; they error without config data, so test with a fixture: `chezmoi --config-format toml --config <(printf '[data]\nisWork = false\nemail = "test@example.com"\n') execute-template --init < file.tmpl`
+- `--promptBool`/`--promptString` on `chezmoi init`/`execute-template` match the **prompt text**, not the data key
 - Test with `./bin/executable_test.sh chezmoi-template`
 
 ## Code Style

@@ -34,6 +34,20 @@ summary() {
 
 FILTER="${1:-}"
 
+# True if the script's shebang names zsh (shellcheck can't parse zsh)
+is_zsh_script() { head -n 1 "$1" | grep -q 'zsh'; }
+
+# Fixture chezmoi configs supplying the [data] that .chezmoi.toml.tmpl would
+# normally prompt for on `chezmoi init`, so templates render non-interactively.
+# Rendered once per isWork value; CHEZMOI_CFG (personal) is the default.
+CHEZMOI_CFG_DIR=$(mktemp -d)
+trap 'rm -rf "$CHEZMOI_CFG_DIR"' EXIT
+for is_work in false true; do
+  printf '[data]\n    isWork = %s\n    email = "test@example.com"\n' "$is_work" \
+    > "$CHEZMOI_CFG_DIR/isWork-$is_work.toml"
+done
+CHEZMOI_CFG="$CHEZMOI_CFG_DIR/isWork-false.toml"
+
 # ---------------------------------------------------------------------------
 # 1. ShellCheck — lint shell scripts
 # ---------------------------------------------------------------------------
@@ -42,6 +56,8 @@ if run_check "shellcheck" "$FILTER"; then
     for f in "$REPO_DIR"/bin/executable_* "$REPO_DIR"/dot_macos "$REPO_DIR"/dot_config/raycast-scripts/executable_*.sh; do
       [[ -f "$f" ]] || continue
       basename="$(basename "$f")"
+      # zsh scripts are syntax-checked with `zsh -n` under shell-syntax instead
+      is_zsh_script "$f" && continue
       # dot_macos uses osascript/defaults — lots of deliberate SC warnings; exclude common noise
       if shellcheck -e SC1091,SC2034,SC2044,SC2046,SC2064,SC2086,SC2162 "$f" 2>&1; then
         pass "shellcheck $basename"
@@ -58,11 +74,19 @@ fi
 # 2. Shell syntax — parse-check zshrc and bash scripts
 # ---------------------------------------------------------------------------
 if run_check "shell-syntax" "$FILTER"; then
-  # bash scripts
+  # bash (and zsh-shebang) scripts
   for f in "$REPO_DIR"/bin/executable_* "$REPO_DIR"/dot_config/raycast-scripts/executable_*.sh; do
     [[ -f "$f" ]] || continue
     basename="$(basename "$f")"
-    if bash -n "$f" 2>&1; then
+    if is_zsh_script "$f"; then
+      if ! command -v zsh &>/dev/null; then
+        fail "zsh -n $basename (zsh not installed)"
+      elif zsh -n "$f" 2>&1; then
+        pass "zsh -n $basename"
+      else
+        fail "zsh -n $basename"
+      fi
+    elif bash -n "$f" 2>&1; then
       pass "bash -n $basename"
     else
       fail "bash -n $basename"
@@ -80,7 +104,7 @@ if run_check "shell-syntax" "$FILTER"; then
     ZSHRC_FILE="$REPO_DIR/dot_zshrc.tmpl"
     if [[ -f "$ZSHRC_FILE" ]]; then
       ZSHRC_TMP=$(mktemp)
-      chezmoi execute-template --init < "$ZSHRC_FILE" > "$ZSHRC_TMP" 2>/dev/null
+      chezmoi --config "$CHEZMOI_CFG" execute-template --init < "$ZSHRC_FILE" > "$ZSHRC_TMP" 2>/dev/null
       if zsh -n "$ZSHRC_TMP" 2>&1; then
         pass "zsh -n dot_zshrc.tmpl"
       else
@@ -188,9 +212,8 @@ if run_check "git-config" "$FILTER"; then
   elif ! command -v chezmoi &>/dev/null; then
     fail "chezmoi not installed (needed to render dot_gitconfig.tmpl)"
   else
-    TMPFILE=$(mktemp)
-    trap 'rm -f "$TMPFILE"' EXIT
-    chezmoi execute-template --init < "$GITCONFIG" > "$TMPFILE" 2>/dev/null
+    TMPFILE="$CHEZMOI_CFG_DIR/gitconfig"
+    chezmoi --config "$CHEZMOI_CFG" execute-template --init < "$GITCONFIG" > "$TMPFILE" 2>/dev/null
     if git config --file "$TMPFILE" --list >/dev/null 2>&1; then
       pass "git config dot_gitconfig.tmpl"
     else
@@ -208,24 +231,28 @@ if run_check "chezmoi-template" "$FILTER"; then
     fail "chezmoi not installed"
   else
     TMPL_FAIL=0
+    # .chezmoiignore is a template too, despite lacking the .tmpl suffix
     while IFS= read -r -d '' f; do
       basename="$(basename "$f")"
-      # Validate template syntax only — templates that call onepassword* will
-      # fail to *execute* without 1Password auth, so we just check parsing.
-      if chezmoi execute-template --init < "$f" >/dev/null 2>&1; then
-        pass "template $basename"
-      else
-        # Retry: if the error is about 1Password, treat as a syntax pass
-        ERR=$(chezmoi execute-template --init < "$f" 2>&1 || true)
-        if echo "$ERR" | grep -qi "onepassword\|1password\|op:"; then
-          pass "template $basename (skipped — requires 1Password)"
+      for is_work in false true; do
+        cfg="$CHEZMOI_CFG_DIR/isWork-$is_work.toml"
+        # Validate template syntax only — templates that call onepassword* will
+        # fail to *execute* without 1Password auth, so we just check parsing.
+        if chezmoi --config "$cfg" execute-template --init < "$f" >/dev/null 2>&1; then
+          pass "template $basename (isWork=$is_work)"
         else
-          printf "  %s\n" "$ERR"
-          fail "template $basename"
-          TMPL_FAIL=1
+          # Retry: if the error is about 1Password, treat as a syntax pass
+          ERR=$(chezmoi --config "$cfg" execute-template --init < "$f" 2>&1 || true)
+          if echo "$ERR" | grep -qi "onepassword\|1password\|op:"; then
+            pass "template $basename (isWork=$is_work, skipped — requires 1Password)"
+          else
+            printf "  %s\n" "$ERR"
+            fail "template $basename (isWork=$is_work)"
+            TMPL_FAIL=1
+          fi
         fi
-      fi
-    done < <(find "$REPO_DIR" -name '*.tmpl' -not -path '*/.git/*' -print0)
+      done
+    done < <(find "$REPO_DIR" \( -name '*.tmpl' -o -name '.chezmoiignore' \) -not -path '*/.git/*' -print0)
     [[ "$TMPL_FAIL" -eq 0 ]] || true
   fi
 fi

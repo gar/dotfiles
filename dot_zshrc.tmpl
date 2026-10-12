@@ -30,13 +30,6 @@ fi
 # ------------------------------
 alias vim="nvim"
 
-# modern CLI replacements
-if command -v fdfind &>/dev/null; then
-  alias find='fdfind'
-elif command -v fd &>/dev/null; then
-  alias find='fd'
-fi
-
 # git (subset of oh-my-zsh git plugin)
 alias g="git"
 alias ga="g add"
@@ -69,8 +62,10 @@ elif command -v batcat &>/dev/null; then
   alias cat='batcat'
   export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
 fi
-command -v broot &>/dev/null && alias tree='broot'
-command -v hexyl &>/dev/null && alias xxd='hexyl'
+# Debian/Ubuntu ship fd as `fdfind` — expose it under its usual name
+if ! command -v fd &>/dev/null && command -v fdfind &>/dev/null; then
+  alias fd='fdfind'
+fi
 alias cl='claude'
 
 # git worktree
