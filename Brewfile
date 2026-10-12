@@ -44,6 +44,7 @@ cask 'raycast'
 cask 'dash'
 cask 'font-jetbrains-mono-nerd-font'
 cask 'cmux'
+cask 'obsidian'
 cask 'spotify'
 cask 'keymapp'
 
@@ -54,5 +55,4 @@ cask 'keymapp'
 # evaluating the Brewfile, so a plain DOTFILES_WORK would always read as nil.
 unless ENV["HOMEBREW_DOTFILES_WORK"] == "1"
   cask 'firefox'
-  cask 'obsidian'
 end

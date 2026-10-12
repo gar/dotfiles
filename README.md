@@ -49,7 +49,7 @@ On a company-managed Mac (MDM, endpoint security), answer **yes** to the work-ma
 
 - `~/.macos` is not installed (excluded in `.chezmoiignore`) and bootstrap never runs it — MDM owns system settings
 - bootstrap does **not** finish with `sudo shutdown -r now`
-- `brew bundle` skips the personal-only `firefox` and `obsidian` casks (the Brewfile checks `HOMEBREW_DOTFILES_WORK=1`, which bootstrap sets from `isWork`)
+- `brew bundle` skips the personal-only `firefox` cask (the Brewfile checks `HOMEBREW_DOTFILES_WORK=1`, which bootstrap sets from `isWork`)
 - bootstrap doesn't require 1Password or the `op` CLI (no machine does any more)
 
 Everything else — shell, git, Neovim, mise, CLI tools — is applied as normal.
@@ -186,7 +186,7 @@ The `[plugins]` section registers a plugin from a custom git URL — equivalent 
 
 ```bash
 brew bundle                  # personal machine
-HOMEBREW_DOTFILES_WORK=1 brew bundle  # work machine — skips firefox, obsidian
+HOMEBREW_DOTFILES_WORK=1 brew bundle  # work machine — skips firefox
 ```
 
 Personal-only casks go inside the `unless ENV["HOMEBREW_DOTFILES_WORK"] == "1"` block at the bottom of the `Brewfile`.
