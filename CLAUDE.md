@@ -15,6 +15,7 @@ dotfiles/
 │   ├── executable_sharpen         # Files a @claude GitHub issue from any prompt
 │   └── executable_test.sh         # Local test runner (mirrors CI)
 ├── dot_config/
+│   ├── mise/config.toml           # mise global config — personal runtime defaults (lowest priority)
 │   └── nvim/                      # Neovim config (Lua, lazy.nvim)
 │       ├── init.lua               # Entry point — bootstraps lazy.nvim
 │       └── lua/
@@ -27,7 +28,6 @@ dotfiles/
 ├── .chezmoiignore                 # OS-conditional file exclusions
 ├── dot_zshrc.tmpl                 # Zsh config — templated per OS
 ├── dot_gitconfig.tmpl             # Git config — templated
-├── dot_mise.toml                  # Language runtime versions (Node, Erlang, Elixir, Python)
 ├── dot_macos                      # macOS system preferences (skipped on Linux)
 ├── Brewfile                       # Homebrew packages and casks (macOS)
 └── README.md                      # User-facing setup documentation
@@ -83,7 +83,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 
 - **`dot_zshrc.tmpl`** — Shell config. Uses chezmoi `if eq .chezmoi.os "darwin"` blocks for OS-specific plugin paths. Integrates mise, direnv, zoxide, chezmoi completions, and 1Password completions.
 - **`dot_gitconfig.tmpl`** — Git config. Notable aliases: `oops` (amend), `shove` (push --force-with-lease), `l` (log oneline). Uses diff3 conflict style.
-- **`dot_mise.toml`** — Pins language runtime versions. Changed here, applied via `mise install`.
+- **`dot_config/mise/config.toml`** — Personal default runtime versions, as mise's *global* config (`~/.config/mise/config.toml`, lowest priority). Changed here, applied via `mise install`. Also holds the `[plugins]` entry for dexter. `mise use -g` writes to this managed file — edit via `chezmoi edit` instead.
 - **`Brewfile`** — macOS packages. Run `brew bundle` after changes.
 - **`bin/executable_bootstrap.sh`** — Full machine setup. Detects OS/distro, installs packages, applies chezmoi, installs runtimes, sets default shell.
 - **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, pyright, ts_ls, clangd. Floating terminal via toggleterm.nvim (`<C-\>` to toggle). Claude Code integration via claudecode.nvim (`<leader>ac` to toggle).
@@ -139,7 +139,7 @@ Group labels for leader prefixes live in `wk.add()` inside `whichkey.lua`. Add a
 Two escape hatches for machine-specific settings that must not be committed:
 
 - **Neovim:** `~/.config/nvim/lua/local.lua` — loaded at the end of `init.lua` via `dofile()` if present. Not in the chezmoi source, so chezmoi never creates or overwrites it. Use for local LSP servers (`vim.lsp.config` / `vim.lsp.enable`), private plugins, etc.
-- **mise:** `~/.mise.local.toml` — mise merges this with `~/.mise.toml` at runtime. The dotfiles only manage `~/.mise.toml`; this path is never touched by chezmoi. Use `[plugins]` here to register tools from private git URLs.
+- **mise:** personal defaults live in the managed `~/.config/mise/config.toml` (global config, lowest priority). Per-machine overrides go in the unmanaged `~/.mise.toml` (or `~/.mise.local.toml`), which beats the global config for any cwd under `$HOME`; per-repo `mise.toml` files beat both. chezmoi never touches `~/.mise.toml` — don't re-add it to the source. Use `[plugins]` there to register tools from private git URLs. Machines that applied the old `dot_mise.toml` still have a stale full `~/.mise.toml` that shadows the global config; chezmoi won't remove it (no `.chezmoiremove`, since work machines use that path for overrides).
 
 ### Claude Code inside Neovim
 
