@@ -7,3 +7,8 @@ CLAUDE.md
 .macos
 .config/raycast-scripts
 {{- end }}
+
+{{- if .isWork }}
+# Work (MDM-managed) machines: don't touch system preferences
+.macos
+{{- end }}

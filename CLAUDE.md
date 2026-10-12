@@ -4,7 +4,7 @@
 > Keep entries here terse and implementation-focused (file paths, conventions, gotchas).
 > Anything a human would want to read — keymaps, usage guides, feature descriptions — belongs in `README.md`.
 
-Cross-platform dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports macOS, Ubuntu/Debian, and Arch/Manjaro. Secrets are stored in 1Password and injected at apply time via chezmoi templates.
+Cross-platform dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports macOS, Ubuntu/Debian, and Arch/Manjaro. No secrets are templated in — machine secrets live in the unmanaged `~/.env.local` (see README). Per-machine answers (`isWork`, git `email`) are prompted for on `chezmoi init` by `.chezmoi.toml.tmpl`.
 
 ## Repository Structure
 
@@ -23,7 +23,6 @@ dotfiles/
 ├── private_dot_claude/            # Personal Claude preferences (private)
 │   ├── CLAUDE.md                  # Personal coding preferences (synced to ~/.claude/CLAUDE.md)
 │   └── skills/                    # Claude Code skills (synced to ~/.claude/skills/<name>/SKILL.md)
-├── private_dot_ssh/               # SSH keys (populated from 1Password)
 ├── .github/workflows/ci.yml      # GitHub Actions CI pipeline
 ├── .chezmoiignore                 # OS-conditional file exclusions
 ├── dot_zshrc.tmpl                 # Zsh config — templated per OS
@@ -41,7 +40,9 @@ dotfiles/
 - `.tmpl` suffix → chezmoi template with variable substitution and OS conditionals
 - `executable_` prefix → file gets executable permission when applied
 - `.chezmoiignore` excludes files conditionally (e.g. `.macos` excluded on non-Darwin)
-- 1Password secrets are injected via `onepassword*` template functions at apply time
+- `.chezmoi.toml.tmpl` prompts once (`promptBoolOnce`/`promptStringOnce`) for `isWork` and `email`, stored under `[data]` in `~/.config/chezmoi/chezmoi.toml`. Never commit a work email — it is only entered at init time
+- `isWork` gates MDM-unsafe behaviour: `.chezmoiignore` drops `.macos`; bootstrap skips running `~/.macos` and the final reboot. Bootstrap pre-answers the prompt via `--promptBool "<prompt text>=…"` — keep the prompt text in sync between the two files
+- No template uses `onepassword*` functions and bootstrap does not require 1Password/`op`. If you add one, CI/test skip logic for 1Password errors is still in place
 
 ## Testing
 
@@ -71,7 +72,7 @@ Each check hard-fails if its required tool isn't on `PATH`. Run the full suite o
 | `nvim-startup` | Headless neovim launch with plugin install — catches broken config |
 | `nvim-filetypes` | Opens a temp file per filetype (lua, md, py, sh, ts, js, ex, rs, c, rb) — exercises lazy-loaded plugin configs |
 | `git-config` | Renders and parses `dot_gitconfig.tmpl` |
-| `chezmoi-template` | Renders all `.tmpl` files (1Password-dependent templates are skipped) |
+| `chezmoi-template` | Renders all `.tmpl` files and `.chezmoiignore` once per `isWork` value, using fixture `[data]` (`isWork`, `email = "test@example.com"`) passed via `--config` so nothing prompts |
 | `secret-scan` | Runs `gitleaks` over the working tree to catch committed API keys, tokens, passwords |
 
 ### CI
@@ -150,8 +151,8 @@ Two escape hatches for machine-specific settings that must not be committed:
 
 ### When editing templates
 
-- Templates using `onepassword*` functions cannot be tested without 1Password auth
-- Use `chezmoi execute-template --init < file.tmpl` to test rendering locally
+- Templates may reference `.isWork` / `.email`; they error without config data, so test with a fixture: `chezmoi --config-format toml --config <(printf '[data]\nisWork = false\nemail = "test@example.com"\n') execute-template --init < file.tmpl`
+- `--promptBool`/`--promptString` on `chezmoi init`/`execute-template` match the **prompt text**, not the data key
 - Test with `./bin/executable_test.sh chezmoi-template`
 
 ## Code Style

@@ -1,11 +1,10 @@
 # Dotfiles
 
-Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/). Secrets (SSH keys, config) are stored in 1Password and injected at apply time via chezmoi templates.
+Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/). No secrets are committed — machine-specific secrets go in an unmanaged `~/.env.local` (see [Machine-local Config](#machine-local-config)).
 
 ## Prerequisites
 
 - macOS **or** Linux (Ubuntu/Debian, Arch/Manjaro)
-- [1Password](https://1password.com/) with the `op` CLI available
 
 **macOS additionally requires:**
 - [Homebrew](https://brew.sh/) installed (the bootstrap script will install it if missing)
@@ -20,12 +19,12 @@ bash bin/executable_bootstrap.sh
 
 ### What it does
 
-1. Open 1Password for account setup, then authenticate the `op` CLI
+1. Ask whether this is a work machine (see [Work Machines](#work-machines))
 2. Install system packages:
    - **macOS:** Homebrew packages and casks (`Brewfile`)
    - **Ubuntu/Debian:** apt packages + luacheck via luarocks
    - **Arch/Manjaro:** pacman packages (+ AUR for `zsh-you-should-use`)
-3. Install chezmoi and apply dotfiles (pulling secrets from 1Password)
+3. Install chezmoi and apply dotfiles (prompts for your git email)
 4. **macOS only:** Apply system preferences (`.macos`)
 5. Install language runtimes and tools via [mise](https://mise.jdx.dev/) (Node, Erlang, Elixir, Python, [dexter](https://github.com/remoteoss/dexter))
 6. Set zsh as the default shell (if not already)
@@ -39,7 +38,7 @@ Pull and apply the latest changes:
 chezmoi update
 ```
 
-This fetches the latest from the repo and re-applies all templates (including any updated 1Password secrets).
+This fetches the latest from the repo and re-applies all templates.
 
 To preview what would change before applying:
 
@@ -211,7 +210,6 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `dot_mise.toml` | Language runtime versions |
 | `dot_macos` | macOS system preferences (skipped on Linux via `.chezmoiignore`) |
 | `dot_config/nvim/` | Neovim config (LSP, completion, fuzzy find, floating terminal, etc.) |
-| `private_dot_ssh/` | SSH keys and config (populated from 1Password) |
 | `Brewfile` | Homebrew packages and casks (macOS only) |
 | `.chezmoiignore` | OS-conditional file exclusions |
 | `bin/executable_bootstrap.sh` | Cross-platform machine bootstrap script |
@@ -533,5 +531,4 @@ Raycast script commands live in `~/.config/raycast-scripts/` (excluded on Linux 
 | Zsh plugins | Homebrew | apt + git clone | pacman + AUR |
 | macOS preferences | Yes | Skipped | Skipped |
 | Neovim config | Yes | Yes | Yes |
-| SSH keys (1Password) | Yes | Yes | Yes |
 | Language runtimes (mise) | Yes | Yes | Yes |
