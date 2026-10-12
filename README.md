@@ -24,11 +24,47 @@ bash bin/executable_bootstrap.sh
    - **macOS:** Homebrew packages and casks (`Brewfile`)
    - **Ubuntu/Debian:** apt packages + luacheck via luarocks
    - **Arch/Manjaro:** pacman packages (+ AUR for `zsh-you-should-use`)
-3. Install chezmoi and apply dotfiles (prompts for your git email)
-4. **macOS only:** Apply system preferences (`.macos`)
+3. Install chezmoi and apply dotfiles (prompts for your git email — see [chezmoi init prompts](#chezmoi-init-prompts))
+4. **macOS only, personal machines only:** Apply system preferences (`.macos`)
 5. Install language runtimes and tools via [mise](https://mise.jdx.dev/) (Node, Erlang, Elixir, Python, [dexter](https://github.com/remoteoss/dexter))
 6. Set zsh as the default shell (if not already)
-7. **macOS only:** Restart to apply system preferences
+7. **macOS only, personal machines only:** Restart to apply system preferences
+
+### chezmoi init prompts
+
+`chezmoi init` (run by bootstrap, or by hand) asks two questions once and caches the answers in `~/.config/chezmoi/chezmoi.toml`:
+
+| Prompt | Data key | Used for |
+|---|---|---|
+| Is this a work machine (MDM-managed)? | `isWork` (default `false`) | Skipping MDM-unsafe setup — see [Work Machines](#work-machines) |
+| Git email address | `email` (default `garmorley@gmail.com`) | `user.email` in `~/.gitconfig` |
+
+Only the personal default is in the repo — a work email is entered at init time and only exists in the local chezmoi config. To change an answer later, edit `~/.config/chezmoi/chezmoi.toml` or re-run `chezmoi init --prompt`.
+
+> **Existing machines:** after pulling this change, run `chezmoi init` once to answer the new prompts — `chezmoi apply` fails on the missing `email`/`isWork` data until you do.
+
+### Work Machines
+
+On a company-managed Mac (MDM, endpoint security), answer **yes** to the work-machine prompt. With `isWork = true`:
+
+- `~/.macos` is not installed (excluded in `.chezmoiignore`) and bootstrap never runs it — MDM owns system settings
+- bootstrap does **not** finish with `sudo shutdown -r now`
+- `brew bundle` skips the personal-only `firefox` cask (the Brewfile checks `DOTFILES_WORK=1`, which bootstrap sets from `isWork`)
+- bootstrap doesn't require 1Password or the `op` CLI (no machine does any more)
+
+Everything else — shell, git, Neovim, mise, CLI tools — is applied as normal.
+
+Setting up a work Mac by hand, without bootstrap:
+
+```bash
+brew install chezmoi
+chezmoi init gar            # answer: work machine = yes, email = your work email
+chezmoi diff                # review before touching anything
+chezmoi apply
+DOTFILES_WORK=1 brew bundle --file="$(chezmoi source-path)/Brewfile"
+```
+
+When running `brew bundle` by hand on a work machine, **always** set `DOTFILES_WORK=1` — without it the Brewfile installs the personal casks too.
 
 ## Updating Dotfiles on an Existing Machine
 
@@ -64,15 +100,33 @@ git add -A && git commit -m "update zshrc" && git push
 
 ## Managing Language Runtimes
 
-Runtimes are defined in `~/.mise.toml` (source: `dot_mise.toml`) and managed by [mise](https://mise.jdx.dev/):
+Personal default runtime versions live in mise's global config, `~/.config/mise/config.toml` (source: `dot_config/mise/config.toml`), managed by [mise](https://mise.jdx.dev/). It has the lowest priority, so anything more specific wins:
+
+| Priority | File | Managed by |
+|---|---|---|
+| Highest | `mise.toml` / `.mise.toml` in a project (and its parents) | the project |
+| | `~/.mise.toml` (or `~/.mise.local.toml`) | you, per machine — never touched by chezmoi |
+| Lowest | `~/.config/mise/config.toml` | chezmoi (this repo) |
 
 ```bash
 # Install all defined runtimes
 mise install
 
-# Add or change a runtime version
+# Change a personal default (all machines) — edit the chezmoi source, not the live file
+chezmoi edit ~/.config/mise/config.toml
+
+# Override a version on this machine only
+mise use --path ~/.mise.toml python@3.12
+
+# Pin a version for one project
 mise use node@20
 ```
+
+Avoid `mise use -g` — it writes to the chezmoi-managed global config, and the next `chezmoi apply` will want to revert it.
+
+`~/.mise.toml` only applies inside `$HOME` (mise looks for it as a parent directory of the cwd); outside `$HOME` the global defaults apply.
+
+> **Upgrading an existing machine:** older versions of these dotfiles managed `~/.mise.toml` directly. chezmoi leaves that file in place, and since it outranks the global config it would hide future version changes. After `chezmoi apply`, delete `~/.mise.toml` (or trim it down to genuine per-machine overrides).
 
 ## Machine-local Config
 
@@ -113,26 +167,29 @@ Any valid Neovim Lua is fine here — the file runs after all plugins are loaded
 
 ### mise
 
-`~/.mise.local.toml` sits next to the chezmoi-managed `~/.mise.toml` and is never touched by chezmoi. Use it for machine-specific tools and plugins from internal or private registries:
+`~/.mise.toml` (or `~/.mise.local.toml`) is never touched by chezmoi and outranks the chezmoi-managed `~/.config/mise/config.toml`. Use it to override personal default versions on this machine, and for machine-specific tools and plugins from internal or private registries:
 
 ```toml
-# ~/.mise.local.toml  (not in git)
+# ~/.mise.toml  (not in git)
+[tools]
+python = "3.12.15"          # overrides the personal default
+my-private-tool = "latest"
+
 [plugins]
 my-private-tool = "git@github.com:my-org/mise-my-private-tool.git"
-
-[tools]
-my-private-tool = "latest"
 ```
-
-The `[plugins]` section registers a plugin from a custom git URL — equivalent to `mise plugin add <name> <url>`. mise merges this file with `~/.mise.toml` at runtime.
+The `[plugins]` section registers a plugin from a custom git URL — equivalent to `mise plugin add <name> <url>`. mise merges this file with the global config at runtime; per-project `mise.toml` files still win over both.
 
 ## Managing Packages
 
 **macOS:** Add packages to the `Brewfile`, then:
 
 ```bash
-brew bundle
+brew bundle                  # personal machine
+DOTFILES_WORK=1 brew bundle  # work machine — skips firefox
 ```
+
+Personal-only casks go inside the `unless ENV["DOTFILES_WORK"] == "1"` block at the bottom of the `Brewfile`.
 
 **Ubuntu/Debian:** Packages are installed via `apt-get` in the bootstrap script. To add new packages, edit the `install_packages_debian()` function in `bin/executable_bootstrap.sh`.
 
@@ -144,7 +201,8 @@ brew bundle
 |------|---------|
 | `btop` | System monitor — CPU, memory, disk, network, processes with graphs and per-core view |
 | `termgraph` | Draw bar charts and sparklines from piped data — `value,label` CSV format |
-| `hexyl` | Hex viewer — colorized, human-readable `xxd` replacement (`xxd` is aliased to `hexyl`) |
+| `hexyl` | Hex viewer — colorized, human-readable alternative to `xxd` (run as `hexyl`; `xxd` is untouched) |
+| `broot` | Interactive tree explorer with fuzzy search (run as `broot`/`br`; `tree` is untouched) |
 | `hyperfine` | Command benchmarking with statistics (mean/stddev, warmup runs, parameter sweeps) |
 | `procs` | Modern `ps` replacement — color output, keyword search, process tree view |
 | `watson` | Time tracker — `watson start <project> +tag`, `watson stop`, `watson report`. Active task is shown centred in the Neovim statusline. |
@@ -207,11 +265,12 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 |---|---|
 | `dot_zshrc.tmpl` | Zsh config (aliases, plugins, tool activation) — templated per OS |
 | `dot_gitconfig.tmpl` | Git config (aliases, user info) |
-| `dot_mise.toml` | Language runtime versions |
-| `dot_macos` | macOS system preferences (skipped on Linux via `.chezmoiignore`) |
+| `.chezmoi.toml.tmpl` | `chezmoi init` prompts — `isWork` and git `email` |
+| `dot_config/mise/config.toml` | Personal default language runtime versions (mise global config) |
+| `dot_macos` | macOS system preferences (skipped on Linux and on work machines via `.chezmoiignore`) |
 | `dot_config/nvim/` | Neovim config (LSP, completion, fuzzy find, floating terminal, etc.) |
 | `Brewfile` | Homebrew packages and casks (macOS only) |
-| `.chezmoiignore` | OS-conditional file exclusions |
+| `.chezmoiignore` | OS- and `isWork`-conditional file exclusions |
 | `bin/executable_bootstrap.sh` | Cross-platform machine bootstrap script |
 | `bin/executable_test.sh` | Local test runner (same checks as CI) |
 | `.github/workflows/ci.yml` | GitHub Actions CI pipeline |
@@ -220,15 +279,17 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 
 ### Modern CLI Replacements
 
-These modern tools are installed and aliased over their traditional counterparts:
+These modern tools are installed alongside their traditional counterparts and run under their own names — `find`, `grep`, `sed`, `tree` and `xxd` are never aliased, so scripts and muscle memory that expect the standard tools keep working:
 
-| Alias | Replaces | Tool |
+| Command | Alternative to | Tool |
 |-------|----------|------|
-| `find` | `find` | [`fd`](https://github.com/sharkdp/fd) — faster, friendlier find |
-| `grep` | `grep` | [`rg`](https://github.com/BurntSushi/ripgrep) — ripgrep, faster grep |
-| `sd` | `sed` | [`sd`](https://github.com/chmln/sd) — simpler stream editor (accessed as `sd`) |
+| `fd` | `find` | [`fd`](https://github.com/sharkdp/fd) — faster, friendlier find (aliased from `fdfind` on Debian/Ubuntu) |
+| `rg` | `grep` | [`rg`](https://github.com/BurntSushi/ripgrep) — ripgrep, faster grep |
+| `sd` | `sed` | [`sd`](https://github.com/chmln/sd) — simpler stream editor |
+| `broot` | `tree` | [`broot`](https://github.com/Canop/broot) — interactive tree explorer |
+| `hexyl` | `xxd` | [`hexyl`](https://github.com/sharkdp/hexyl) — colorized hex viewer |
 
-> **Note:** `sd` uses a different syntax from `sed` — it does not override `sed`. Use `sd 'old' 'new' file` or pipe: `echo 'hello' | sd 'hello' 'world'`.
+> **Note:** `sd` uses a different syntax from `sed`. Use `sd 'old' 'new' file` or pipe: `echo 'hello' | sd 'hello' 'world'`.
 
 ### Watson
 
@@ -454,6 +515,8 @@ Headings at all levels fold their content. Folds start open — use these to col
 
 `man` pages are also rendered via `bat` for syntax-highlighted output.
 
+These are the only aliases that shadow a standard command. `fd`, `broot` and `hexyl` are installed too but are run by their own names (see [Modern CLI Replacements](#modern-cli-replacements)).
+
 `broot` provides an interactive tree explorer with fuzzy search. Run `broot --install` once after install to enable the `br` shell function (`br` lets you `cd` on exit; plain `broot` does not).
 
 ### Git
@@ -529,6 +592,6 @@ Raycast script commands live in `~/.config/raycast-scripts/` (excluded on Linux 
 |---|---|---|---|
 | Package installation | Homebrew | apt | pacman |
 | Zsh plugins | Homebrew | apt + git clone | pacman + AUR |
-| macOS preferences | Yes | Skipped | Skipped |
+| macOS preferences | Yes (skipped on work machines) | Skipped | Skipped |
 | Neovim config | Yes | Yes | Yes |
 | Language runtimes (mise) | Yes | Yes | Yes |

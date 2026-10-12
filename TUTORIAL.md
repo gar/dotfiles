@@ -373,9 +373,40 @@ mise install
 ### Switch versions for a project
 
 ```bash
-mise use node@20    # sets node 20 for this directory (writes .mise.toml)
-mise use -g node@22 # sets globally
+mise use node@20    # sets node 20 for this directory (writes mise.toml)
 ```
+
+### Where versions come from
+
+mise layers config files; the most specific one wins:
+
+1. `mise.toml` in the project (or a parent directory) — per-repo pins
+2. `~/.mise.toml` — this machine's overrides, never touched by chezmoi
+3. `~/.config/mise/config.toml` — your personal defaults, managed by chezmoi
+
+Run `mise ls --current` to see each active version and which file it came from.
+
+### Override a version on one machine
+
+Say a work laptop needs Python 3.12 while your defaults say 3.14:
+
+```bash
+mise use --path ~/.mise.toml python@3.12.15
+mise install
+```
+
+This writes `~/.mise.toml`, which beats the personal default everywhere under `$HOME`. Project `mise.toml` files still win over it.
+
+### Change your personal defaults
+
+These live in the dotfiles repo, so edit them through chezmoi so every machine picks them up:
+
+```bash
+chezmoi edit ~/.config/mise/config.toml
+mise install
+```
+
+Avoid `mise use -g` — it edits the chezmoi-managed file directly, and `chezmoi diff` will flag the change.
 
 ### See all available versions
 
@@ -418,6 +449,29 @@ chezmoi apply
 ```bash
 chezmoi update
 ```
+
+### Answer the init prompts
+
+The first `chezmoi init` asks two questions and remembers the answers in `~/.config/chezmoi/chezmoi.toml`:
+
+- **Is this a work machine (MDM-managed)?** — answer yes on a company-managed Mac. chezmoi then skips `~/.macos`, and bootstrap skips the final reboot.
+- **Git email address** — becomes `user.email` in `~/.gitconfig`. Press enter for the default (`garmorley@gmail.com`); type your work email on a work machine — it never goes into the repo.
+
+To change an answer, re-run `chezmoi init --prompt`, then `chezmoi diff` and `chezmoi apply`.
+
+### Set up a work Mac
+
+Skip bootstrap and go step by step, so you can see each change before it happens:
+
+```bash
+brew install chezmoi
+chezmoi init gar        # work machine: yes; email: your work email
+chezmoi diff            # no ~/.macos in the list
+chezmoi apply
+DOTFILES_WORK=1 brew bundle --file="$(chezmoi source-path)/Brewfile"   # skips Firefox
+```
+
+Need different runtime versions from your personal defaults? Create `~/.mise.toml` first (see [Override a version on one machine](#override-a-version-on-one-machine)).
 
 ### See what would change before applying
 
@@ -478,14 +532,14 @@ This works alongside `dexter` or any other LSP already configured in the dotfile
 
 ### Extra mise tools
 
-`~/.mise.local.toml` sits next to `~/.mise.toml` and is never touched by chezmoi. Use it for machine-specific tools, including plugins from internal or private registries:
+`~/.mise.toml` (or `~/.mise.local.toml`) is never touched by chezmoi and outranks your chezmoi-managed defaults in `~/.config/mise/config.toml`. Use it for machine-specific versions and tools, including plugins from internal or private registries:
 
 ```bash
-nvim ~/.mise.local.toml
+nvim ~/.mise.toml
 ```
 
 ```toml
-# ~/.mise.local.toml  (not in git)
+# ~/.mise.toml  (not in git)
 [plugins]
 my-work-tool = "git@gitlab.com:my-org/mise-my-work-tool.git"
 
@@ -501,7 +555,7 @@ Then install:
 mise install
 ```
 
-mise merges `~/.mise.local.toml` with `~/.mise.toml` at runtime, so you never need to modify the chezmoi-managed file.
+mise merges `~/.mise.toml` with the global `~/.config/mise/config.toml` at runtime, so you never need to modify the chezmoi-managed file.
 
 ---
 
@@ -517,10 +571,10 @@ A few tools from the Brewfile worth knowing:
 | `gh` | GitHub CLI | `gh pr create`, `gh pr list`, `gh issue view 42` |
 | `entr` | Re-run on file change | `fd -e ex \| entr mix test` |
 | `htop` | Process viewer | `htop` |
-| `tree` | Interactive directory tree (broot) | `tree src/` — fuzzy search, Alt+Enter to cd |
+| `broot` | Interactive directory tree | `broot src/` — fuzzy search, Alt+Enter to cd |
 | `ls` | Directory listing (eza) | `ls` or `ll` for long form with git status |
 | `cat` | File viewer (bat) | `cat file.ex` — syntax highlighted, with line numbers |
-| `xxd` | Hex viewer (hexyl) | `xxd file` — colorized hex dump with ASCII sidebar |
+| `hexyl` | Hex viewer | `hexyl file` — colorized hex dump with ASCII sidebar |
 | `termgraph` | Terminal bar charts | `echo "Jan,100\nFeb,120" \| termgraph` |
 | `watson` | Time tracker | `watson start project +tag`, `watson stop`, `watson report` |
 
@@ -548,22 +602,22 @@ man ls              # man pages are also rendered via bat
 
 ### hexyl — better xxd
 
-`xxd` is aliased to `hexyl`:
+Run it as `hexyl` — plain `xxd` is left alone, so scripts that rely on its output format still work:
 
 ```bash
-xxd file.bin        # colorized hex dump with ASCII sidebar
-xxd -n 256 file     # show first 256 bytes only
+hexyl file.bin      # colorized hex dump with ASCII sidebar
+hexyl -n 256 file   # show first 256 bytes only
 hexyl --border none file | head  # strip border for piping
 ```
 
 ### broot — interactive tree explorer
 
-`tree` is aliased to `broot`:
+Run it as `broot` (or `br`) — plain `tree` is left alone for static, pipeable output:
 
 ```bash
-tree                # open interactive tree for current directory
-tree src/           # open at a specific path
-br                  # same as tree, but cd into the selected directory on exit
+broot               # open interactive tree for current directory
+broot src/          # open at a specific path
+br                  # same as broot, but cd into the selected directory on exit
 ```
 
 Inside broot:
@@ -571,7 +625,17 @@ Inside broot:
 - `Alt+Enter` to `cd` into the selected directory and exit
 - `?` for help
 
-Note: `br` (cd-on-exit) requires the broot shell launcher, which bootstrap installs automatically. Plain `tree`/`broot` works without it.
+Note: `br` (cd-on-exit) requires the broot shell launcher, which bootstrap installs automatically. Plain `broot` works without it.
+
+### fd — better find
+
+Run it as `fd` — `find` is not aliased, so scripts and commands that expect POSIX `find` flags keep working. (On Debian/Ubuntu the binary is `fdfind`; the zshrc aliases `fd` to it.)
+
+```bash
+fd config           # files/dirs whose name contains "config"
+fd -e lua           # all .lua files
+fd -H .env          # include hidden files
+```
 
 ### gh for pull requests
 
