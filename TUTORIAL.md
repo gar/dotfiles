@@ -468,7 +468,7 @@ brew install chezmoi
 chezmoi init gar        # work machine: yes; email: your work email
 chezmoi diff            # no ~/.macos in the list
 chezmoi apply
-DOTFILES_WORK=1 brew bundle --file="$(chezmoi source-path)/Brewfile"   # skips Firefox
+HOMEBREW_DOTFILES_WORK=1 brew bundle --file="$(chezmoi source-path)/Brewfile"   # skips Firefox
 ```
 
 Need different runtime versions from your personal defaults? Create `~/.mise.toml` first (see [Override a version on one machine](#override-a-version-on-one-machine)).
