@@ -1,0 +1,6 @@
+{{- /* Answers are cached in ~/.config/chezmoi/chezmoi.toml; re-run `chezmoi init` to be asked again */ -}}
+{{- $isWork := promptBoolOnce . "isWork" "Is this a work machine (MDM-managed)" false -}}
+{{- $email := promptStringOnce . "email" "Git email address" "garmorley@gmail.com" -}}
+[data]
+    isWork = {{ $isWork }}
+    email = {{ $email | quote }}

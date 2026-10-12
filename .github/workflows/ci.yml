@@ -45,7 +45,9 @@ jobs:
       - name: Zsh syntax check
         run: |
           sudo apt-get install -y zsh
-          chezmoi execute-template --init < dot_zshrc.tmpl > /tmp/dot_zshrc
+          # Supply the [data] .chezmoi.toml.tmpl would prompt for on `chezmoi init`
+          printf '[data]\n    isWork = false\n    email = "test@example.com"\n' > "$RUNNER_TEMP/chezmoi.toml"
+          chezmoi --config "$RUNNER_TEMP/chezmoi.toml" execute-template --init < dot_zshrc.tmpl > /tmp/dot_zshrc
           zsh -n /tmp/dot_zshrc
 
   lua:
@@ -220,10 +222,19 @@ jobs:
       - name: Add chezmoi to PATH
         run: echo "$HOME/bin" >> "$GITHUB_PATH"
 
+      - name: Write test chezmoi configs
+        run: |
+          # Supply the [data] .chezmoi.toml.tmpl would prompt for on `chezmoi init`,
+          # once per isWork value, so templates render non-interactively.
+          for is_work in false true; do
+            printf '[data]\n    isWork = %s\n    email = "test@example.com"\n' "$is_work" \
+              > "$RUNNER_TEMP/isWork-$is_work.toml"
+          done
+
       - name: Validate git config
         run: |
           TMPFILE=$(mktemp)
-          chezmoi execute-template --init < dot_gitconfig.tmpl > "$TMPFILE"
+          chezmoi --config "$RUNNER_TEMP/isWork-false.toml" execute-template --init < dot_gitconfig.tmpl > "$TMPFILE"
           if ! git config --file "$TMPFILE" --list > /dev/null; then
             echo "::error::dot_gitconfig.tmpl is not valid git config"
             git config --file "$TMPFILE" --list
@@ -234,18 +245,22 @@ jobs:
       - name: Validate all templates
         run: |
           FAILED=0
-          for f in $(find . -name '*.tmpl' -not -path './.git/*'); do
-            echo "checking $f"
-            if ! chezmoi execute-template --init < "$f" > /dev/null 2>&1; then
-              # Templates using 1Password functions can't render in CI — skip them
-              ERR=$(chezmoi execute-template --init < "$f" 2>&1 || true)
-              if echo "$ERR" | grep -qi "onepassword\|1password\|op:"; then
-                echo "  skipped (requires 1Password)"
-              else
-                echo "::error::Template failed to render: $f"
-                echo "$ERR"
-                FAILED=1
+          # .chezmoiignore is a template too, despite lacking the .tmpl suffix
+          for f in $(find . \( -name '*.tmpl' -o -name '.chezmoiignore' \) -not -path './.git/*'); do
+            for is_work in false true; do
+              cfg="$RUNNER_TEMP/isWork-$is_work.toml"
+              echo "checking $f (isWork=$is_work)"
+              if ! chezmoi --config "$cfg" execute-template --init < "$f" > /dev/null 2>&1; then
+                # Templates using 1Password functions can't render in CI — skip them
+                ERR=$(chezmoi --config "$cfg" execute-template --init < "$f" 2>&1 || true)
+                if echo "$ERR" | grep -qi "onepassword\|1password\|op:"; then
+                  echo "  skipped (requires 1Password)"
+                else
+                  echo "::error::Template failed to render: $f (isWork=$is_work)"
+                  echo "$ERR"
+                  FAILED=1
+                fi
               fi
-            fi
+            done
           done
           exit $FAILED
