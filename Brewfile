@@ -1,5 +1,3 @@
-tap 'manaflow-ai/cmux'
-
 brew 'mise'
 brew 'zsh-autosuggestions'
 brew 'zsh-fast-syntax-highlighting'
@@ -46,14 +44,15 @@ cask 'raycast'
 cask 'dash'
 cask 'font-jetbrains-mono-nerd-font'
 cask 'cmux'
-cask 'obsidian'
 cask 'spotify'
-cask 'utc-menu-clock'
 cask 'keymapp'
 
 # Personal-only apps — skipped on work (MDM-managed) machines.
-# bootstrap.sh sets DOTFILES_WORK from isWork; when running `brew bundle`
-# by hand on a work machine, use: DOTFILES_WORK=1 brew bundle
-unless ENV["DOTFILES_WORK"] == "1"
+# bootstrap.sh sets HOMEBREW_DOTFILES_WORK from isWork; when running `brew bundle`
+# by hand on a work machine, use: HOMEBREW_DOTFILES_WORK=1 brew bundle
+# The HOMEBREW_ prefix is required: Homebrew strips every other env var before
+# evaluating the Brewfile, so a plain DOTFILES_WORK would always read as nil.
+unless ENV["HOMEBREW_DOTFILES_WORK"] == "1"
   cask 'firefox'
+  cask 'obsidian'
 end

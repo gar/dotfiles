@@ -41,7 +41,7 @@ dotfiles/
 - `executable_` prefix → file gets executable permission when applied
 - `.chezmoiignore` excludes files conditionally (e.g. `.macos` excluded on non-Darwin)
 - `.chezmoi.toml.tmpl` prompts once (`promptBoolOnce`/`promptStringOnce`) for `isWork` and `email`, stored under `[data]` in `~/.config/chezmoi/chezmoi.toml`. Never commit a work email — it is only entered at init time
-- `isWork` gates MDM-unsafe behaviour: `.chezmoiignore` drops `.macos`; bootstrap skips running `~/.macos` and the final reboot. Bootstrap pre-answers the prompt via `--promptBool "<prompt text>=…"` — keep the prompt text in sync between the two files
+- `isWork` gates MDM-unsafe behaviour: `.chezmoiignore` drops `.macos`; bootstrap skips running `~/.macos` and the final reboot; bootstrap exports `HOMEBREW_DOTFILES_WORK=1|0` so the `Brewfile` skips personal-only casks (firefox, obsidian). The `HOMEBREW_` prefix is mandatory — `brew bundle` strips all other env vars before evaluating the Brewfile. Bootstrap pre-answers the prompt via `--promptBool "<prompt text>=…"` — keep the prompt text in sync between the two files
 - No template uses `onepassword*` functions and bootstrap does not require 1Password/`op`. If you add one, CI/test skip logic for 1Password errors is still in place
 
 ## Testing

@@ -23,11 +23,11 @@ detect_distro() {
 
 # ---------------------------------------------------------------------------
 # Helper: is this a work (MDM-managed) machine? Prints "true" or "false".
-# Order: $DOTFILES_WORK, then an existing chezmoi config, then ask.
+# Order: $HOMEBREW_DOTFILES_WORK, then an existing chezmoi config, then ask.
 # Determined up front because `brew bundle` runs before `chezmoi init`.
 # ---------------------------------------------------------------------------
 detect_is_work() {
-  case "${DOTFILES_WORK:-}" in
+  case "${HOMEBREW_DOTFILES_WORK:-}" in
     1) echo "true";  return ;;
     0) echo "false"; return ;;
   esac
@@ -231,9 +231,9 @@ IS_WORK="$(detect_is_work)"
 echo "Work machine: $IS_WORK"
 # Read by the Brewfile to skip personal-only casks on work machines
 if [[ "$IS_WORK" == "true" ]]; then
-  export DOTFILES_WORK=1
+  export HOMEBREW_DOTFILES_WORK=1
 else
-  export DOTFILES_WORK=0
+  export HOMEBREW_DOTFILES_WORK=0
 fi
 
 # Install packages
