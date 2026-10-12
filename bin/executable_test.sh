@@ -34,6 +34,9 @@ summary() {
 
 FILTER="${1:-}"
 
+# True if the script's shebang names zsh (shellcheck can't parse zsh)
+is_zsh_script() { head -n 1 "$1" | grep -q 'zsh'; }
+
 # Fixture chezmoi configs supplying the [data] that .chezmoi.toml.tmpl would
 # normally prompt for on `chezmoi init`, so templates render non-interactively.
 # Rendered once per isWork value; CHEZMOI_CFG (personal) is the default.
@@ -53,6 +56,8 @@ if run_check "shellcheck" "$FILTER"; then
     for f in "$REPO_DIR"/bin/executable_* "$REPO_DIR"/dot_macos "$REPO_DIR"/dot_config/raycast-scripts/executable_*.sh; do
       [[ -f "$f" ]] || continue
       basename="$(basename "$f")"
+      # zsh scripts are syntax-checked with `zsh -n` under shell-syntax instead
+      is_zsh_script "$f" && continue
       # dot_macos uses osascript/defaults — lots of deliberate SC warnings; exclude common noise
       if shellcheck -e SC1091,SC2034,SC2044,SC2046,SC2064,SC2086,SC2162 "$f" 2>&1; then
         pass "shellcheck $basename"
@@ -69,11 +74,19 @@ fi
 # 2. Shell syntax — parse-check zshrc and bash scripts
 # ---------------------------------------------------------------------------
 if run_check "shell-syntax" "$FILTER"; then
-  # bash scripts
+  # bash (and zsh-shebang) scripts
   for f in "$REPO_DIR"/bin/executable_* "$REPO_DIR"/dot_config/raycast-scripts/executable_*.sh; do
     [[ -f "$f" ]] || continue
     basename="$(basename "$f")"
-    if bash -n "$f" 2>&1; then
+    if is_zsh_script "$f"; then
+      if ! command -v zsh &>/dev/null; then
+        fail "zsh -n $basename (zsh not installed)"
+      elif zsh -n "$f" 2>&1; then
+        pass "zsh -n $basename"
+      else
+        fail "zsh -n $basename"
+      fi
+    elif bash -n "$f" 2>&1; then
       pass "bash -n $basename"
     else
       fail "bash -n $basename"
