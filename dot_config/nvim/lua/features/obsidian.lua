@@ -530,7 +530,6 @@ return {
     picker = { name = "telescope.nvim" },
 
     completion = {
-      blink = true,
       min_chars = 2,
     },
 
