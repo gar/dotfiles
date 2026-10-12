@@ -229,6 +229,12 @@ install_chezmoi() {
 
 IS_WORK="$(detect_is_work)"
 echo "Work machine: $IS_WORK"
+# Read by the Brewfile to skip personal-only casks on work machines
+if [[ "$IS_WORK" == "true" ]]; then
+  export DOTFILES_WORK=1
+else
+  export DOTFILES_WORK=0
+fi
 
 # Install packages
 if [[ "$OS" == "Darwin" ]]; then

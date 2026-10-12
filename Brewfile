@@ -45,10 +45,15 @@ brew 'zsh'
 cask 'raycast'
 cask 'dash'
 cask 'font-jetbrains-mono-nerd-font'
-cask 'firefox'
 cask 'cmux'
 cask 'obsidian'
 cask 'spotify'
 cask 'utc-menu-clock'
 cask 'keymapp'
-cask 'wispr-flow'
+
+# Personal-only apps — skipped on work (MDM-managed) machines.
+# bootstrap.sh sets DOTFILES_WORK from isWork; when running `brew bundle`
+# by hand on a work machine, use: DOTFILES_WORK=1 brew bundle
+unless ENV["DOTFILES_WORK"] == "1"
+  cask 'firefox'
+end
