@@ -69,7 +69,6 @@ install_packages_debian() {
     hexyl \
     fzf \
     gh \
-    pipx \
     git \
     gnupg \
     btop \
@@ -77,6 +76,7 @@ install_packages_debian() {
     procs \
     jq \
     libpq-dev libxslt1-dev libssl-dev libreadline-dev libwxgtk3.2-dev \
+    fontconfig \
     luarocks \
     neovim \
     pkg-config \
@@ -85,8 +85,16 @@ install_packages_debian() {
     sd \
     shellcheck \
     tree \
-    tree-sitter \
+    tree-sitter-cli \
     zoxide
+
+  # Build deps for runtimes mise compiles from source on Ubuntu (no
+  # precompiled builds for this release): Erlang via kerl, Ruby via
+  # ruby-build, Postgres via asdf-postgres
+  sudo apt-get install -y \
+    m4 libncurses-dev libssh-dev unixodbc-dev libgl1-mesa-dev libglu1-mesa-dev \
+    libyaml-dev libffi-dev zlib1g-dev libgmp-dev rustc \
+    bison flex libicu-dev icu-devtools uuid-dev libcurl4-openssl-dev
 
   # eza is available in Ubuntu 24.04+ — skip silently on older releases
   if apt-cache show eza &>/dev/null 2>&1; then
@@ -97,7 +105,7 @@ install_packages_debian() {
 
   # zsh-you-should-use is not in Ubuntu repos — install from source if missing
   if [[ ! -d /usr/share/zsh-you-should-use ]]; then
-    sudo git clone https://github.com/MichaelAqwortsms/zsh-you-should-use.git /usr/share/zsh-you-should-use
+    sudo git clone https://github.com/MichaelAquilina/zsh-you-should-use.git /usr/share/zsh-you-should-use
   fi
 
   # fast-syntax-highlighting is not in Ubuntu repos — install from source if missing
@@ -266,8 +274,14 @@ fi
 install_chezmoi
 
 # Apply dotfiles. Pre-answer the isWork prompt — the text must match
-# .chezmoi.toml.tmpl. chezmoi still prompts for the git email.
-chezmoi init gar --apply --promptBool "Is this a work machine (MDM-managed)=$IS_WORK"
+# .chezmoi.toml.tmpl. chezmoi still prompts for the git email unless
+# $DOTFILES_EMAIL is set. $DOTFILES_REPO overrides the source repo (used by
+# the end-to-end container test to apply a local checkout).
+CHEZMOI_INIT_ARGS=(--apply --promptBool "Is this a work machine (MDM-managed)=$IS_WORK")
+if [[ -n "${DOTFILES_EMAIL:-}" ]]; then
+  CHEZMOI_INIT_ARGS+=(--promptString "Git email address=$DOTFILES_EMAIL")
+fi
+chezmoi init "${DOTFILES_REPO:-gar}" "${CHEZMOI_INIT_ARGS[@]}"
 
 # macOS-specific system preferences — skipped on work machines, where MDM
 # owns system settings (.chezmoiignore also keeps ~/.macos off them)
