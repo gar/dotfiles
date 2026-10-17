@@ -35,8 +35,8 @@ Bootstrap asks for your `sudo` password (apt) and your login password (`chsh` to
 1. Ask whether this is a work machine (see [Work Machines](#work-machines))
 2. Install system packages:
    - **macOS:** Homebrew packages and casks (`Brewfile`)
-   - **Ubuntu/Debian:** apt packages (including build deps for the runtimes mise compiles from source) + luacheck via luarocks
-   - **Arch/Manjaro:** pacman packages (+ AUR for `zsh-you-should-use`)
+   - **Ubuntu/Debian:** apt packages (including Ghostty, build deps for the runtimes mise compiles from source) + luacheck via luarocks
+   - **Arch/Manjaro:** pacman packages (including Ghostty, + AUR for `zsh-you-should-use`)
 3. Install chezmoi and apply dotfiles (prompts for your git email — see [chezmoi init prompts](#chezmoi-init-prompts))
 4. **macOS only, personal machines only:** Apply system preferences (`.macos`)
 5. Install language runtimes and tools via [mise](https://mise.jdx.dev/) (Node, Erlang, Elixir, Python, [dexter](https://github.com/remoteoss/dexter))
@@ -292,6 +292,8 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `.chezmoi.toml.tmpl` | `chezmoi init` prompts — `isWork` and git `email` |
 | `dot_config/mise/config.toml` | Personal default language runtime versions (mise global config) |
 | `dot_macos` | macOS system preferences (skipped on Linux and on work machines via `.chezmoiignore`) |
+| `dot_config/ghostty/config.tmpl` | Ghostty terminal config (font size 16 on macOS, 12 on Linux) |
+| `dot_config/xdg-terminals.list` | Makes Ghostty the default terminal on Linux (GNOME `Ctrl+Alt+T`, via `xdg-terminal-exec`) |
 | `dot_config/nvim/` | Neovim config (LSP, completion, fuzzy find, floating terminal, etc.) |
 | `Brewfile` | Homebrew packages and casks (macOS only) |
 | `.chezmoiignore` | OS- and `isWork`-conditional file exclusions |
