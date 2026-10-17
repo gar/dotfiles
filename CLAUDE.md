@@ -13,7 +13,8 @@ dotfiles/
 ├── bin/
 │   ├── executable_bootstrap.sh    # Cross-platform machine setup script
 │   ├── executable_sharpen         # Files a @claude GitHub issue from any prompt
-│   └── executable_test.sh         # Local test runner (mirrors CI)
+│   ├── executable_test.sh         # Local test runner (mirrors CI)
+│   └── executable_test_bootstrap_ubuntu.sh  # E2E bootstrap in ubuntu:26.04 docker (local only, slow)
 ├── dot_config/
 │   ├── mise/config.toml           # mise global config — personal runtime defaults (lowest priority)
 │   └── nvim/                      # Neovim config (Lua, lazy.nvim)
@@ -77,7 +78,7 @@ Each check hard-fails if its required tool isn't on `PATH`. Run the full suite o
 
 ### CI
 
-GitHub Actions runs the same checks on every PR and push to `main` — five parallel jobs (`lint`, `lua`, `neovim`, `chezmoi`, `secret-scan`). The `neovim` job runs startup and filetype smoke tests as sequential steps; the `chezmoi` job also validates `dot_gitconfig.tmpl` parses as valid git config; the `secret-scan` job runs gitleaks against the full git history (`fetch-depth: 0`) with `--redact` so any findings are never printed verbatim in logs. The neovim binary, lazy.nvim plugin dir, and gitleaks binary are cached between runs. See `.github/workflows/ci.yml`.
+GitHub Actions runs the same checks on every PR and push to `main` — six parallel jobs (`lint`, `lua`, `neovim`, `chezmoi`, `secret-scan`, `ubuntu-packages`). `ubuntu-packages` runs in an `ubuntu:26.04` container: it extracts every package from the `apt-get install` calls inside `install_packages_debian()` (sed range `^install_packages_debian() {` → `^}`, backslash continuations joined) and `apt-get install --dry-run`s them, then `git ls-remote`s every `git clone https://github.com/...` URL in bootstrap. Keep Debian package lists in that form (`sudo apt-get install -y \` + continuation lines) so the extractor sees them. The `neovim` job runs startup and filetype smoke tests as sequential steps; the `chezmoi` job also validates `dot_gitconfig.tmpl` parses as valid git config; the `secret-scan` job runs gitleaks against the full git history (`fetch-depth: 0`) with `--redact` so any findings are never printed verbatim in logs. The neovim binary, lazy.nvim plugin dir, and gitleaks binary are cached between runs. See `.github/workflows/ci.yml`.
 
 ## Key Files to Know
 
@@ -85,7 +86,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — five para
 - **`dot_gitconfig.tmpl`** — Git config. Notable aliases: `oops` (amend), `shove` (push --force-with-lease), `l` (log oneline). Uses diff3 conflict style.
 - **`dot_config/mise/config.toml`** — Personal default runtime versions, as mise's *global* config (`~/.config/mise/config.toml`, lowest priority). Changed here, applied via `mise install`. Also holds the `[plugins]` entry for dexter. `mise use -g` writes to this managed file — edit via `chezmoi edit` instead.
 - **`Brewfile`** — macOS packages. Run `brew bundle` after changes.
-- **`bin/executable_bootstrap.sh`** — Full machine setup. Detects OS/distro, installs packages, applies chezmoi, installs runtimes, sets default shell.
+- **`bin/executable_bootstrap.sh`** — Full machine setup. Detects OS/distro, installs packages, applies chezmoi, installs runtimes, sets default shell. Non-interactive knobs: `HOMEBREW_DOTFILES_WORK`, `DOTFILES_EMAIL` (→ `--promptString "Git email address=…"`), `DOTFILES_REPO` (default `gar`). Ubuntu package names: `tree-sitter-cli` (not `tree-sitter`, which is Arch-only). There are no precompiled Erlang builds for Ubuntu 26.04, so mise compiles Erlang (kerl), Ruby (ruby-build) and Postgres; their build deps are in the second `apt-get install` in `install_packages_debian()`. E2E: `bin/executable_test_bootstrap_ubuntu.sh` (not in CI, too slow).
 - **`dot_config/nvim/`** — Neovim config. Each file in `lua/features/` is a lazy.nvim plugin spec. LSP servers configured: lua_ls, pyright, ts_ls, clangd. Floating terminal via toggleterm.nvim (`<C-\>` to toggle). Claude Code integration via claudecode.nvim (`<leader>ac` to toggle).
 - **`private_dot_claude/skills/`** — Claude Code skills. Each subdirectory is a skill with a `SKILL.md` (YAML frontmatter: `name`, `description`) plus optional resource files. Mostly vendored verbatim from [`mattpocock/skills`](https://github.com/mattpocock/skills); the `notes/` skill is locally adapted from upstream's `obsidian-vault` to use `~/notes`. Provenance and re-vend instructions in `private_dot_claude/skills/README.md`. Adding a new skill: `mkdir private_dot_claude/skills/<name> && $EDITOR private_dot_claude/skills/<name>/SKILL.md`.
 
