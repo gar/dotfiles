@@ -69,6 +69,7 @@ install_packages_debian() {
     hexyl \
     fzf \
     gh \
+    ghostty \
     git \
     gnupg \
     btop \
@@ -135,6 +136,7 @@ install_packages_arch() {
     hexyl \
     fzf \
     github-cli \
+    ghostty \
     python-pipx \
     git \
     gnupg \
