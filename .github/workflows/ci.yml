@@ -264,3 +264,47 @@ jobs:
             done
           done
           exit $FAILED
+
+  ubuntu-packages:
+    name: Ubuntu bootstrap deps
+    runs-on: ubuntu-latest
+    container: ubuntu:26.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install git
+        run: apt-get update -qq && apt-get install -y -qq git
+
+      - name: Check apt package names exist
+        run: |
+          # Every package named in an `apt-get install` inside
+          # install_packages_debian(). --dry-run resolves the full dependency
+          # set without installing; an unknown name exits non-zero.
+          PKGS=$(sed -n '/^install_packages_debian() {/,/^}/p' bin/executable_bootstrap.sh \
+            | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba}' \
+            | grep -E 'apt-get install' \
+            | sed -E 's/.*apt-get install -y//' \
+            | tr -s ' ' '\n' | grep -v '^$' | sort -u)
+          # Guard against the extractor silently matching nothing
+          if [ "$(echo "$PKGS" | wc -l)" -lt 20 ]; then
+            echo "::error::Extracted too few packages from install_packages_debian(): $PKGS"
+            exit 1
+          fi
+          echo "Checking: $(echo $PKGS)"
+          apt-get install --dry-run -qq $PKGS > /dev/null
+
+      - name: Check cloned GitHub repos exist
+        run: |
+          # GIT_TERMINAL_PROMPT=0 makes a missing repo fail instead of
+          # prompting for credentials
+          export GIT_TERMINAL_PROMPT=0
+          FAILED=0
+          for url in $(grep -oE 'git clone https://github\.com/[^ ]+' bin/executable_bootstrap.sh | awk '{print $3}'); do
+            if git ls-remote --heads "$url" > /dev/null; then
+              echo "OK: $url"
+            else
+              echo "::error::Repo not reachable: $url"
+              FAILED=1
+            fi
+          done
+          exit $FAILED
