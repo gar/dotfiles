@@ -473,6 +473,20 @@ HOMEBREW_DOTFILES_WORK=1 brew bundle --file="$(chezmoi source-path)/Brewfile"   
 
 Need different runtime versions from your personal defaults? Create `~/.mise.toml` first (see [Override a version on one machine](#override-a-version-on-one-machine)).
 
+### Set up a fresh Ubuntu desktop
+
+Stock Ubuntu ships without `git` and `curl`:
+
+```bash
+sudo apt update && sudo apt install -y git curl
+git clone https://github.com/gar/dotfiles.git ~/dotfiles
+cd ~/dotfiles && bash bin/executable_bootstrap.sh
+```
+
+Answer the two prompts, enter your password for `sudo` and `chsh`, then leave it running — `mise install` compiles Erlang, Ruby and Postgres. Log out and back in to get zsh.
+
+Changed the Ubuntu part of bootstrap? Test the whole run in a throwaway container before you merge: `./bin/executable_test_bootstrap_ubuntu.sh`.
+
 ### See what would change before applying
 
 ```bash

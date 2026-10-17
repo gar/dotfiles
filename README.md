@@ -17,12 +17,25 @@ Run the bootstrap script to set up everything from scratch:
 bash bin/executable_bootstrap.sh
 ```
 
+**Fresh Ubuntu desktop (first boot):** a stock Ubuntu install has neither `git` nor `curl`, so install those first, then clone and bootstrap:
+
+```bash
+sudo apt update && sudo apt install -y git curl
+git clone https://github.com/gar/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+bash bin/executable_bootstrap.sh
+```
+
+Bootstrap asks for your `sudo` password (apt) and your login password (`chsh` to zsh). Expect `mise install` to take a while on Ubuntu: Erlang, Ruby and Postgres compile from source.
+
+**Non-interactive runs:** set `HOMEBREW_DOTFILES_WORK=0|1` to answer the work-machine prompt and `DOTFILES_EMAIL=you@example.com` to answer the git email prompt. `DOTFILES_REPO` (default `gar`) changes the repo `chezmoi init` applies, e.g. `file:///path/to/checkout`.
+
 ### What it does
 
 1. Ask whether this is a work machine (see [Work Machines](#work-machines))
 2. Install system packages:
    - **macOS:** Homebrew packages and casks (`Brewfile`)
-   - **Ubuntu/Debian:** apt packages + luacheck via luarocks
+   - **Ubuntu/Debian:** apt packages (including build deps for the runtimes mise compiles from source) + luacheck via luarocks
    - **Arch/Manjaro:** pacman packages (+ AUR for `zsh-you-should-use`)
 3. Install chezmoi and apply dotfiles (prompts for your git email — see [chezmoi init prompts](#chezmoi-init-prompts))
 4. **macOS only, personal machines only:** Apply system preferences (`.macos`)
@@ -244,9 +257,19 @@ sudo pacman -S shellcheck luacheck neovim chezmoi gitleaks
 
 Each check hard-fails if its tool is missing (e.g. running `secret-scan` without `gitleaks` installed is a failure, not a skip). If you haven't installed every dependency, run the specific checks you care about instead of the full suite.
 
+### End-to-end Ubuntu bootstrap
+
+Runs the whole bootstrap non-interactively in a fresh `ubuntu:26.04` container (needs Docker), applying this checkout's committed `HEAD`:
+
+```bash
+./bin/executable_test_bootstrap_ubuntu.sh            # or pass another image, e.g. ubuntu:24.04
+```
+
+Not part of CI: `mise install` compiles Erlang, Ruby and Postgres from source, which takes too long for a per-PR job. Run it before merging changes to the Ubuntu path of bootstrap.
+
 ### CI
 
-GitHub Actions runs automatically on every pull request and push to `main`. The pipeline has six parallel jobs:
+GitHub Actions runs automatically on every pull request and push to `main`. The pipeline has seven parallel jobs:
 
 | Job | What it checks |
 |---|---|
@@ -255,6 +278,7 @@ GitHub Actions runs automatically on every pull request and push to `main`. The 
 | **Neovim startup** | Headless `nvim` launch — catches broken plugin specs, bad keymaps, etc. |
 | **Git config** | Renders and parses `dot_gitconfig.tmpl` to catch malformed config |
 | **Chezmoi templates** | Renders every `.tmpl` file to verify template syntax |
+| **Ubuntu bootstrap deps** | In an `ubuntu:26.04` container: `apt-get install --dry-run` on every package in `install_packages_debian()` (fails on a name that doesn't exist), and `git ls-remote` on every GitHub repo bootstrap clones |
 | **Secret scan** | `gitleaks` over the full git history — fails the build if an API key, token, password, or similar secret is detected. Output is `--redact`ed so secrets never appear in logs. |
 
 No manual GitHub setup is required — the workflow runs automatically once `.github/workflows/ci.yml` is pushed.
@@ -273,6 +297,7 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `.chezmoiignore` | OS- and `isWork`-conditional file exclusions |
 | `bin/executable_bootstrap.sh` | Cross-platform machine bootstrap script |
 | `bin/executable_test.sh` | Local test runner (same checks as CI) |
+| `bin/executable_test_bootstrap_ubuntu.sh` | End-to-end bootstrap test in an Ubuntu container (Docker) |
 | `.github/workflows/ci.yml` | GitHub Actions CI pipeline |
 
 ## Shell Aliases
