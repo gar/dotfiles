@@ -119,6 +119,7 @@ GitHub Actions runs the same checks on every PR and push to `main` — six paral
 - Plugin specs use lazy.nvim format (table with plugin URL, dependencies, config function)
 - Test with `./bin/executable_test.sh lua-lint` and `./bin/executable_test.sh nvim-startup`
 - `vim` is a recognized global in luacheck — no need to declare it
+- `syntax.lua` sets `vim.g._ts_force_sync_parsing = true`: 0.12's async treesitter parsing races with render-markdown's sync parse (stale tree → `get_node_text` "Index out of bounds"). Don't remove without re-testing big notes
 
 #### which-key registration
 

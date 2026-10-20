@@ -8,6 +8,12 @@ return {
     end
   end,
   config = function()
+    -- Neovim 0.12 parses in 3ms async slices and leaves the C parser halted
+    -- between them. A sync parse from another plugin (render-markdown) can
+    -- resume that halted parse and get a tree that doesn't match the buffer,
+    -- which surfaces as "Index out of bounds" in get_node_text.
+    vim.g._ts_force_sync_parsing = true
+
     require("nvim-treesitter").setup({
       install_dir = vim.fn.stdpath("data") .. "/site",
     })
