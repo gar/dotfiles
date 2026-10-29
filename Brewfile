@@ -44,6 +44,7 @@ cask 'raycast'
 cask 'dash'
 cask 'font-jetbrains-mono-nerd-font'
 cask 'cmux'
+cask 'ghostty'  # quick terminal (cmd+`) — cmux has none
 cask 'obsidian'
 cask 'spotify'
 cask 'keymapp'

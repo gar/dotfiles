@@ -292,7 +292,7 @@ No manual GitHub setup is required — the workflow runs automatically once `.gi
 | `.chezmoi.toml.tmpl` | `chezmoi init` prompts — `isWork` and git `email` |
 | `dot_config/mise/config.toml` | Personal default language runtime versions (mise global config) |
 | `dot_macos` | macOS system preferences (skipped on Linux and on work machines via `.chezmoiignore`) |
-| `dot_config/ghostty/config.tmpl` | Ghostty terminal config (font size 16 on macOS, 12 on Linux) |
+| `dot_config/ghostty/config.tmpl` | Ghostty terminal config (font size 16 on macOS, 12 on Linux; macOS: Cmd+backtick quake-style quick terminal) |
 | `dot_config/xdg-terminals.list` | Makes Ghostty the default terminal on Linux (GNOME `Ctrl+Alt+T`, via `xdg-terminal-exec`) |
 | `dot_config/nvim/` | Neovim config (LSP, completion, fuzzy find, floating terminal, etc.) |
 | `Brewfile` | Homebrew packages and casks (macOS only) |

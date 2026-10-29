@@ -208,6 +208,22 @@ From inside the terminal:
 
 You can also split navigate from terminal mode with `<C-w>h/j/k/l` to jump to other splits.
 
+### Quake-style quick terminal (macOS)
+
+Outside Neovim, from any app:
+
+```
+Cmd+`   — drop down / hide the Ghostty quick terminal
+```
+
+It slides down from the top of the main screen and hides again when it loses focus. The shell session persists between toggles, so it suits quick git commands, test runs, or a `cl` session you keep coming back to.
+
+It's a Ghostty.app feature (cmux doesn't have one), so Ghostty has to be running. It starts without a window and keeps running after you close its last window. One-time setup:
+- Grant Ghostty access in **System Settings → Privacy & Security → Accessibility** (needed for global hotkeys)
+- Add Ghostty to **System Settings → General → Login Items** so the hotkey works from boot
+
+This replaces macOS's own Cmd+backtick "cycle windows of the same app" shortcut.
+
 ---
 
 ## 7. Working with Claude Code
